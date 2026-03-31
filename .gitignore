@@ -1,4 +1,20 @@
-﻿.vs/
-bin/
-obj/
-*.user
+﻿{
+"hooks": {
+"UserPromptSubmit": [
+{
+"type": "command",
+"command": "powershell.exe -ExecutionPolicy
+Bypass -Command \"$input | Add-Content -Path 'C:\\git\\.git
+hub\\hooks\\agent_log.txt'\""
+}
+],
+"preToolUse": [
+{
+"type": "command",
+"command": "powershell.exe -ExecutionPolicy
+Bypass -Command \"$input | Add-Content -Path 'C:\\git\\.git
+hub\\hooks\\agent_log.txt'\""
+}
+]
+}
+}
