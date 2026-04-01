@@ -1,0 +1,15 @@
+C:\git\ASP_NET_2026\Labosi-ASP.NET\bin\Debug\net8.0\Labosi-ASP.NET.exe
+C:\git\ASP_NET_2026\Labosi-ASP.NET\bin\Debug\net8.0\Labosi-ASP.NET.deps.json
+C:\git\ASP_NET_2026\Labosi-ASP.NET\bin\Debug\net8.0\Labosi-ASP.NET.runtimeconfig.json
+C:\git\ASP_NET_2026\Labosi-ASP.NET\bin\Debug\net8.0\Labosi-ASP.NET.dll
+C:\git\ASP_NET_2026\Labosi-ASP.NET\bin\Debug\net8.0\Labosi-ASP.NET.pdb
+C:\git\ASP_NET_2026\Labosi-ASP.NET\obj\Debug\net8.0\Labosi-ASP.NET.GeneratedMSBuildEditorConfig.editorconfig
+C:\git\ASP_NET_2026\Labosi-ASP.NET\obj\Debug\net8.0\Labosi-ASP.NET.AssemblyInfoInputs.cache
+C:\git\ASP_NET_2026\Labosi-ASP.NET\obj\Debug\net8.0\Labosi-ASP.NET.AssemblyInfo.cs
+C:\git\ASP_NET_2026\Labosi-ASP.NET\obj\Debug\net8.0\Labosi-ASP.NET.csproj.CoreCompileInputs.cache
+C:\git\ASP_NET_2026\Labosi-ASP.NET\obj\Debug\net8.0\Labosi-ASP.NET.sourcelink.json
+C:\git\ASP_NET_2026\Labosi-ASP.NET\obj\Debug\net8.0\Labosi-ASP.NET.dll
+C:\git\ASP_NET_2026\Labosi-ASP.NET\obj\Debug\net8.0\refint\Labosi-ASP.NET.dll
+C:\git\ASP_NET_2026\Labosi-ASP.NET\obj\Debug\net8.0\Labosi-ASP.NET.pdb
+C:\git\ASP_NET_2026\Labosi-ASP.NET\obj\Debug\net8.0\Labosi-ASP.NET.genruntimeconfig.cache
+C:\git\ASP_NET_2026\Labosi-ASP.NET\obj\Debug\net8.0\ref\Labosi-ASP.NET.dll
