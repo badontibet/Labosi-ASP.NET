@@ -1,0 +1,49 @@
+@model List<FileItem>
+
+@{
+    ViewData["Title"] = "Files";
+}
+
+<nav class="breadcrumb" aria-label="Breadcrumb">
+    <a asp-controller="Home" asp-action="Index">Dashboard</a>
+    <span>/</span>
+    <span>Files</span>
+</nav>
+
+<section class="page-hero">
+    <span class="eyebrow">File intelligence</span>
+    <h1>Indexed File Catalog</h1>
+    <p>Metadata, directory placement, tags, and change counts for indexed files.</p>
+</section>
+
+<section class="panel">
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Size</th>
+                    <th>Modified</th>
+                    <th>Directory</th>
+                    <th>Signals</th>
+                    <th>Details</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var file in Model)
+                {
+                    <tr>
+                        <td><strong>@file.Name</strong></td>
+                        <td><span class="tag-chip">@file.Extension</span></td>
+                        <td>@file.Size bytes</td>
+                        <td>@file.ModifiedDate.ToString("yyyy-MM-dd HH:mm")</td>
+                        <td><a asp-controller="Directories" asp-action="Details" asp-route-id="@file.DirectoryId">@file.Directory.Name</a></td>
+                        <td>@file.Tags.Count tags / @file.ChangeLogs.Count changes</td>
+                        <td><a class="link-chip" asp-action="Details" asp-route-id="@file.Id">Open file</a></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</section>

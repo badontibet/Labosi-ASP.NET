@@ -1,0 +1,78 @@
+@model DirectoryItem
+
+@{
+    ViewData["Title"] = Model.Name;
+}
+
+<nav class="breadcrumb" aria-label="Breadcrumb">
+    <a asp-controller="Home" asp-action="Index">Dashboard</a>
+    <span>/</span>
+    <a asp-controller="Directories" asp-action="Index">Directories</a>
+    <span>/</span>
+    <span>@Model.Name</span>
+</nav>
+
+<section class="page-hero">
+    <span class="eyebrow">Directory details</span>
+    <h1>@Model.Name</h1>
+    <p class="path-text">@Model.Path</p>
+</section>
+
+<section class="metadata-grid">
+    <article class="metadata-card">
+        <span>Parent Directory</span>
+        <strong>
+            @if (Model.Parent != null)
+            {
+                <a asp-controller="Directories" asp-action="Details" asp-route-id="@Model.ParentId">@Model.Parent.Name</a>
+            }
+            else
+            {
+                <span>Root directory</span>
+            }
+        </strong>
+    </article>
+    <article class="metadata-card"><span>Created</span><strong>@Model.CreatedDate.ToString("yyyy-MM-dd HH:mm")</strong></article>
+    <article class="metadata-card"><span>Modified</span><strong>@Model.ModifiedDate.ToString("yyyy-MM-dd HH:mm")</strong></article>
+    <article class="metadata-card"><span>Files</span><strong>@Model.Files.Count</strong></article>
+</section>
+
+<section class="panel">
+    <h3>Subdirectories</h3>
+    @if (Model.SubDirectories.Any())
+    {
+        <ul class="tree-list">
+            @foreach (var directory in Model.SubDirectories)
+            {
+                <li>
+                    <a asp-action="Details" asp-route-id="@directory.Id">@directory.Name</a>
+                    <span class="path-text">@directory.Path</span>
+                </li>
+            }
+        </ul>
+    }
+    else
+    {
+        <p>No subdirectories.</p>
+    }
+</section>
+
+<section class="panel">
+    <h3>Files</h3>
+    @if (Model.Files.Any())
+    {
+        <ul class="file-list">
+            @foreach (var file in Model.Files)
+            {
+                <li>
+                    <a asp-controller="FileItems" asp-action="Details" asp-route-id="@file.Id">@file.Name</a>
+                    <span class="muted">@file.Extension - @file.Size bytes</span>
+                </li>
+            }
+        </ul>
+    }
+    else
+    {
+        <p>No files in this directory.</p>
+    }
+</section>

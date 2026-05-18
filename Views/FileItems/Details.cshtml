@@ -1,0 +1,81 @@
+@model FileItem
+
+@{
+    ViewData["Title"] = Model.Name;
+}
+
+<nav class="breadcrumb" aria-label="Breadcrumb">
+    <a asp-controller="Home" asp-action="Index">Dashboard</a>
+    <span>/</span>
+    <a asp-controller="FileItems" asp-action="Index">Files</a>
+    <span>/</span>
+    <span>@Model.Name</span>
+</nav>
+
+<section class="page-hero">
+    <span class="eyebrow">File metadata card</span>
+    <h1>@Model.Name</h1>
+    <p class="path-text">@Model.Path</p>
+</section>
+
+<section class="metadata-grid">
+    <article class="metadata-card"><span>Extension</span><strong>@Model.Extension</strong></article>
+    <article class="metadata-card"><span>Size</span><strong>@Model.Size bytes</strong></article>
+    <article class="metadata-card"><span>Directory</span><strong><a asp-controller="Directories" asp-action="Details" asp-route-id="@Model.DirectoryId">@Model.Directory.Name</a></strong></article>
+    <article class="metadata-card"><span>Directory Path</span><strong>@Model.Directory.Path</strong></article>
+    <article class="metadata-card"><span>Created</span><strong>@Model.CreatedDate.ToString("yyyy-MM-dd HH:mm")</strong></article>
+    <article class="metadata-card"><span>Modified</span><strong>@Model.ModifiedDate.ToString("yyyy-MM-dd HH:mm")</strong></article>
+</section>
+
+<section class="panel">
+    <h3>Tags</h3>
+    @if (Model.Tags.Any())
+    {
+        <ul class="quick-links">
+            @foreach (var tag in Model.Tags)
+            {
+                <li><a asp-controller="Tags" asp-action="Details" asp-route-id="@tag.Id">@tag.Name</a></li>
+            }
+        </ul>
+    }
+    else
+    {
+        <p>No tags.</p>
+    }
+</section>
+
+<section class="panel">
+    <h3>Change Log</h3>
+    @if (Model.ChangeLogs.Any())
+    {
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Timestamp</th>
+                        <th>Change Type</th>
+                        <th>Old Value</th>
+                        <th>New Value</th>
+                        <th>User</th>
+                    </tr>
+                </thead>
+                <tbody>
+                @foreach (var change in Model.ChangeLogs)
+                {
+                    <tr>
+                        <td>@change.Timestamp.ToString("yyyy-MM-dd HH:mm")</td>
+                        <td><span class="status-badge">@change.ChangeType</span></td>
+                        <td>@(string.IsNullOrWhiteSpace(change.OldValue) ? "No previous value" : change.OldValue)</td>
+                        <td>@change.NewValue</td>
+                        <td>@change.User</td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    }
+    else
+    {
+        <p>No change log entries found.</p>
+    }
+</section>

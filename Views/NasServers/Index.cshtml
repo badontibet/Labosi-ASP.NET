@@ -1,0 +1,56 @@
+@model List<NasServer>
+
+@{
+    ViewData["Title"] = "NAS Servers";
+}
+
+<nav class="breadcrumb" aria-label="Breadcrumb">
+    <a asp-controller="Home" asp-action="Index">Dashboard</a>
+    <span>/</span>
+    <span>NAS Servers</span>
+</nav>
+
+<section class="page-hero">
+    <span class="eyebrow">Server inventory</span>
+    <h1>NAS Server Grid</h1>
+    <p>Read-only list of NAS endpoints from the mock repository.</p>
+</section>
+
+<section class="panel">
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Network</th>
+                    <th>Status</th>
+                    <th>Last Scan</th>
+                    <th>Scan Jobs</th>
+                    <th>Details</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var server in Model)
+                {
+                    <tr>
+                        <td><strong>@server.Name</strong></td>
+                        <td><code>@server.IpAddress:@server.Port</code></td>
+                        <td>
+                            @if (server.IsActive)
+                            {
+                                <span class="status-badge status-good">Active</span>
+                            }
+                            else
+                            {
+                                <span class="status-badge status-bad">Inactive</span>
+                            }
+                        </td>
+                        <td>@server.LastScan.ToString("yyyy-MM-dd HH:mm")</td>
+                        <td>@server.ScanJobs.Count</td>
+                        <td><a class="link-chip" asp-action="Details" asp-route-id="@server.Id">Open server</a></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</section>

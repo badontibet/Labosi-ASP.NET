@@ -1,0 +1,66 @@
+@model List<ScanJob>
+
+@{
+    ViewData["Title"] = "Scan Jobs";
+}
+
+<nav class="breadcrumb" aria-label="Breadcrumb">
+    <a asp-controller="Home" asp-action="Index">Dashboard</a>
+    <span>/</span>
+    <span>Scan Jobs</span>
+</nav>
+
+<section class="page-hero">
+    <span class="eyebrow">Scan telemetry</span>
+    <h1>Scan Job Timeline</h1>
+    <p>Read-only list of scan jobs, roots, and file processing progress.</p>
+</section>
+
+<section class="panel">
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Job</th>
+                    <th>Server</th>
+                    <th>Status</th>
+                    <th>Root Path</th>
+                    <th>Progress</th>
+                    <th>Started</th>
+                    <th>Details</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var job in Model)
+                {
+                    <tr>
+                        <td><strong>Job @job.Id</strong></td>
+                        <td><a asp-controller="NasServers" asp-action="Details" asp-route-id="@job.NasServerId">@job.NasServer.Name</a></td>
+                        <td>
+                            @if (job.Status == ScanStatus.Completed)
+                            {
+                                <span class="status-badge status-good">@job.Status</span>
+                            }
+                            else if (job.Status == ScanStatus.Running)
+                            {
+                                <span class="status-badge status-running">@job.Status</span>
+                            }
+                            else if (job.Status == ScanStatus.Failed)
+                            {
+                                <span class="status-badge status-bad">@job.Status</span>
+                            }
+                            else
+                            {
+                                <span class="status-badge status-pending">@job.Status</span>
+                            }
+                        </td>
+                        <td><span class="path-text">@job.RootPath</span></td>
+                        <td>@job.ProcessedFiles / @job.TotalFiles</td>
+                        <td>@job.StartTime.ToString("yyyy-MM-dd HH:mm")</td>
+                        <td><a class="link-chip" asp-action="Details" asp-route-id="@job.Id">Open scan</a></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</section>

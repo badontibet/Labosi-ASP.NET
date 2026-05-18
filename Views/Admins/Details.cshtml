@@ -1,0 +1,79 @@
+@model SystemAdmin
+
+@{
+    ViewData["Title"] = Model.Username;
+}
+
+<nav class="breadcrumb" aria-label="Breadcrumb">
+    <a asp-controller="Home" asp-action="Index">Dashboard</a>
+    <span>/</span>
+    <a asp-controller="Admins" asp-action="Index">Admins</a>
+    <span>/</span>
+    <span>@Model.Username</span>
+</nav>
+
+<section class="page-hero">
+    <span class="eyebrow">Operator profile</span>
+    <h1>@Model.Username</h1>
+    <span class="tag-chip">@Model.Role</span>
+</section>
+
+<section class="metadata-grid">
+    <article class="metadata-card"><span>Email</span><strong>@Model.Email</strong></article>
+    <article class="metadata-card"><span>Created</span><strong>@Model.CreatedDate.ToString("yyyy-MM-dd HH:mm")</strong></article>
+    <article class="metadata-card"><span>Last Login</span><strong>@Model.LastLogin.ToString("yyyy-MM-dd HH:mm")</strong></article>
+    <article class="metadata-card"><span>Managed Servers</span><strong>@Model.ManagedServers.Count</strong></article>
+</section>
+
+<section class="panel">
+    <h3>Managed Servers</h3>
+    <ul class="file-list">
+        @foreach (var server in Model.ManagedServers)
+        {
+            <li>
+                @if (server.IsActive)
+                {
+                    <span class="status-badge status-good">Active</span>
+                }
+                else
+                {
+                    <span class="status-badge status-bad">Inactive</span>
+                }
+                <a asp-controller="NasServers" asp-action="Details" asp-route-id="@server.Id">@server.Name</a>
+                <span class="muted">@server.ScanJobs.Count scan jobs</span>
+            </li>
+        }
+    </ul>
+</section>
+
+<section class="panel">
+    <h3>Scan Jobs On Managed Servers</h3>
+    <ul class="timeline-list">
+        @foreach (var server in Model.ManagedServers)
+        {
+            @foreach (var job in server.ScanJobs)
+            {
+                <li>
+                    @if (job.Status == ScanStatus.Completed)
+                    {
+                        <span class="status-badge status-good">@job.Status</span>
+                    }
+                    else if (job.Status == ScanStatus.Running)
+                    {
+                        <span class="status-badge status-running">@job.Status</span>
+                    }
+                    else if (job.Status == ScanStatus.Failed)
+                    {
+                        <span class="status-badge status-bad">@job.Status</span>
+                    }
+                    else
+                    {
+                        <span class="status-badge status-pending">@job.Status</span>
+                    }
+                    <a asp-controller="ScanJobs" asp-action="Details" asp-route-id="@job.Id">Job @job.Id</a>
+                    <span class="muted">on @server.Name</span>
+                </li>
+            }
+        }
+    </ul>
+</section>

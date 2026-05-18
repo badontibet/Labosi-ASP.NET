@@ -1,0 +1,93 @@
+@model DashboardViewModel
+
+@{
+    ViewData["Title"] = "NAS Operations Control Center";
+}
+
+<section class="dashboard-section">
+    <div class="page-hero">
+        <span class="eyebrow">Read-only mock repository feed</span>
+        <h1>NAS Operations Control Center</h1>
+        <p>Live-style inventory, scan health, and recent file activity for the NAS Indexer lab.</p>
+    </div>
+</section>
+
+<section class="dashboard-grid" aria-label="NAS metrics">
+    <article class="metric-card"><span>Total NAS Servers</span><strong>@Model.TotalServers</strong></article>
+    <article class="metric-card"><span>Active Servers</span><strong>@Model.ActiveServers</strong></article>
+    <article class="metric-card"><span>Inactive Servers</span><strong>@Model.InactiveServers</strong></article>
+    <article class="metric-card"><span>Total Scan Jobs</span><strong>@Model.TotalScanJobs</strong></article>
+    <article class="metric-card"><span>Completed Scans</span><strong>@Model.CompletedScanJobs</strong></article>
+    <article class="metric-card"><span>Running Scans</span><strong>@Model.RunningScanJobs</strong></article>
+    <article class="metric-card"><span>Failed Scans</span><strong>@Model.FailedScanJobs</strong></article>
+    <article class="metric-card"><span>Indexed Files</span><strong>@Model.TotalFiles</strong></article>
+</section>
+
+<section class="panel">
+    <div class="panel-heading">
+        <h2>Scan Watchlist</h2>
+        <span class="muted">@Model.WarningScanJobs.Count running or failed</span>
+    </div>
+    @if (Model.WarningScanJobs.Any())
+    {
+        <ul class="timeline-list">
+            @foreach (var job in Model.WarningScanJobs)
+            {
+                <li>
+                    @if (job.Status == ScanStatus.Running)
+                    {
+                        <span class="status-badge status-running">@job.Status</span>
+                    }
+                    else
+                    {
+                        <span class="status-badge status-bad">@job.Status</span>
+                    }
+                    <strong>Job @job.Id</strong> on
+                    <a asp-controller="NasServers" asp-action="Details" asp-route-id="@job.NasServerId">@job.NasServer.Name</a>
+                    <span class="muted">@job.ProcessedFiles / @job.TotalFiles files since @job.StartTime.ToString("yyyy-MM-dd HH:mm")</span>
+                    <a class="link-chip" asp-controller="ScanJobs" asp-action="Details" asp-route-id="@job.Id">Open scan</a>
+                </li>
+            }
+        </ul>
+    }
+    else
+    {
+        <p>No running or failed scan jobs are currently listed.</p>
+    }
+</section>
+
+<section class="panel">
+    <div class="panel-heading">
+        <h2>Recent File Changes</h2>
+        <span class="muted">Newest first</span>
+    </div>
+    @if (Model.RecentChanges.Any())
+    {
+        <ol class="timeline-list">
+            @foreach (var change in Model.RecentChanges)
+            {
+                <li>
+                    <strong>@change.ChangeType</strong>
+                    <a asp-controller="FileItems" asp-action="Details" asp-route-id="@change.FileId">@change.File.Name</a>
+                    <span class="muted">by @change.User at @change.Timestamp.ToString("yyyy-MM-dd HH:mm")</span>
+                </li>
+            }
+        </ol>
+    }
+    else
+    {
+        <p>No recent file changes are available.</p>
+    }
+</section>
+
+<section class="panel">
+    <h2>Quick Links</h2>
+    <ul class="quick-links">
+        <li><a asp-controller="NasServers" asp-action="Index">View NAS servers</a></li>
+        <li><a asp-controller="ScanJobs" asp-action="Index">View scan jobs</a></li>
+        <li><a asp-controller="Directories" asp-action="Index">View directories</a></li>
+        <li><a asp-controller="FileItems" asp-action="Index">View files</a></li>
+        <li><a asp-controller="Tags" asp-action="Index">View tags</a></li>
+        <li><a asp-controller="Admins" asp-action="Index">View admins</a></li>
+    </ul>
+</section>

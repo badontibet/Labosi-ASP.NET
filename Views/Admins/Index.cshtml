@@ -1,0 +1,47 @@
+@model List<SystemAdmin>
+
+@{
+    ViewData["Title"] = "Admins";
+}
+
+<nav class="breadcrumb" aria-label="Breadcrumb">
+    <a asp-controller="Home" asp-action="Index">Dashboard</a>
+    <span>/</span>
+    <span>Admins</span>
+</nav>
+
+<section class="page-hero">
+    <span class="eyebrow">Operators</span>
+    <h1>System Admin Roster</h1>
+    <p>Read-only view of mock administrators and managed NAS servers.</p>
+</section>
+
+<section class="panel">
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Username</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Managed Servers</th>
+                    <th>Last Login</th>
+                    <th>Details</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var admin in Model)
+                {
+                    <tr>
+                        <td><strong>@admin.Username</strong></td>
+                        <td>@admin.Email</td>
+                        <td><span class="tag-chip">@admin.Role</span></td>
+                        <td>@admin.ManagedServers.Count</td>
+                        <td>@admin.LastLogin.ToString("yyyy-MM-dd HH:mm")</td>
+                        <td><a class="link-chip" asp-action="Details" asp-route-id="@admin.Id">Open admin</a></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</section>

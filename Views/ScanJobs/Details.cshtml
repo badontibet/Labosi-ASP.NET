@@ -1,0 +1,77 @@
+@model ScanJob
+
+@{
+    ViewData["Title"] = "Scan Job " + Model.Id;
+}
+
+<nav class="breadcrumb" aria-label="Breadcrumb">
+    <a asp-controller="Home" asp-action="Index">Dashboard</a>
+    <span>/</span>
+    <a asp-controller="ScanJobs" asp-action="Index">Scan Jobs</a>
+    <span>/</span>
+    <span>Job @Model.Id</span>
+</nav>
+
+<section class="page-hero">
+    <span class="eyebrow">Scan job details</span>
+    <h1>Job @Model.Id</h1>
+    @if (Model.Status == ScanStatus.Completed)
+    {
+        <span class="status-badge status-good">@Model.Status</span>
+    }
+    else if (Model.Status == ScanStatus.Running)
+    {
+        <span class="status-badge status-running">@Model.Status</span>
+    }
+    else if (Model.Status == ScanStatus.Failed)
+    {
+        <span class="status-badge status-bad">@Model.Status</span>
+    }
+    else
+    {
+        <span class="status-badge status-pending">@Model.Status</span>
+    }
+</section>
+
+<section class="metadata-grid">
+    <article class="metadata-card"><span>Server</span><strong><a asp-controller="NasServers" asp-action="Details" asp-route-id="@Model.NasServerId">@Model.NasServer.Name</a></strong></article>
+    <article class="metadata-card"><span>Root Path</span><strong>@Model.RootPath</strong></article>
+    <article class="metadata-card"><span>Started</span><strong>@Model.StartTime.ToString("yyyy-MM-dd HH:mm")</strong></article>
+    <article class="metadata-card"><span>Ended</span><strong>@(Model.EndTime.HasValue ? Model.EndTime.Value.ToString("yyyy-MM-dd HH:mm") : "Still running")</strong></article>
+    <article class="metadata-card"><span>Progress</span><strong>@Model.ProcessedFiles / @Model.TotalFiles files</strong></article>
+    <article class="metadata-card"><span>Root Directories</span><strong>@Model.ScannedDirectories.Count</strong></article>
+</section>
+
+<section class="panel">
+    <h3>Scanned Directories</h3>
+    <ul class="tree-list">
+        @foreach (var directory in Model.ScannedDirectories)
+        {
+            <li>
+                <a asp-controller="Directories" asp-action="Details" asp-route-id="@directory.Id">@directory.Path</a>
+                <span class="muted">@directory.Files.Count files directly in this directory</span>
+            </li>
+        }
+    </ul>
+</section>
+
+<section class="panel">
+    <h3>Files Found In This Scan</h3>
+    <ul class="file-list">
+        @foreach (var directory in Model.ScannedDirectories)
+        {
+            @foreach (var file in directory.Files)
+            {
+                <li><a asp-controller="FileItems" asp-action="Details" asp-route-id="@file.Id">@file.Name</a></li>
+            }
+
+            @foreach (var childDirectory in directory.SubDirectories)
+            {
+                @foreach (var file in childDirectory.Files)
+                {
+                    <li><a asp-controller="FileItems" asp-action="Details" asp-route-id="@file.Id">@file.Name</a></li>
+                }
+            }
+        }
+    </ul>
+</section>
