@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Labosi-ASP.NET")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+97fc206871c8b7a8dc7c8a2da6c0023ea517e358")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+e82ab7383501e403583d6898d239e5d489b426cf")]
 [assembly: System.Reflection.AssemblyProductAttribute("Labosi-ASP.NET")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Labosi-ASP.NET")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

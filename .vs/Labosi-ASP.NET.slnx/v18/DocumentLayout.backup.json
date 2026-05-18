@@ -7,8 +7,8 @@
       "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:Program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\git\\ASP_NET_2026\\Labosi-ASP.NET\\Labosi-ASP.NET.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}",
-      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:Labosi-ASP.NET.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}"
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\git\\ASP_NET_2026\\Labosi-ASP.NET\\lab-1\\agent_log.txt||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:lab-1\\agent_log.txt||{8B382828-6202-11D1-8870-0000F87579D2}"
     }
   ],
   "DocumentGroupContainers": [
@@ -27,14 +27,15 @@
             {
               "$type": "Document",
               "DocumentIndex": 1,
-              "Title": "Labosi-ASP.NET.csproj",
-              "DocumentMoniker": "C:\\git\\ASP_NET_2026\\Labosi-ASP.NET\\Labosi-ASP.NET.csproj",
-              "RelativeDocumentMoniker": "Labosi-ASP.NET.csproj",
-              "ToolTip": "C:\\git\\ASP_NET_2026\\Labosi-ASP.NET\\Labosi-ASP.NET.csproj",
-              "RelativeToolTip": "Labosi-ASP.NET.csproj",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
-              "WhenOpened": "2026-04-01T19:50:49.328Z"
+              "Title": "agent_log.txt",
+              "DocumentMoniker": "C:\\git\\ASP_NET_2026\\Labosi-ASP.NET\\lab-1\\agent_log.txt",
+              "RelativeDocumentMoniker": "lab-1\\agent_log.txt",
+              "ToolTip": "C:\\git\\ASP_NET_2026\\Labosi-ASP.NET\\lab-1\\agent_log.txt",
+              "RelativeToolTip": "lab-1\\agent_log.txt",
+              "ViewState": "AgIAAA4AAAAAAAAAAAAAACIAAAASAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003109|",
+              "WhenOpened": "2026-04-03T11:53:50.269Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -44,7 +45,7 @@
               "RelativeDocumentMoniker": "Program.cs",
               "ToolTip": "C:\\git\\ASP_NET_2026\\Labosi-ASP.NET\\Program.cs",
               "RelativeToolTip": "Program.cs",
-              "ViewState": "AgIAAFwBAAAAAAAAAAAAAG4BAAApAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABIAAAAVAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-04-01T19:44:20.294Z",
               "EditorCaption": ""
