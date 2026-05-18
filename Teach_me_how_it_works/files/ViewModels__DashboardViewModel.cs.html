@@ -1,0 +1,341 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ViewModels/DashboardViewModel.cs - Teach Me How It Works</title>
+  <link rel="stylesheet" href="../assets/guide.css">
+</head>
+<body class="file-page">
+  <a class="skip-link" href="#content">Skip to content</a>
+  <aside class="side-rail">
+    <a class="brand" href="../index.html">
+      <span class="brand-mark">T</span>
+      <span>Teach Me</span>
+    </a>
+    <nav class="rail-nav">
+      <a href="../index.html">Project map</a>
+      <a href="#overview">This file</a>
+      <a href="#line-by-line">Line by line</a>
+    </nav>
+  </aside>
+  <main id="content" class="content-shell">
+    <section class="page-header" id="overview">
+      <a class="back-link" href="../index.html">Back to index</a>
+      <p class="eyebrow">View Models - C# - 26 lines</p>
+      <h1>ViewModels/DashboardViewModel.cs</h1>
+      <p class="lead">Packages page-specific data so a Razor view receives one organized object.</p>
+      <div class="concept-row">
+        <span class="pill">Class: DashboardViewModel</span>
+<span class="pill">Property: Servers</span>
+<span class="pill">Property: ScanJobs</span>
+<span class="pill">Property: Directories</span>
+<span class="pill">Property: Files</span>
+<span class="pill">Property: Tags</span>
+<span class="pill">Property: RecentChanges</span>
+<span class="pill">Property: WarningScanJobs</span>
+      </div>
+    </section>
+
+    <section class="legend-panel">
+      <div><span class="legend-dot does"></span><strong>Blue</strong><span>what the line does</span></div>
+      <div><span class="legend-dot why"></span><strong>Green</strong><span>why the idea matters</span></div>
+      <div><span class="legend-dot watch"></span><strong>Amber</strong><span>watch-outs or real-world notes</span></div>
+      <div><span class="legend-dot context"></span><strong>Gray</strong><span>structure and spacing</span></div>
+    </section>
+
+    <section id="line-by-line" class="line-section">
+      <div class="section-heading">
+        <h2>Line by Line</h2>
+        <a href="#overview">Back to top</a>
+      </div>
+              <article class="line-card kind-context" id="L1">
+          <div class="code-strip">
+            <a class="line-number" href="#L1">1</a>
+            <code><span class="tok-keyword">using</span> NasIndexer.Model;</code>
+          </div>
+          <div class="explain-card">
+            <span class="explain-label">Import</span>
+            <p>Imports the NasIndexer.Model namespace so this file can use its classes without writing long full names.</p>
+            <p class="plain"><strong>In plain English:</strong> This is like putting a toolbox on the desk before work starts.</p>
+          </div>
+        </article>
+        <article class="line-card kind-context" id="L2">
+          <div class="code-strip">
+            <a class="line-number" href="#L2">2</a>
+            <code><span class="blank-code">(blank line)</span></code>
+          </div>
+          <div class="explain-card">
+            <span class="explain-label">Spacing</span>
+            <p>Blank line used to separate related ideas so the file is easier to scan.</p>
+            <p class="plain"><strong>In plain English:</strong> It gives your eyes a pause.</p>
+          </div>
+        </article>
+        <article class="line-card kind-context" id="L3">
+          <div class="code-strip">
+            <a class="line-number" href="#L3">3</a>
+            <code><span class="tok-keyword">namespace</span> NasIndexer.ViewModels</code>
+          </div>
+          <div class="explain-card">
+            <span class="explain-label">Namespace</span>
+            <p>Groups related classes under one name and avoids naming conflicts with other code.</p>
+            <p class="plain"><strong>In plain English:</strong> It is the address of this code inside the project.</p>
+          </div>
+        </article>
+        <article class="line-card kind-context" id="L4">
+          <div class="code-strip">
+            <a class="line-number" href="#L4">4</a>
+            <code>{</code>
+          </div>
+          <div class="explain-card">
+            <span class="explain-label">Code Block</span>
+            <p>Brace that starts or ends a block such as a class, method, loop, or object initializer.</p>
+            <p class="plain"><strong>In plain English:</strong> It shows where a section begins or ends.</p>
+          </div>
+        </article>
+        <article class="line-card kind-why" id="L5">
+          <div class="code-strip">
+            <a class="line-number" href="#L5">5</a>
+            <code>    <span class="tok-keyword">public</span> <span class="tok-keyword">class</span> DashboardViewModel</code>
+          </div>
+          <div class="explain-card">
+            <span class="explain-label">Class</span>
+            <p>Declares the DashboardViewModel class, a named container for related data or behavior.</p>
+            <p class="plain"><strong>In plain English:</strong> A class is a blueprint the app can use.</p>
+          </div>
+        </article>
+        <article class="line-card kind-context" id="L6">
+          <div class="code-strip">
+            <a class="line-number" href="#L6">6</a>
+            <code>    {</code>
+          </div>
+          <div class="explain-card">
+            <span class="explain-label">Code Block</span>
+            <p>Brace that starts or ends a block such as a class, method, loop, or object initializer.</p>
+            <p class="plain"><strong>In plain English:</strong> It shows where a section begins or ends.</p>
+          </div>
+        </article>
+        <article class="line-card kind-does" id="L7">
+          <div class="code-strip">
+            <a class="line-number" href="#L7">7</a>
+            <code>        <span class="tok-keyword">public</span> <span class="tok-type">List</span>&lt;NasServer&gt; Servers { <span class="tok-keyword">get</span>; <span class="tok-keyword">set</span>; } = <span class="tok-keyword">new</span> <span class="tok-type">List</span>&lt;NasServer&gt;();</code>
+          </div>
+          <div class="explain-card">
+            <span class="explain-label">Property</span>
+            <p>Defines the Servers property. get/set means other code can read and assign this value.</p>
+            <p class="plain"><strong>In plain English:</strong> It is a labeled piece of information on the object.</p>
+          </div>
+        </article>
+        <article class="line-card kind-does" id="L8">
+          <div class="code-strip">
+            <a class="line-number" href="#L8">8</a>
+            <code>        <span class="tok-keyword">public</span> <span class="tok-type">List</span>&lt;ScanJob&gt; ScanJobs { <span class="tok-keyword">get</span>; <span class="tok-keyword">set</span>; } = <span class="tok-keyword">new</span> <span class="tok-type">List</span>&lt;ScanJob&gt;();</code>
+          </div>
+          <div class="explain-card">
+            <span class="explain-label">Property</span>
+            <p>Defines the ScanJobs property. get/set means other code can read and assign this value.</p>
+            <p class="plain"><strong>In plain English:</strong> It is a labeled piece of information on the object.</p>
+          </div>
+        </article>
+        <article class="line-card kind-does" id="L9">
+          <div class="code-strip">
+            <a class="line-number" href="#L9">9</a>
+            <code>        <span class="tok-keyword">public</span> <span class="tok-type">List</span>&lt;DirectoryItem&gt; Directories { <span class="tok-keyword">get</span>; <span class="tok-keyword">set</span>; } = <span class="tok-keyword">new</span> <span class="tok-type">List</span>&lt;DirectoryItem&gt;();</code>
+          </div>
+          <div class="explain-card">
+            <span class="explain-label">Property</span>
+            <p>Defines the Directories property. get/set means other code can read and assign this value.</p>
+            <p class="plain"><strong>In plain English:</strong> It is a labeled piece of information on the object.</p>
+          </div>
+        </article>
+        <article class="line-card kind-does" id="L10">
+          <div class="code-strip">
+            <a class="line-number" href="#L10">10</a>
+            <code>        <span class="tok-keyword">public</span> <span class="tok-type">List</span>&lt;FileItem&gt; Files { <span class="tok-keyword">get</span>; <span class="tok-keyword">set</span>; } = <span class="tok-keyword">new</span> <span class="tok-type">List</span>&lt;FileItem&gt;();</code>
+          </div>
+          <div class="explain-card">
+            <span class="explain-label">Property</span>
+            <p>Defines the Files property. get/set means other code can read and assign this value.</p>
+            <p class="plain"><strong>In plain English:</strong> It is a labeled piece of information on the object.</p>
+          </div>
+        </article>
+        <article class="line-card kind-does" id="L11">
+          <div class="code-strip">
+            <a class="line-number" href="#L11">11</a>
+            <code>        <span class="tok-keyword">public</span> <span class="tok-type">List</span>&lt;FileTag&gt; Tags { <span class="tok-keyword">get</span>; <span class="tok-keyword">set</span>; } = <span class="tok-keyword">new</span> <span class="tok-type">List</span>&lt;FileTag&gt;();</code>
+          </div>
+          <div class="explain-card">
+            <span class="explain-label">Property</span>
+            <p>Defines the Tags property. get/set means other code can read and assign this value.</p>
+            <p class="plain"><strong>In plain English:</strong> It is a labeled piece of information on the object.</p>
+          </div>
+        </article>
+        <article class="line-card kind-does" id="L12">
+          <div class="code-strip">
+            <a class="line-number" href="#L12">12</a>
+            <code>        <span class="tok-keyword">public</span> <span class="tok-type">List</span>&lt;FileChangeLog&gt; RecentChanges { <span class="tok-keyword">get</span>; <span class="tok-keyword">set</span>; } = <span class="tok-keyword">new</span> <span class="tok-type">List</span>&lt;FileChangeLog&gt;();</code>
+          </div>
+          <div class="explain-card">
+            <span class="explain-label">Property</span>
+            <p>Defines the RecentChanges property. get/set means other code can read and assign this value.</p>
+            <p class="plain"><strong>In plain English:</strong> It is a labeled piece of information on the object.</p>
+          </div>
+        </article>
+        <article class="line-card kind-does" id="L13">
+          <div class="code-strip">
+            <a class="line-number" href="#L13">13</a>
+            <code>        <span class="tok-keyword">public</span> <span class="tok-type">List</span>&lt;ScanJob&gt; WarningScanJobs { <span class="tok-keyword">get</span>; <span class="tok-keyword">set</span>; } = <span class="tok-keyword">new</span> <span class="tok-type">List</span>&lt;ScanJob&gt;();</code>
+          </div>
+          <div class="explain-card">
+            <span class="explain-label">Property</span>
+            <p>Defines the WarningScanJobs property. get/set means other code can read and assign this value.</p>
+            <p class="plain"><strong>In plain English:</strong> It is a labeled piece of information on the object.</p>
+          </div>
+        </article>
+        <article class="line-card kind-context" id="L14">
+          <div class="code-strip">
+            <a class="line-number" href="#L14">14</a>
+            <code><span class="blank-code">(blank line)</span></code>
+          </div>
+          <div class="explain-card">
+            <span class="explain-label">Spacing</span>
+            <p>Blank line used to separate related ideas so the file is easier to scan.</p>
+            <p class="plain"><strong>In plain English:</strong> It gives your eyes a pause.</p>
+          </div>
+        </article>
+        <article class="line-card kind-does" id="L15">
+          <div class="code-strip">
+            <a class="line-number" href="#L15">15</a>
+            <code>        <span class="tok-keyword">public</span> <span class="tok-type">int</span> TotalServers { <span class="tok-keyword">get</span>; <span class="tok-keyword">set</span>; }</code>
+          </div>
+          <div class="explain-card">
+            <span class="explain-label">Property</span>
+            <p>Defines the TotalServers property. get/set means other code can read and assign this value.</p>
+            <p class="plain"><strong>In plain English:</strong> It is a labeled piece of information on the object.</p>
+          </div>
+        </article>
+        <article class="line-card kind-does" id="L16">
+          <div class="code-strip">
+            <a class="line-number" href="#L16">16</a>
+            <code>        <span class="tok-keyword">public</span> <span class="tok-type">int</span> ActiveServers { <span class="tok-keyword">get</span>; <span class="tok-keyword">set</span>; }</code>
+          </div>
+          <div class="explain-card">
+            <span class="explain-label">Property</span>
+            <p>Defines the ActiveServers property. get/set means other code can read and assign this value.</p>
+            <p class="plain"><strong>In plain English:</strong> It is a labeled piece of information on the object.</p>
+          </div>
+        </article>
+        <article class="line-card kind-does" id="L17">
+          <div class="code-strip">
+            <a class="line-number" href="#L17">17</a>
+            <code>        <span class="tok-keyword">public</span> <span class="tok-type">int</span> InactiveServers { <span class="tok-keyword">get</span>; <span class="tok-keyword">set</span>; }</code>
+          </div>
+          <div class="explain-card">
+            <span class="explain-label">Property</span>
+            <p>Defines the InactiveServers property. get/set means other code can read and assign this value.</p>
+            <p class="plain"><strong>In plain English:</strong> It is a labeled piece of information on the object.</p>
+          </div>
+        </article>
+        <article class="line-card kind-does" id="L18">
+          <div class="code-strip">
+            <a class="line-number" href="#L18">18</a>
+            <code>        <span class="tok-keyword">public</span> <span class="tok-type">int</span> TotalScanJobs { <span class="tok-keyword">get</span>; <span class="tok-keyword">set</span>; }</code>
+          </div>
+          <div class="explain-card">
+            <span class="explain-label">Property</span>
+            <p>Defines the TotalScanJobs property. get/set means other code can read and assign this value.</p>
+            <p class="plain"><strong>In plain English:</strong> It is a labeled piece of information on the object.</p>
+          </div>
+        </article>
+        <article class="line-card kind-does" id="L19">
+          <div class="code-strip">
+            <a class="line-number" href="#L19">19</a>
+            <code>        <span class="tok-keyword">public</span> <span class="tok-type">int</span> CompletedScanJobs { <span class="tok-keyword">get</span>; <span class="tok-keyword">set</span>; }</code>
+          </div>
+          <div class="explain-card">
+            <span class="explain-label">Property</span>
+            <p>Defines the CompletedScanJobs property. get/set means other code can read and assign this value.</p>
+            <p class="plain"><strong>In plain English:</strong> It is a labeled piece of information on the object.</p>
+          </div>
+        </article>
+        <article class="line-card kind-does" id="L20">
+          <div class="code-strip">
+            <a class="line-number" href="#L20">20</a>
+            <code>        <span class="tok-keyword">public</span> <span class="tok-type">int</span> RunningScanJobs { <span class="tok-keyword">get</span>; <span class="tok-keyword">set</span>; }</code>
+          </div>
+          <div class="explain-card">
+            <span class="explain-label">Property</span>
+            <p>Defines the RunningScanJobs property. get/set means other code can read and assign this value.</p>
+            <p class="plain"><strong>In plain English:</strong> It is a labeled piece of information on the object.</p>
+          </div>
+        </article>
+        <article class="line-card kind-does" id="L21">
+          <div class="code-strip">
+            <a class="line-number" href="#L21">21</a>
+            <code>        <span class="tok-keyword">public</span> <span class="tok-type">int</span> FailedScanJobs { <span class="tok-keyword">get</span>; <span class="tok-keyword">set</span>; }</code>
+          </div>
+          <div class="explain-card">
+            <span class="explain-label">Property</span>
+            <p>Defines the FailedScanJobs property. get/set means other code can read and assign this value.</p>
+            <p class="plain"><strong>In plain English:</strong> It is a labeled piece of information on the object.</p>
+          </div>
+        </article>
+        <article class="line-card kind-does" id="L22">
+          <div class="code-strip">
+            <a class="line-number" href="#L22">22</a>
+            <code>        <span class="tok-keyword">public</span> <span class="tok-type">int</span> TotalDirectories { <span class="tok-keyword">get</span>; <span class="tok-keyword">set</span>; }</code>
+          </div>
+          <div class="explain-card">
+            <span class="explain-label">Property</span>
+            <p>Defines the TotalDirectories property. get/set means other code can read and assign this value.</p>
+            <p class="plain"><strong>In plain English:</strong> It is a labeled piece of information on the object.</p>
+          </div>
+        </article>
+        <article class="line-card kind-does" id="L23">
+          <div class="code-strip">
+            <a class="line-number" href="#L23">23</a>
+            <code>        <span class="tok-keyword">public</span> <span class="tok-type">int</span> TotalFiles { <span class="tok-keyword">get</span>; <span class="tok-keyword">set</span>; }</code>
+          </div>
+          <div class="explain-card">
+            <span class="explain-label">Property</span>
+            <p>Defines the TotalFiles property. get/set means other code can read and assign this value.</p>
+            <p class="plain"><strong>In plain English:</strong> It is a labeled piece of information on the object.</p>
+          </div>
+        </article>
+        <article class="line-card kind-does" id="L24">
+          <div class="code-strip">
+            <a class="line-number" href="#L24">24</a>
+            <code>        <span class="tok-keyword">public</span> <span class="tok-type">int</span> TotalTags { <span class="tok-keyword">get</span>; <span class="tok-keyword">set</span>; }</code>
+          </div>
+          <div class="explain-card">
+            <span class="explain-label">Property</span>
+            <p>Defines the TotalTags property. get/set means other code can read and assign this value.</p>
+            <p class="plain"><strong>In plain English:</strong> It is a labeled piece of information on the object.</p>
+          </div>
+        </article>
+        <article class="line-card kind-context" id="L25">
+          <div class="code-strip">
+            <a class="line-number" href="#L25">25</a>
+            <code>    }</code>
+          </div>
+          <div class="explain-card">
+            <span class="explain-label">Code Block</span>
+            <p>Brace that starts or ends a block such as a class, method, loop, or object initializer.</p>
+            <p class="plain"><strong>In plain English:</strong> It shows where a section begins or ends.</p>
+          </div>
+        </article>
+        <article class="line-card kind-context" id="L26">
+          <div class="code-strip">
+            <a class="line-number" href="#L26">26</a>
+            <code>}</code>
+          </div>
+          <div class="explain-card">
+            <span class="explain-label">Code Block</span>
+            <p>Brace that starts or ends a block such as a class, method, loop, or object initializer.</p>
+            <p class="plain"><strong>In plain English:</strong> It shows where a section begins or ends.</p>
+          </div>
+        </article>
+    </section>
+  </main>
+</body>
+</html>

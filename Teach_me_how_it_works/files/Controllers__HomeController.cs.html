@@ -1,0 +1,665 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Controllers/HomeController.cs - Teach Me How It Works</title>
+  <link rel="stylesheet" href="../assets/guide.css">
+</head>
+<body class="file-page">
+  <a class="skip-link" href="#content">Skip to content</a>
+  <aside class="side-rail">
+    <a class="brand" href="../index.html">
+      <span class="brand-mark">T</span>
+      <span>Teach Me</span>
+    </a>
+    <nav class="rail-nav">
+      <a href="../index.html">Project map</a>
+      <a href="#overview">This file</a>
+      <a href="#line-by-line">Line by line</a>
+    </nav>
+  </aside>
+  <main id="content" class="content-shell">
+    <section class="page-header" id="overview">
+      <a class="back-link" href="../index.html">Back to index</a>
+      <p class="eyebrow">Controllers - C# - 56 lines</p>
+      <h1>Controllers/HomeController.cs</h1>
+      <p class="lead">Receives browser requests, asks the repository for data, and chooses which Razor view should render the response.</p>
+      <div class="concept-row">
+        <span class="pill">Class: HomeController</span>
+<span class="pill">Action/method: Index</span>
+      </div>
+    </section>
+
+    <section class="legend-panel">
+      <div><span class="legend-dot does"></span><strong>Blue</strong><span>what the line does</span></div>
+      <div><span class="legend-dot why"></span><strong>Green</strong><span>why the idea matters</span></div>
+      <div><span class="legend-dot watch"></span><strong>Amber</strong><span>watch-outs or real-world notes</span></div>
+      <div><span class="legend-dot context"></span><strong>Gray</strong><span>structure and spacing</span></div>
+    </section>
+
+    <section id="line-by-line" class="line-section">
+      <div class="section-heading">
+        <h2>Line by Line</h2>
+        <a href="#overview">Back to top</a>
+      </div>
+              <article class="line-card kind-context" id="L1">
+          <div class="code-strip">
+            <a class="line-number" href="#L1">1</a>
+            <code><span class="tok-keyword">using</span> Microsoft.AspNetCore.Mvc;</code>
+          </div>
+          <div class="explain-card">
+            <span class="explain-label">Import</span>
+            <p>Imports the Microsoft.AspNetCore.Mvc namespace so this file can use its classes without writing long full names.</p>
+            <p class="plain"><strong>In plain English:</strong> This is like putting a toolbox on the desk before work starts.</p>
+          </div>
+        </article>
+        <article class="line-card kind-context" id="L2">
+          <div class="code-strip">
+            <a class="line-number" href="#L2">2</a>
+            <code><span class="tok-keyword">using</span> NasIndexer.Model;</code>
+          </div>
+          <div class="explain-card">
+            <span class="explain-label">Import</span>
+            <p>Imports the NasIndexer.Model namespace so this file can use its classes without writing long full names.</p>
+            <p class="plain"><strong>In plain English:</strong> This is like putting a toolbox on the desk before work starts.</p>
+          </div>
+        </article>
+        <article class="line-card kind-context" id="L3">
+          <div class="code-strip">
+            <a class="line-number" href="#L3">3</a>
+            <code><span class="tok-keyword">using</span> NasIndexer.Repositories;</code>
+          </div>
+          <div class="explain-card">
+            <span class="explain-label">Import</span>
+            <p>Imports the NasIndexer.Repositories namespace so this file can use its classes without writing long full names.</p>
+            <p class="plain"><strong>In plain English:</strong> This is like putting a toolbox on the desk before work starts.</p>
+          </div>
+        </article>
+        <article class="line-card kind-context" id="L4">
+          <div class="code-strip">
+            <a class="line-number" href="#L4">4</a>
+            <code><span class="tok-keyword">using</span> NasIndexer.ViewModels;</code>
+          </div>
+          <div class="explain-card">
+            <span class="explain-label">Import</span>
+            <p>Imports the NasIndexer.ViewModels namespace so this file can use its classes without writing long full names.</p>
+            <p class="plain"><strong>In plain English:</strong> This is like putting a toolbox on the desk before work starts.</p>
+          </div>
+        </article>
+        <article class="line-card kind-context" id="L5">
+          <div class="code-strip">
+            <a class="line-number" href="#L5">5</a>
+            <code><span class="blank-code">(blank line)</span></code>
+          </div>
+          <div class="explain-card">
+            <span class="explain-label">Spacing</span>
+            <p>Blank line used to separate related ideas so the file is easier to scan.</p>
+            <p class="plain"><strong>In plain English:</strong> It gives your eyes a pause.</p>
+          </div>
+        </article>
+        <article class="line-card kind-context" id="L6">
+          <div class="code-strip">
+            <a class="line-number" href="#L6">6</a>
+            <code><span class="tok-keyword">namespace</span> NasIndexer.Controllers</code>
+          </div>
+          <div class="explain-card">
+            <span class="explain-label">Namespace</span>
+            <p>Groups related classes under one name and avoids naming conflicts with other code.</p>
+            <p class="plain"><strong>In plain English:</strong> It is the address of this code inside the project.</p>
+          </div>
+        </article>
+        <article class="line-card kind-context" id="L7">
+          <div class="code-strip">
+            <a class="line-number" href="#L7">7</a>
+            <code>{</code>
+          </div>
+          <div class="explain-card">
+            <span class="explain-label">Code Block</span>
+            <p>Brace that starts or ends a block such as a class, method, loop, or object initializer.</p>
+            <p class="plain"><strong>In plain English:</strong> It shows where a section begins or ends.</p>
+          </div>
+        </article>
+        <article class="line-card kind-why" id="L8">
+          <div class="code-strip">
+            <a class="line-number" href="#L8">8</a>
+            <code>    <span class="tok-keyword">public</span> <span class="tok-keyword">class</span> HomeController : Controller</code>
+          </div>
+          <div class="explain-card">
+            <span class="explain-label">Class</span>
+            <p>Declares the HomeController class, a named container for related data or behavior.</p>
+            <p class="plain"><strong>In plain English:</strong> A class is a blueprint the app can use.</p>
+          </div>
+        </article>
+        <article class="line-card kind-context" id="L9">
+          <div class="code-strip">
+            <a class="line-number" href="#L9">9</a>
+            <code>    {</code>
+          </div>
+          <div class="explain-card">
+            <span class="explain-label">Code Block</span>
+            <p>Brace that starts or ends a block such as a class, method, loop, or object initializer.</p>
+            <p class="plain"><strong>In plain English:</strong> It shows where a section begins or ends.</p>
+          </div>
+        </article>
+        <article class="line-card kind-why" id="L10">
+          <div class="code-strip">
+            <a class="line-number" href="#L10">10</a>
+            <code>        <span class="tok-keyword">private</span> <span class="tok-keyword">readonly</span> INasRepository repository;</code>
+          </div>
+          <div class="explain-card">
+            <span class="explain-label">Private Field</span>
+            <p>Stores a dependency inside the class. readonly means it is assigned once, usually in the constructor.</p>
+            <p class="plain"><strong>In plain English:</strong> The controller keeps a reference to the repository it will use.</p>
+          </div>
+        </article>
+        <article class="line-card kind-context" id="L11">
+          <div class="code-strip">
+            <a class="line-number" href="#L11">11</a>
+            <code><span class="blank-code">(blank line)</span></code>
+          </div>
+          <div class="explain-card">
+            <span class="explain-label">Spacing</span>
+            <p>Blank line used to separate related ideas so the file is easier to scan.</p>
+            <p class="plain"><strong>In plain English:</strong> It gives your eyes a pause.</p>
+          </div>
+        </article>
+        <article class="line-card kind-does" id="L12">
+          <div class="code-strip">
+            <a class="line-number" href="#L12">12</a>
+            <code>        <span class="tok-keyword">public</span> HomeController(INasRepository repository)</code>
+          </div>
+          <div class="explain-card">
+            <span class="explain-label">What it does</span>
+            <p>This line contributes to the surrounding file. Read it together with the nearby lines for the complete behavior.</p>
+            
+          </div>
+        </article>
+        <article class="line-card kind-context" id="L13">
+          <div class="code-strip">
+            <a class="line-number" href="#L13">13</a>
+            <code>        {</code>
+          </div>
+          <div class="explain-card">
+            <span class="explain-label">Code Block</span>
+            <p>Brace that starts or ends a block such as a class, method, loop, or object initializer.</p>
+            <p class="plain"><strong>In plain English:</strong> It shows where a section begins or ends.</p>
+          </div>
+        </article>
+        <article class="line-card kind-does" id="L14">
+          <div class="code-strip">
+            <a class="line-number" href="#L14">14</a>
+            <code>            this.repository = repository;</code>
+          </div>
+          <div class="explain-card">
+            <span class="explain-label">What it does</span>
+            <p>This line contributes to the surrounding file. Read it together with the nearby lines for the complete behavior.</p>
+            
+          </div>
+        </article>
+        <article class="line-card kind-context" id="L15">
+          <div class="code-strip">
+            <a class="line-number" href="#L15">15</a>
+            <code>        }</code>
+          </div>
+          <div class="explain-card">
+            <span class="explain-label">Code Block</span>
+            <p>Brace that starts or ends a block such as a class, method, loop, or object initializer.</p>
+            <p class="plain"><strong>In plain English:</strong> It shows where a section begins or ends.</p>
+          </div>
+        </article>
+        <article class="line-card kind-context" id="L16">
+          <div class="code-strip">
+            <a class="line-number" href="#L16">16</a>
+            <code><span class="blank-code">(blank line)</span></code>
+          </div>
+          <div class="explain-card">
+            <span class="explain-label">Spacing</span>
+            <p>Blank line used to separate related ideas so the file is easier to scan.</p>
+            <p class="plain"><strong>In plain English:</strong> It gives your eyes a pause.</p>
+          </div>
+        </article>
+        <article class="line-card kind-why" id="L17">
+          <div class="code-strip">
+            <a class="line-number" href="#L17">17</a>
+            <code>        <span class="tok-keyword">public</span> <span class="tok-type">IActionResult</span> Index()</code>
+          </div>
+          <div class="explain-card">
+            <span class="explain-label">Method</span>
+            <p>Starts the Index method. Methods package a named task so it can be called from elsewhere.</p>
+            <p class="plain"><strong>In plain English:</strong> Think of it as a button the program can press.</p>
+          </div>
+        </article>
+        <article class="line-card kind-context" id="L18">
+          <div class="code-strip">
+            <a class="line-number" href="#L18">18</a>
+            <code>        {</code>
+          </div>
+          <div class="explain-card">
+            <span class="explain-label">Code Block</span>
+            <p>Brace that starts or ends a block such as a class, method, loop, or object initializer.</p>
+            <p class="plain"><strong>In plain English:</strong> It shows where a section begins or ends.</p>
+          </div>
+        </article>
+        <article class="line-card kind-does" id="L19">
+          <div class="code-strip">
+            <a class="line-number" href="#L19">19</a>
+            <code>            <span class="tok-keyword">var</span> servers = repository.GetAllNasServers();</code>
+          </div>
+          <div class="explain-card">
+            <span class="explain-label">What it does</span>
+            <p>This line contributes to the surrounding file. Read it together with the nearby lines for the complete behavior.</p>
+            
+          </div>
+        </article>
+        <article class="line-card kind-does" id="L20">
+          <div class="code-strip">
+            <a class="line-number" href="#L20">20</a>
+            <code>            <span class="tok-keyword">var</span> scanJobs = repository.GetAllScanJobs();</code>
+          </div>
+          <div class="explain-card">
+            <span class="explain-label">What it does</span>
+            <p>This line contributes to the surrounding file. Read it together with the nearby lines for the complete behavior.</p>
+            
+          </div>
+        </article>
+        <article class="line-card kind-does" id="L21">
+          <div class="code-strip">
+            <a class="line-number" href="#L21">21</a>
+            <code>            <span class="tok-keyword">var</span> directories = repository.GetAllDirectories();</code>
+          </div>
+          <div class="explain-card">
+            <span class="explain-label">What it does</span>
+            <p>This line contributes to the surrounding file. Read it together with the nearby lines for the complete behavior.</p>
+            
+          </div>
+        </article>
+        <article class="line-card kind-does" id="L22">
+          <div class="code-strip">
+            <a class="line-number" href="#L22">22</a>
+            <code>            <span class="tok-keyword">var</span> files = repository.GetAllFiles();</code>
+          </div>
+          <div class="explain-card">
+            <span class="explain-label">What it does</span>
+            <p>This line contributes to the surrounding file. Read it together with the nearby lines for the complete behavior.</p>
+            
+          </div>
+        </article>
+        <article class="line-card kind-does" id="L23">
+          <div class="code-strip">
+            <a class="line-number" href="#L23">23</a>
+            <code>            <span class="tok-keyword">var</span> tags = repository.GetAllTags();</code>
+          </div>
+          <div class="explain-card">
+            <span class="explain-label">What it does</span>
+            <p>This line contributes to the surrounding file. Read it together with the nearby lines for the complete behavior.</p>
+            
+          </div>
+        </article>
+        <article class="line-card kind-context" id="L24">
+          <div class="code-strip">
+            <a class="line-number" href="#L24">24</a>
+            <code><span class="blank-code">(blank line)</span></code>
+          </div>
+          <div class="explain-card">
+            <span class="explain-label">Spacing</span>
+            <p>Blank line used to separate related ideas so the file is easier to scan.</p>
+            <p class="plain"><strong>In plain English:</strong> It gives your eyes a pause.</p>
+          </div>
+        </article>
+        <article class="line-card kind-does" id="L25">
+          <div class="code-strip">
+            <a class="line-number" href="#L25">25</a>
+            <code>            <span class="tok-keyword">var</span> viewModel = <span class="tok-keyword">new</span> DashboardViewModel</code>
+          </div>
+          <div class="explain-card">
+            <span class="explain-label">What it does</span>
+            <p>This line contributes to the surrounding file. Read it together with the nearby lines for the complete behavior.</p>
+            
+          </div>
+        </article>
+        <article class="line-card kind-context" id="L26">
+          <div class="code-strip">
+            <a class="line-number" href="#L26">26</a>
+            <code>            {</code>
+          </div>
+          <div class="explain-card">
+            <span class="explain-label">Code Block</span>
+            <p>Brace that starts or ends a block such as a class, method, loop, or object initializer.</p>
+            <p class="plain"><strong>In plain English:</strong> It shows where a section begins or ends.</p>
+          </div>
+        </article>
+        <article class="line-card kind-does" id="L27">
+          <div class="code-strip">
+            <a class="line-number" href="#L27">27</a>
+            <code>                Servers = servers,</code>
+          </div>
+          <div class="explain-card">
+            <span class="explain-label">What it does</span>
+            <p>This line contributes to the surrounding file. Read it together with the nearby lines for the complete behavior.</p>
+            
+          </div>
+        </article>
+        <article class="line-card kind-does" id="L28">
+          <div class="code-strip">
+            <a class="line-number" href="#L28">28</a>
+            <code>                ScanJobs = scanJobs,</code>
+          </div>
+          <div class="explain-card">
+            <span class="explain-label">What it does</span>
+            <p>This line contributes to the surrounding file. Read it together with the nearby lines for the complete behavior.</p>
+            
+          </div>
+        </article>
+        <article class="line-card kind-does" id="L29">
+          <div class="code-strip">
+            <a class="line-number" href="#L29">29</a>
+            <code>                Directories = directories,</code>
+          </div>
+          <div class="explain-card">
+            <span class="explain-label">What it does</span>
+            <p>This line contributes to the surrounding file. Read it together with the nearby lines for the complete behavior.</p>
+            
+          </div>
+        </article>
+        <article class="line-card kind-does" id="L30">
+          <div class="code-strip">
+            <a class="line-number" href="#L30">30</a>
+            <code>                Files = files,</code>
+          </div>
+          <div class="explain-card">
+            <span class="explain-label">What it does</span>
+            <p>This line contributes to the surrounding file. Read it together with the nearby lines for the complete behavior.</p>
+            
+          </div>
+        </article>
+        <article class="line-card kind-does" id="L31">
+          <div class="code-strip">
+            <a class="line-number" href="#L31">31</a>
+            <code>                Tags = tags,</code>
+          </div>
+          <div class="explain-card">
+            <span class="explain-label">What it does</span>
+            <p>This line contributes to the surrounding file. Read it together with the nearby lines for the complete behavior.</p>
+            
+          </div>
+        </article>
+        <article class="line-card kind-does" id="L32">
+          <div class="code-strip">
+            <a class="line-number" href="#L32">32</a>
+            <code>                RecentChanges = files</code>
+          </div>
+          <div class="explain-card">
+            <span class="explain-label">What it does</span>
+            <p>This line contributes to the surrounding file. Read it together with the nearby lines for the complete behavior.</p>
+            
+          </div>
+        </article>
+        <article class="line-card kind-does" id="L33">
+          <div class="code-strip">
+            <a class="line-number" href="#L33">33</a>
+            <code>                    .SelectMany(file =&gt; file.ChangeLogs)</code>
+          </div>
+          <div class="explain-card">
+            <span class="explain-label">Flatten Lists</span>
+            <p>Uses LINQ SelectMany to turn nested lists into one list, such as many servers each having many scan jobs.</p>
+            <p class="plain"><strong>In plain English:</strong> It unwraps lists inside lists.</p>
+          </div>
+        </article>
+        <article class="line-card kind-does" id="L34">
+          <div class="code-strip">
+            <a class="line-number" href="#L34">34</a>
+            <code>                    .OrderByDescending(change =&gt; change.Timestamp)</code>
+          </div>
+          <div class="explain-card">
+            <span class="explain-label">What it does</span>
+            <p>This line contributes to the surrounding file. Read it together with the nearby lines for the complete behavior.</p>
+            
+          </div>
+        </article>
+        <article class="line-card kind-does" id="L35">
+          <div class="code-strip">
+            <a class="line-number" href="#L35">35</a>
+            <code>                    .Take(<span class="tok-number">5</span>)</code>
+          </div>
+          <div class="explain-card">
+            <span class="explain-label">What it does</span>
+            <p>This line contributes to the surrounding file. Read it together with the nearby lines for the complete behavior.</p>
+            
+          </div>
+        </article>
+        <article class="line-card kind-does" id="L36">
+          <div class="code-strip">
+            <a class="line-number" href="#L36">36</a>
+            <code>                    .ToList(),</code>
+          </div>
+          <div class="explain-card">
+            <span class="explain-label">What it does</span>
+            <p>This line contributes to the surrounding file. Read it together with the nearby lines for the complete behavior.</p>
+            
+          </div>
+        </article>
+        <article class="line-card kind-does" id="L37">
+          <div class="code-strip">
+            <a class="line-number" href="#L37">37</a>
+            <code>                WarningScanJobs = scanJobs</code>
+          </div>
+          <div class="explain-card">
+            <span class="explain-label">What it does</span>
+            <p>This line contributes to the surrounding file. Read it together with the nearby lines for the complete behavior.</p>
+            
+          </div>
+        </article>
+        <article class="line-card kind-does" id="L38">
+          <div class="code-strip">
+            <a class="line-number" href="#L38">38</a>
+            <code>                    .Where(job =&gt; job.Status == ScanStatus.Failed || job.Status == ScanStatus.Running)</code>
+          </div>
+          <div class="explain-card">
+            <span class="explain-label">What it does</span>
+            <p>This line contributes to the surrounding file. Read it together with the nearby lines for the complete behavior.</p>
+            
+          </div>
+        </article>
+        <article class="line-card kind-does" id="L39">
+          <div class="code-strip">
+            <a class="line-number" href="#L39">39</a>
+            <code>                    .OrderByDescending(job =&gt; job.StartTime)</code>
+          </div>
+          <div class="explain-card">
+            <span class="explain-label">What it does</span>
+            <p>This line contributes to the surrounding file. Read it together with the nearby lines for the complete behavior.</p>
+            
+          </div>
+        </article>
+        <article class="line-card kind-does" id="L40">
+          <div class="code-strip">
+            <a class="line-number" href="#L40">40</a>
+            <code>                    .ToList(),</code>
+          </div>
+          <div class="explain-card">
+            <span class="explain-label">What it does</span>
+            <p>This line contributes to the surrounding file. Read it together with the nearby lines for the complete behavior.</p>
+            
+          </div>
+        </article>
+        <article class="line-card kind-does" id="L41">
+          <div class="code-strip">
+            <a class="line-number" href="#L41">41</a>
+            <code>                TotalServers = servers.Count,</code>
+          </div>
+          <div class="explain-card">
+            <span class="explain-label">What it does</span>
+            <p>This line contributes to the surrounding file. Read it together with the nearby lines for the complete behavior.</p>
+            
+          </div>
+        </article>
+        <article class="line-card kind-does" id="L42">
+          <div class="code-strip">
+            <a class="line-number" href="#L42">42</a>
+            <code>                ActiveServers = servers.Count(server =&gt; server.IsActive),</code>
+          </div>
+          <div class="explain-card">
+            <span class="explain-label">What it does</span>
+            <p>This line contributes to the surrounding file. Read it together with the nearby lines for the complete behavior.</p>
+            
+          </div>
+        </article>
+        <article class="line-card kind-does" id="L43">
+          <div class="code-strip">
+            <a class="line-number" href="#L43">43</a>
+            <code>                InactiveServers = servers.Count(server =&gt; !server.IsActive),</code>
+          </div>
+          <div class="explain-card">
+            <span class="explain-label">What it does</span>
+            <p>This line contributes to the surrounding file. Read it together with the nearby lines for the complete behavior.</p>
+            
+          </div>
+        </article>
+        <article class="line-card kind-does" id="L44">
+          <div class="code-strip">
+            <a class="line-number" href="#L44">44</a>
+            <code>                TotalScanJobs = scanJobs.Count,</code>
+          </div>
+          <div class="explain-card">
+            <span class="explain-label">What it does</span>
+            <p>This line contributes to the surrounding file. Read it together with the nearby lines for the complete behavior.</p>
+            
+          </div>
+        </article>
+        <article class="line-card kind-does" id="L45">
+          <div class="code-strip">
+            <a class="line-number" href="#L45">45</a>
+            <code>                CompletedScanJobs = scanJobs.Count(job =&gt; job.Status == ScanStatus.Completed),</code>
+          </div>
+          <div class="explain-card">
+            <span class="explain-label">What it does</span>
+            <p>This line contributes to the surrounding file. Read it together with the nearby lines for the complete behavior.</p>
+            
+          </div>
+        </article>
+        <article class="line-card kind-does" id="L46">
+          <div class="code-strip">
+            <a class="line-number" href="#L46">46</a>
+            <code>                RunningScanJobs = scanJobs.Count(job =&gt; job.Status == ScanStatus.Running),</code>
+          </div>
+          <div class="explain-card">
+            <span class="explain-label">What it does</span>
+            <p>This line contributes to the surrounding file. Read it together with the nearby lines for the complete behavior.</p>
+            
+          </div>
+        </article>
+        <article class="line-card kind-does" id="L47">
+          <div class="code-strip">
+            <a class="line-number" href="#L47">47</a>
+            <code>                FailedScanJobs = scanJobs.Count(job =&gt; job.Status == ScanStatus.Failed),</code>
+          </div>
+          <div class="explain-card">
+            <span class="explain-label">What it does</span>
+            <p>This line contributes to the surrounding file. Read it together with the nearby lines for the complete behavior.</p>
+            
+          </div>
+        </article>
+        <article class="line-card kind-does" id="L48">
+          <div class="code-strip">
+            <a class="line-number" href="#L48">48</a>
+            <code>                TotalDirectories = directories.Count,</code>
+          </div>
+          <div class="explain-card">
+            <span class="explain-label">What it does</span>
+            <p>This line contributes to the surrounding file. Read it together with the nearby lines for the complete behavior.</p>
+            
+          </div>
+        </article>
+        <article class="line-card kind-does" id="L49">
+          <div class="code-strip">
+            <a class="line-number" href="#L49">49</a>
+            <code>                TotalFiles = files.Count,</code>
+          </div>
+          <div class="explain-card">
+            <span class="explain-label">What it does</span>
+            <p>This line contributes to the surrounding file. Read it together with the nearby lines for the complete behavior.</p>
+            
+          </div>
+        </article>
+        <article class="line-card kind-does" id="L50">
+          <div class="code-strip">
+            <a class="line-number" href="#L50">50</a>
+            <code>                TotalTags = tags.Count</code>
+          </div>
+          <div class="explain-card">
+            <span class="explain-label">What it does</span>
+            <p>This line contributes to the surrounding file. Read it together with the nearby lines for the complete behavior.</p>
+            
+          </div>
+        </article>
+        <article class="line-card kind-does" id="L51">
+          <div class="code-strip">
+            <a class="line-number" href="#L51">51</a>
+            <code>            };</code>
+          </div>
+          <div class="explain-card">
+            <span class="explain-label">What it does</span>
+            <p>This line contributes to the surrounding file. Read it together with the nearby lines for the complete behavior.</p>
+            
+          </div>
+        </article>
+        <article class="line-card kind-context" id="L52">
+          <div class="code-strip">
+            <a class="line-number" href="#L52">52</a>
+            <code><span class="blank-code">(blank line)</span></code>
+          </div>
+          <div class="explain-card">
+            <span class="explain-label">Spacing</span>
+            <p>Blank line used to separate related ideas so the file is easier to scan.</p>
+            <p class="plain"><strong>In plain English:</strong> It gives your eyes a pause.</p>
+          </div>
+        </article>
+        <article class="line-card kind-does" id="L53">
+          <div class="code-strip">
+            <a class="line-number" href="#L53">53</a>
+            <code>            <span class="tok-keyword">return</span> View(viewModel);</code>
+          </div>
+          <div class="explain-card">
+            <span class="explain-label">Return View</span>
+            <p>Returns a Razor page response. If a model is passed in, that data becomes available to the view.</p>
+            <p class="plain"><strong>In plain English:</strong> The controller hands data to the screen.</p>
+          </div>
+        </article>
+        <article class="line-card kind-context" id="L54">
+          <div class="code-strip">
+            <a class="line-number" href="#L54">54</a>
+            <code>        }</code>
+          </div>
+          <div class="explain-card">
+            <span class="explain-label">Code Block</span>
+            <p>Brace that starts or ends a block such as a class, method, loop, or object initializer.</p>
+            <p class="plain"><strong>In plain English:</strong> It shows where a section begins or ends.</p>
+          </div>
+        </article>
+        <article class="line-card kind-context" id="L55">
+          <div class="code-strip">
+            <a class="line-number" href="#L55">55</a>
+            <code>    }</code>
+          </div>
+          <div class="explain-card">
+            <span class="explain-label">Code Block</span>
+            <p>Brace that starts or ends a block such as a class, method, loop, or object initializer.</p>
+            <p class="plain"><strong>In plain English:</strong> It shows where a section begins or ends.</p>
+          </div>
+        </article>
+        <article class="line-card kind-context" id="L56">
+          <div class="code-strip">
+            <a class="line-number" href="#L56">56</a>
+            <code>}</code>
+          </div>
+          <div class="explain-card">
+            <span class="explain-label">Code Block</span>
+            <p>Brace that starts or ends a block such as a class, method, loop, or object initializer.</p>
+            <p class="plain"><strong>In plain English:</strong> It shows where a section begins or ends.</p>
+          </div>
+        </article>
+    </section>
+  </main>
+</body>
+</html>

@@ -2,10 +2,8 @@
   "ExpandedNodes": [
     "",
     "\\.github",
-    "\\.github\\hooks",
-    "\\lab-1",
-    "\\Models"
+    "\\.github\\hooks"
   ],
-  "SelectedNode": "\\Program.cs",
+  "SelectedNode": "\\Labosi-ASP.NET.csproj",
   "PreviewInSolutionExplorer": false
 }
