@@ -34,46 +34,45 @@
 
 <section class="panel">
     <h3>Scan Jobs</h3>
-    <ul class="timeline-list">
-        @foreach (var job in Model.ScanJobs)
-        {
-            <li>
-                @if (job.Status == ScanStatus.Completed)
-                {
-                    <span class="status-badge status-good">@job.Status</span>
-                }
-                else if (job.Status == ScanStatus.Running)
-                {
-                    <span class="status-badge status-running">@job.Status</span>
-                }
-                else if (job.Status == ScanStatus.Failed)
-                {
-                    <span class="status-badge status-bad">@job.Status</span>
-                }
-                else
-                {
-                    <span class="status-badge status-pending">@job.Status</span>
-                }
-                <a asp-controller="ScanJobs" asp-action="Details" asp-route-id="@job.Id">Job @job.Id</a>
-                <span class="path-text">@job.RootPath</span>
-                <span class="muted">@job.ProcessedFiles / @job.TotalFiles files</span>
-            </li>
-        }
-    </ul>
+    @if (Model.ScanJobs.Any())
+    {
+        <ul class="timeline-list">
+            @foreach (var job in Model.ScanJobs)
+            {
+                <li>
+                    <partial name="_ScanStatusBadge" model="job.Status" />
+                    <a asp-controller="ScanJobs" asp-action="Details" asp-route-id="@job.Id">Job @job.Id</a>
+                    <span class="path-text">@job.RootPath</span>
+                    <span class="muted">@job.ProcessedFiles / @job.TotalFiles files</span>
+                </li>
+            }
+        </ul>
+    }
+    else
+    {
+        <p>No scan jobs have been recorded for this server.</p>
+    }
 </section>
 
 <section class="panel">
     <h3>Root Directories</h3>
-    <ul class="tree-list">
-        @foreach (var job in Model.ScanJobs)
-        {
-            @foreach (var directory in job.ScannedDirectories)
+    @if (Model.ScanJobs.Any(job => job.ScannedDirectories.Any()))
+    {
+        <ul class="tree-list">
+            @foreach (var job in Model.ScanJobs)
             {
-                <li>
-                    <a asp-controller="Directories" asp-action="Details" asp-route-id="@directory.Id">@directory.Path</a>
-                    <span class="muted">from Job @job.Id</span>
-                </li>
+                @foreach (var directory in job.ScannedDirectories)
+                {
+                    <li>
+                        <a asp-controller="Directories" asp-action="Details" asp-route-id="@directory.Id">@directory.Path</a>
+                        <span class="muted">from Job @job.Id</span>
+                    </li>
+                }
             }
-        }
-    </ul>
+        </ul>
+    }
+    else
+    {
+        <p>No root directories are connected to this server's scan jobs.</p>
+    }
 </section>

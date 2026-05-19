@@ -15,22 +15,7 @@
 <section class="page-hero">
     <span class="eyebrow">Scan job details</span>
     <h1>Job @Model.Id</h1>
-    @if (Model.Status == ScanStatus.Completed)
-    {
-        <span class="status-badge status-good">@Model.Status</span>
-    }
-    else if (Model.Status == ScanStatus.Running)
-    {
-        <span class="status-badge status-running">@Model.Status</span>
-    }
-    else if (Model.Status == ScanStatus.Failed)
-    {
-        <span class="status-badge status-bad">@Model.Status</span>
-    }
-    else
-    {
-        <span class="status-badge status-pending">@Model.Status</span>
-    }
+    <partial name="_ScanStatusBadge" model="Model.Status" />
 </section>
 
 <section class="metadata-grid">
@@ -44,34 +29,64 @@
 
 <section class="panel">
     <h3>Scanned Directories</h3>
-    <ul class="tree-list">
-        @foreach (var directory in Model.ScannedDirectories)
-        {
-            <li>
-                <a asp-controller="Directories" asp-action="Details" asp-route-id="@directory.Id">@directory.Path</a>
-                <span class="muted">@directory.Files.Count files directly in this directory</span>
-            </li>
-        }
-    </ul>
+    @if (Model.ScannedDirectories.Any())
+    {
+        <ul class="tree-list">
+            @foreach (var directory in Model.ScannedDirectories)
+            {
+                <li>
+                    <a asp-controller="Directories" asp-action="Details" asp-route-id="@directory.Id">@directory.Path</a>
+                    <span class="muted">@directory.Files.Count files directly in this directory</span>
+                </li>
+            }
+        </ul>
+    }
+    else
+    {
+        <p>No directories are connected to this scan job.</p>
+    }
 </section>
 
 <section class="panel">
     <h3>Files Found In This Scan</h3>
-    <ul class="file-list">
-        @foreach (var directory in Model.ScannedDirectories)
-        {
-            @foreach (var file in directory.Files)
+    @if (Model.ScannedDirectories.Any(directory => directory.Files.Any() || directory.SubDirectories.Any(child => child.Files.Any())))
+    {
+        <ul class="file-list">
+            @foreach (var directory in Model.ScannedDirectories)
             {
-                <li><a asp-controller="FileItems" asp-action="Details" asp-route-id="@file.Id">@file.Name</a></li>
-            }
-
-            @foreach (var childDirectory in directory.SubDirectories)
-            {
-                @foreach (var file in childDirectory.Files)
+                @if (directory.Files.Any())
                 {
-                    <li><a asp-controller="FileItems" asp-action="Details" asp-route-id="@file.Id">@file.Name</a></li>
+                    <li>
+                        <strong>@directory.Path</strong>
+                        <ul class="nested-list">
+                            @foreach (var file in directory.Files)
+                            {
+                                <li><a asp-controller="FileItems" asp-action="Details" asp-route-id="@file.Id">@file.Name</a></li>
+                            }
+                        </ul>
+                    </li>
+                }
+
+                @foreach (var childDirectory in directory.SubDirectories)
+                {
+                    @if (childDirectory.Files.Any())
+                    {
+                        <li>
+                            <strong>@childDirectory.Path</strong>
+                            <ul class="nested-list">
+                                @foreach (var file in childDirectory.Files)
+                                {
+                                    <li><a asp-controller="FileItems" asp-action="Details" asp-route-id="@file.Id">@file.Name</a></li>
+                                }
+                            </ul>
+                        </li>
+                    }
                 }
             }
-        }
-    </ul>
+        </ul>
+    }
+    else
+    {
+        <p>No files are connected to this scan job.</p>
+    }
 </section>

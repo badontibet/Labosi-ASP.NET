@@ -13,7 +13,7 @@
 <section class="page-hero">
     <span class="eyebrow">Operators</span>
     <h1>System Admin Roster</h1>
-    <p>Read-only view of mock administrators and managed NAS servers.</p>
+    <p>Read-only view of administrators and managed NAS servers from the EF database.</p>
 </section>
 
 <section class="panel">
@@ -38,7 +38,7 @@
                         <td><span class="tag-chip">@admin.Role</span></td>
                         <td>@admin.ManagedServers.Count</td>
                         <td>@admin.LastLogin.ToString("yyyy-MM-dd HH:mm")</td>
-                        <td><a class="link-chip" asp-action="Details" asp-route-id="@admin.Id">Open admin</a></td>
+                        <td><a class="link-chip" asp-controller="Admins" asp-action="Details" asp-route-id="@admin.Id">Open admin</a></td>
                     </tr>
                 }
             </tbody>

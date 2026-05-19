@@ -320,7 +320,8 @@ dd {
 
 .tree-list,
 .timeline-list,
-.file-list {
+.file-list,
+.nested-list {
     list-style: none;
     padding-left: 0;
     margin: 0;
@@ -332,6 +333,15 @@ dd {
     padding: 0.65rem 0.75rem;
     border-left: 3px solid var(--accent-blue);
     background: rgba(13, 20, 28, 0.9);
+}
+
+.nested-list {
+    margin-top: 0.5rem;
+    padding-left: 1rem;
+}
+
+.nested-list li {
+    margin-top: 0.35rem;
 }
 
 .tree-child {

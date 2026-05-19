@@ -37,27 +37,12 @@
                         <td><strong>Job @job.Id</strong></td>
                         <td><a asp-controller="NasServers" asp-action="Details" asp-route-id="@job.NasServerId">@job.NasServer.Name</a></td>
                         <td>
-                            @if (job.Status == ScanStatus.Completed)
-                            {
-                                <span class="status-badge status-good">@job.Status</span>
-                            }
-                            else if (job.Status == ScanStatus.Running)
-                            {
-                                <span class="status-badge status-running">@job.Status</span>
-                            }
-                            else if (job.Status == ScanStatus.Failed)
-                            {
-                                <span class="status-badge status-bad">@job.Status</span>
-                            }
-                            else
-                            {
-                                <span class="status-badge status-pending">@job.Status</span>
-                            }
+                            <partial name="_ScanStatusBadge" model="job.Status" />
                         </td>
                         <td><span class="path-text">@job.RootPath</span></td>
                         <td>@job.ProcessedFiles / @job.TotalFiles</td>
                         <td>@job.StartTime.ToString("yyyy-MM-dd HH:mm")</td>
-                        <td><a class="link-chip" asp-action="Details" asp-route-id="@job.Id">Open scan</a></td>
+                        <td><a class="link-chip" asp-controller="ScanJobs" asp-action="Details" asp-route-id="@job.Id">Open scan</a></td>
                     </tr>
                 }
             </tbody>
