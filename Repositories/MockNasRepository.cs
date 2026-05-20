@@ -16,6 +16,23 @@ namespace NasIndexer.Repositories
             return Servers.FirstOrDefault(server => server.Id == id);
         }
 
+        public List<NasServer> SearchNasServers(string? query, int take = 10)
+        {
+            var servers = Servers.AsEnumerable();
+
+            if (!string.IsNullOrWhiteSpace(query))
+            {
+                servers = servers.Where(server =>
+                    server.Name.Contains(query, StringComparison.OrdinalIgnoreCase) ||
+                    server.IpAddress.Contains(query, StringComparison.OrdinalIgnoreCase));
+            }
+
+            return servers
+                .OrderBy(server => server.Name)
+                .Take(take)
+                .ToList();
+        }
+
         public List<ScanJob> GetAllScanJobs()
         {
             return Servers
@@ -23,9 +40,86 @@ namespace NasIndexer.Repositories
                 .ToList();
         }
 
+        public List<ScanJob> SearchScanJobs(string? query)
+        {
+            var scanJobs = GetAllScanJobs().AsEnumerable();
+
+            if (!string.IsNullOrWhiteSpace(query))
+            {
+                scanJobs = scanJobs.Where(job =>
+                    job.NasServer.Name.Contains(query, StringComparison.OrdinalIgnoreCase) ||
+                    job.RootPath.Contains(query, StringComparison.OrdinalIgnoreCase) ||
+                    job.Status.ToString().Contains(query, StringComparison.OrdinalIgnoreCase));
+            }
+
+            return scanJobs
+                .OrderByDescending(job => job.StartTime)
+                .ToList();
+        }
+
         public ScanJob? GetScanJobById(int id)
         {
             return GetAllScanJobs().FirstOrDefault(job => job.Id == id);
+        }
+
+        public ScanJob? GetScanJobForEdit(int id)
+        {
+            return GetScanJobById(id);
+        }
+
+        public bool ScanJobHasDirectories(int id)
+        {
+            return GetScanJobById(id)?.ScannedDirectories.Any() == true;
+        }
+
+        public void AddScanJob(ScanJob scanJob)
+        {
+            scanJob.Id = GetAllScanJobs().Select(job => job.Id).DefaultIfEmpty().Max() + 1;
+            var server = GetNasServerById(scanJob.NasServerId);
+
+            if (server == null)
+            {
+                return;
+            }
+
+            scanJob.NasServer = server;
+            server.ScanJobs.Add(scanJob);
+        }
+
+        public bool UpdateScanJob(ScanJob scanJob)
+        {
+            var existingScanJob = GetScanJobById(scanJob.Id);
+            var server = GetNasServerById(scanJob.NasServerId);
+
+            if (existingScanJob == null || server == null)
+            {
+                return false;
+            }
+
+            existingScanJob.NasServer.ScanJobs.Remove(existingScanJob);
+            existingScanJob.NasServerId = scanJob.NasServerId;
+            existingScanJob.NasServer = server;
+            existingScanJob.Status = scanJob.Status;
+            existingScanJob.StartTime = scanJob.StartTime;
+            existingScanJob.EndTime = scanJob.EndTime;
+            existingScanJob.RootPath = scanJob.RootPath;
+            existingScanJob.TotalFiles = scanJob.TotalFiles;
+            existingScanJob.ProcessedFiles = scanJob.ProcessedFiles;
+            server.ScanJobs.Add(existingScanJob);
+
+            return true;
+        }
+
+        public bool DeleteScanJob(int id)
+        {
+            var scanJob = GetScanJobById(id);
+
+            if (scanJob == null || scanJob.ScannedDirectories.Any())
+            {
+                return false;
+            }
+
+            return scanJob.NasServer.ScanJobs.Remove(scanJob);
         }
 
         public List<DirectoryItem> GetAllDirectories()

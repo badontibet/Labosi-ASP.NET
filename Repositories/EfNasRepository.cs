@@ -31,11 +31,54 @@ namespace NasIndexer.Repositories
                 .FirstOrDefault(server => server.Id == id);
         }
 
+        public List<NasServer> SearchNasServers(string? query, int take = 10)
+        {
+            var servers = context.NasServers.AsNoTracking();
+
+            if (!string.IsNullOrWhiteSpace(query))
+            {
+                var normalizedQuery = query.Trim();
+                servers = servers.Where(server =>
+                    server.Name.Contains(normalizedQuery) ||
+                    server.IpAddress.Contains(normalizedQuery));
+            }
+
+            return servers
+                .OrderBy(server => server.Name)
+                .Take(take)
+                .ToList();
+        }
+
         public List<ScanJob> GetAllScanJobs()
         {
             return context.ScanJobs
                 .AsNoTracking()
                 .Include(scanJob => scanJob.NasServer)
+                .OrderByDescending(scanJob => scanJob.StartTime)
+                .ToList();
+        }
+
+        public List<ScanJob> SearchScanJobs(string? query)
+        {
+            var scanJobs = context.ScanJobs
+                .AsNoTracking()
+                .Include(scanJob => scanJob.NasServer)
+                .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(query))
+            {
+                var normalizedQuery = query.Trim();
+                var statusMatches = Enum.GetValues<ScanStatus>()
+                    .Where(status => status.ToString().Contains(normalizedQuery, StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+
+                scanJobs = scanJobs.Where(scanJob =>
+                    scanJob.NasServer.Name.Contains(normalizedQuery) ||
+                    scanJob.RootPath.Contains(normalizedQuery) ||
+                    statusMatches.Contains(scanJob.Status));
+            }
+
+            return scanJobs
                 .OrderByDescending(scanJob => scanJob.StartTime)
                 .ToList();
         }
@@ -51,6 +94,60 @@ namespace NasIndexer.Repositories
                     .ThenInclude(directory => directory.SubDirectories)
                         .ThenInclude(childDirectory => childDirectory.Files)
                 .FirstOrDefault(scanJob => scanJob.Id == id);
+        }
+
+        public ScanJob? GetScanJobForEdit(int id)
+        {
+            return context.ScanJobs
+                .AsNoTracking()
+                .Include(scanJob => scanJob.NasServer)
+                .FirstOrDefault(scanJob => scanJob.Id == id);
+        }
+
+        public bool ScanJobHasDirectories(int id)
+        {
+            return context.DirectoryItems.Any(directory => directory.ScanJobId == id);
+        }
+
+        public void AddScanJob(ScanJob scanJob)
+        {
+            context.ScanJobs.Add(scanJob);
+            context.SaveChanges();
+        }
+
+        public bool UpdateScanJob(ScanJob scanJob)
+        {
+            var existingScanJob = context.ScanJobs.FirstOrDefault(job => job.Id == scanJob.Id);
+
+            if (existingScanJob == null)
+            {
+                return false;
+            }
+
+            existingScanJob.NasServerId = scanJob.NasServerId;
+            existingScanJob.Status = scanJob.Status;
+            existingScanJob.StartTime = scanJob.StartTime;
+            existingScanJob.EndTime = scanJob.EndTime;
+            existingScanJob.RootPath = scanJob.RootPath;
+            existingScanJob.TotalFiles = scanJob.TotalFiles;
+            existingScanJob.ProcessedFiles = scanJob.ProcessedFiles;
+
+            context.SaveChanges();
+            return true;
+        }
+
+        public bool DeleteScanJob(int id)
+        {
+            var scanJob = context.ScanJobs.FirstOrDefault(job => job.Id == id);
+
+            if (scanJob == null || ScanJobHasDirectories(id))
+            {
+                return false;
+            }
+
+            context.ScanJobs.Remove(scanJob);
+            context.SaveChanges();
+            return true;
         }
 
         public List<DirectoryItem> GetAllDirectories()

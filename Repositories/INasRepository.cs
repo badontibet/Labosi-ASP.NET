@@ -6,8 +6,15 @@ namespace NasIndexer.Repositories
     {
         List<NasServer> GetAllNasServers();
         NasServer? GetNasServerById(int id);
+        List<NasServer> SearchNasServers(string? query, int take = 10);
         List<ScanJob> GetAllScanJobs();
+        List<ScanJob> SearchScanJobs(string? query);
         ScanJob? GetScanJobById(int id);
+        ScanJob? GetScanJobForEdit(int id);
+        bool ScanJobHasDirectories(int id);
+        void AddScanJob(ScanJob scanJob);
+        bool UpdateScanJob(ScanJob scanJob);
+        bool DeleteScanJob(int id);
         List<DirectoryItem> GetAllDirectories();
         DirectoryItem? GetDirectoryById(int id);
         List<FileItem> GetAllFiles();

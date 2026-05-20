@@ -1,0 +1,28 @@
+@model AutocompleteDropdownViewModel
+
+@{
+    var textInputId = Model.TextInputName.Replace(".", "_");
+    var hiddenInputId = Model.HiddenInputName.Replace(".", "_");
+}
+
+<div class="form-field autocomplete-field" data-lab4-autocomplete data-endpoint="@Model.EndpointUrl">
+    <label for="@textInputId">@Model.Label</label>
+    <input id="@hiddenInputId"
+           type="hidden"
+           name="@Model.HiddenInputName"
+           value="@Model.SelectedId"
+           data-lab4-autocomplete-id />
+    <input id="@textInputId"
+           class="form-control"
+           type="text"
+           name="@Model.TextInputName"
+           value="@Model.SelectedText"
+           placeholder="@Model.Placeholder"
+           autocomplete="off"
+           data-lab4-autocomplete-text
+           data-lab4-validate="required"
+           data-lab4-error-target="[data-valmsg-for='@Model.ValidationFieldName']" />
+    <div class="autocomplete-loading" data-lab4-autocomplete-loading hidden>Loading...</div>
+    <div class="autocomplete-menu" data-lab4-autocomplete-menu hidden></div>
+    <span class="field-validation-valid" data-valmsg-for="@Model.ValidationFieldName" data-valmsg-replace="true"></span>
+</div>

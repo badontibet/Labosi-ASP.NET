@@ -1,0 +1,61 @@
+@model ScanJob
+
+@{
+    ViewData["Title"] = "Delete Scan Job " + Model.Id;
+    var deleteBlocked = ViewData["DeleteBlocked"] as bool? == true;
+}
+
+<nav class="breadcrumb" aria-label="Breadcrumb">
+    <a asp-controller="Home" asp-action="Index">Dashboard</a>
+    <span>/</span>
+    <a asp-controller="ScanJobs" asp-action="Index">Scan Jobs</a>
+    <span>/</span>
+    <span>Delete Job @Model.Id</span>
+</nav>
+
+<section class="page-hero">
+    <span class="eyebrow">Delete confirmation</span>
+    <h1>Delete Job @Model.Id</h1>
+    <p>Confirm deletion only when this scan job has no connected scanned directories.</p>
+</section>
+
+<section class="panel delete-panel" data-lab4-delete-panel>
+    <div asp-validation-summary="ModelOnly" class="validation-summary"></div>
+
+    <dl class="detail-list">
+        <dt>Server</dt>
+        <dd>@Model.NasServer.Name</dd>
+        <dt>Status</dt>
+        <dd><partial name="_ScanStatusBadge" model="Model.Status" /></dd>
+        <dt>Root Path</dt>
+        <dd><span class="path-text">@Model.RootPath</span></dd>
+        <dt>Scanned Directories</dt>
+        <dd>@Model.ScannedDirectories.Count</dd>
+    </dl>
+
+    @if (deleteBlocked)
+    {
+        <div class="alert-danger">
+            Delete is blocked because this scan job has scanned directories. Remove or reassign connected directory records first.
+        </div>
+        <div class="form-actions">
+            <a class="link-chip" asp-controller="ScanJobs" asp-action="Details" asp-route-id="@Model.Id">Back to details</a>
+            <a class="link-chip" asp-controller="ScanJobs" asp-action="Index">Back to list</a>
+        </div>
+    }
+    else
+    {
+        <form asp-controller="ScanJobs" asp-action="Delete" asp-route-id="@Model.Id" method="post" data-lab4-delete-form>
+            @Html.AntiForgeryToken()
+            <p class="delete-warning">This action deletes scan metadata for Job @Model.Id. It cannot be undone.</p>
+            <div class="form-actions">
+                <button type="submit" class="danger-action">Delete scan job</button>
+                <a class="link-chip" asp-controller="ScanJobs" asp-action="Details" asp-route-id="@Model.Id">Cancel</a>
+            </div>
+        </form>
+    }
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

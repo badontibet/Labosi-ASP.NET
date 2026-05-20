@@ -1,0 +1,29 @@
+@model List<ScanJob>
+
+@if (Model.Any())
+{
+    @foreach (var job in Model)
+    {
+        <tr data-lab4-row data-row-id="@job.Id">
+            <td><strong>Job @job.Id</strong></td>
+            <td><a asp-controller="NasServers" asp-action="Details" asp-route-id="@job.NasServerId">@job.NasServer.Name</a></td>
+            <td>
+                <partial name="_ScanStatusBadge" model="job.Status" />
+            </td>
+            <td><span class="path-text">@job.RootPath</span></td>
+            <td>@job.ProcessedFiles / @job.TotalFiles</td>
+            <td>@job.StartTime.ToString("yyyy-MM-dd HH:mm")</td>
+            <td class="action-cell">
+                <a class="link-chip" asp-controller="ScanJobs" asp-action="Details" asp-route-id="@job.Id">Open</a>
+                <a class="link-chip" asp-controller="ScanJobs" asp-action="Edit" asp-route-id="@job.Id">Edit</a>
+                <a class="link-chip link-danger" asp-controller="ScanJobs" asp-action="Delete" asp-route-id="@job.Id">Delete</a>
+            </td>
+        </tr>
+    }
+}
+else
+{
+    <tr>
+        <td colspan="7" class="empty-cell">No scan jobs match the current search.</td>
+    </tr>
+}

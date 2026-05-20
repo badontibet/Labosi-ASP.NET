@@ -1,0 +1,59 @@
+@model ScanJobFormViewModel
+
+<div asp-validation-summary="ModelOnly" class="validation-summary"></div>
+
+<partial name="_AutocompleteDropdown" model="@(new AutocompleteDropdownViewModel
+{
+    HiddenInputName = nameof(Model.NasServerId),
+    TextInputName = nameof(Model.NasServerLabel),
+    SelectedId = Model.NasServerId,
+    SelectedText = Model.NasServerLabel,
+    EndpointUrl = Url.Action("NasServerAutocomplete", "ScanJobs") ?? string.Empty,
+    Label = "NAS Server",
+    Placeholder = "Type at least 2 characters...",
+    ValidationFieldName = nameof(Model.NasServerId)
+})" />
+
+<div class="form-grid">
+    <div class="form-field">
+        <label asp-for="Status"></label>
+        <select asp-for="Status" class="form-control" asp-items="Html.GetEnumSelectList<ScanStatus>()"></select>
+        <span asp-validation-for="Status"></span>
+    </div>
+
+    <partial name="_DateTimePicker" model="@(new DateTimePickerViewModel
+    {
+        FieldName = nameof(Model.StartTimeText),
+        Label = "Start Time",
+        Value = Model.StartTimeText,
+        IsRequired = true
+    })" />
+
+    <partial name="_DateTimePicker" model="@(new DateTimePickerViewModel
+    {
+        FieldName = nameof(Model.EndTimeText),
+        Label = "End Time",
+        Value = Model.EndTimeText,
+        IsRequired = false
+    })" />
+</div>
+
+<div class="form-field">
+    <label asp-for="RootPath"></label>
+    <input asp-for="RootPath" class="form-control" type="text" data-lab4-validate="required" />
+    <span asp-validation-for="RootPath"></span>
+</div>
+
+<div class="form-grid">
+    <div class="form-field">
+        <label asp-for="TotalFiles"></label>
+        <input asp-for="TotalFiles" class="form-control" type="number" min="0" data-lab4-validate="nonnegative" />
+        <span asp-validation-for="TotalFiles"></span>
+    </div>
+
+    <div class="form-field">
+        <label asp-for="ProcessedFiles"></label>
+        <input asp-for="ProcessedFiles" class="form-control" type="number" min="0" data-lab4-validate="nonnegative" data-lab4-max-field="TotalFiles" />
+        <span asp-validation-for="ProcessedFiles"></span>
+    </div>
+</div>

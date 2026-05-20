@@ -1,0 +1,22 @@
+@model DateTimePickerViewModel
+
+@{
+    var inputId = Model.FieldName.Replace(".", "_");
+}
+
+<div class="form-field lab4-datetime-field">
+    <label for="@inputId">@Model.Label</label>
+    <input id="@inputId"
+           class="form-control"
+           type="text"
+           name="@Model.FieldName"
+           value="@Model.Value"
+           placeholder="yyyy-MM-dd HH:mm"
+           autocomplete="off"
+           inputmode="text"
+           data-lab4-validate="datetime"
+           data-lab4-required="@Model.IsRequired.ToString().ToLowerInvariant()"
+           data-lab4-error-target="[data-valmsg-for='@Model.FieldName']" />
+    <small class="field-hint">@Model.HelpText</small>
+    <span class="field-validation-valid" data-valmsg-for="@Model.FieldName" data-valmsg-replace="true"></span>
+</div>

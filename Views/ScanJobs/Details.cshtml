@@ -16,6 +16,11 @@
     <span class="eyebrow">Scan job details</span>
     <h1>Job @Model.Id</h1>
     <partial name="_ScanStatusBadge" model="Model.Status" />
+    <div class="hero-actions">
+        <a class="link-chip" asp-controller="ScanJobs" asp-action="Edit" asp-route-id="@Model.Id">Edit</a>
+        <a class="link-chip link-danger" asp-controller="ScanJobs" asp-action="Delete" asp-route-id="@Model.Id">Delete</a>
+        <a class="link-chip" asp-controller="ScanJobs" asp-action="Index">Back to scan jobs</a>
+    </div>
 </section>
 
 <section class="metadata-grid">
