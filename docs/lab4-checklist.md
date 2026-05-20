@@ -165,6 +165,32 @@ Review timestamp: 2026-05-21 00:15:00 +02:00
 | No mass unrelated CRUD | PASS | Changes are scoped to SystemAdmin/Admins plus reusable JS validation support. |
 | Build | PASS | `dotnet build` succeeds with 0 warnings and 0 errors. |
 
+## Final Labos 4 Defense Audit
+
+Audit timestamp: 2026-05-21 00:23:35 +02:00
+
+| PDF/Labos 4 requirement | Status | Evidence/notes |
+|---|---|---|
+| CRUD where business rules allow | PASS | Implemented for `ScanJob`, `DirectoryItem`, `FileItem`, `FileTag`, restricted `NasServer`, and restricted `SystemAdmin`. |
+| FileChangeLog read-only audit entity | PASS | `FileChangeLogsController` has only `Index`, `Search`, and `Details`; grep found no FileChangeLog Create/Edit/Delete UI or POST CRUD. |
+| AJAX search on list pages | PASS | All Labos 4 list pages use `data-lab4-search` and partial row endpoints. |
+| Custom reusable AJAX autocomplete | PASS | `_AutocompleteDropdown.cshtml` plus `lab4.js` hidden-ID/visible-label AJAX behavior is used for ScanJob, DirectoryItem, and FileItem relationship selection. |
+| Edit forms show relationship labels | PASS | ViewModels preserve `NasServerLabel`, `DirectoryLabel`, `ScanJobLabel`, and `ParentDirectoryLabel` for Edit and invalid POST redisplay. |
+| Client-side blur validation | PASS | `lab4.js` attaches `blur` handlers to `data-lab4-validate` fields. |
+| Server-side POST validation | PASS | All Create/Edit/Delete POST endpoints validate model state and/or delete business rules before saving. |
+| Validation messages visible | PASS | Forms use validation summaries and `asp-validation-for`/`data-valmsg-for` targets styled by Labos 4 CSS. |
+| Rich JS | PASS | `lab4.js` includes debounce, loading state, row highlight, autocomplete dropdown animation, stale hidden-ID clearing, and delete confirmation. |
+| DateTime partial | PASS | `_DateTimePicker.cshtml` is the shared DateTime UI. |
+| Date+time and hr/en support | PASS | `DateTimeInputParser` supports `dd.MM.yyyy HH:mm`, `MM/dd/yyyy HH:mm`, and `yyyy-MM-dd HH:mm`; JS mirrors those formats. |
+| No native date inputs | PASS | grep found no `type="date"` or `type="datetime-local"`. |
+| Password not exposed in restricted UIs | PASS | grep found no password/credential references in `Views/NasServers` or `Views/Admins`. |
+| Delete blocked for related data | PASS | Delete blocks exist for scan directories, directory children/files, file change logs, tag file links, NAS scan jobs/admins, and admin managed servers. |
+| Checklist updated | PASS | This checklist contains per-entity and final audit PASS/FAIL tables. |
+| Agent log updated | PASS | `lab-1/agent_log.txt` contains chronological prompts, implementation summaries, commands, build results, and checkpoints. |
+| Build and hygiene checks | PASS | `dotnet build` passed with 0 warnings/errors; `git diff --check` passed; HTTP smoke test returned 200 for key Labos 4 routes. |
+
+Final audit result: PASS. No code fixes were required during the final defense audit; only documentation and log audit entries were added.
+
 ## FileChangeLog Read-only PASS/FAIL
 
 Review timestamp: 2026-05-20 23:03:00 +02:00
