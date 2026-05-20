@@ -1,0 +1,26 @@
+@model List<SystemAdmin>
+
+@if (Model.Any())
+{
+    @foreach (var admin in Model)
+    {
+        <tr data-lab4-row data-row-id="@admin.Id">
+            <td><strong>@admin.Username</strong></td>
+            <td>@admin.Email</td>
+            <td><span class="tag-chip">@admin.Role</span></td>
+            <td>@admin.ManagedServers.Count</td>
+            <td>@admin.LastLogin.ToString("yyyy-MM-dd HH:mm")</td>
+            <td class="action-cell">
+                <a class="link-chip" asp-controller="Admins" asp-action="Details" asp-route-id="@admin.Id">Open</a>
+                <a class="link-chip" asp-controller="Admins" asp-action="Edit" asp-route-id="@admin.Id">Edit</a>
+                <a class="link-chip link-danger" asp-controller="Admins" asp-action="Delete" asp-route-id="@admin.Id">Delete</a>
+            </td>
+        </tr>
+    }
+}
+else
+{
+    <tr>
+        <td colspan="6" class="empty-cell">No system admins match the current search.</td>
+    </tr>
+}

@@ -103,6 +103,18 @@
             return false;
         }
 
+        if (rule === "email") {
+            if (!value) {
+                setMessage(input, "This field is required.");
+                return false;
+            }
+
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+                setMessage(input, "Enter a valid email address.");
+                return false;
+            }
+        }
+
         if (rule === "ipaddress") {
             if (!value) {
                 setMessage(input, "This field is required.");
@@ -157,6 +169,16 @@
                     "Modified date cannot be before created date.");
 
                 if (invalidRange && input.name === "ModifiedDateText") {
+                    return false;
+                }
+
+                invalidRange = validateDateRange(
+                    form,
+                    "CreatedDateText",
+                    "LastLoginText",
+                    "Last login cannot be before created date.");
+
+                if (invalidRange && input.name === "LastLoginText") {
                     return false;
                 }
             }

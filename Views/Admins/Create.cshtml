@@ -1,0 +1,34 @@
+@model SystemAdminFormViewModel
+
+@{
+    ViewData["Title"] = "Create System Admin";
+}
+
+<nav class="breadcrumb" aria-label="Breadcrumb">
+    <a asp-controller="Home" asp-action="Index">Dashboard</a>
+    <span>/</span>
+    <a asp-controller="Admins" asp-action="Index">Admins</a>
+    <span>/</span>
+    <span>Create</span>
+</nav>
+
+<section class="page-hero">
+    <span class="eyebrow">Restricted CRUD</span>
+    <h1>Create System Admin</h1>
+    <p>Add safe operator metadata and managed server assignments. Stored secrets stay outside this workflow.</p>
+</section>
+
+<section class="panel form-panel">
+    <form asp-controller="Admins" asp-action="Create" method="post" data-lab4-form>
+        @Html.AntiForgeryToken()
+        <partial name="_AdminForm" model="Model" />
+        <div class="form-actions">
+            <button type="submit" class="primary-action">Create admin</button>
+            <a class="link-chip" asp-controller="Admins" asp-action="Index">Cancel</a>
+        </div>
+    </form>
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

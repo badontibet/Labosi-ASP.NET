@@ -1,0 +1,64 @@
+@model SystemAdminFormViewModel
+
+<div asp-validation-summary="ModelOnly" class="validation-summary"></div>
+
+<div class="form-grid">
+    <div class="form-field">
+        <label asp-for="Username"></label>
+        <input asp-for="Username" class="form-control" type="text" maxlength="80" data-lab4-validate="required" data-lab4-max-length="80" />
+        <span asp-validation-for="Username"></span>
+    </div>
+
+    <div class="form-field">
+        <label asp-for="Email"></label>
+        <input asp-for="Email" class="form-control" type="email" maxlength="160" data-lab4-validate="email" data-lab4-max-length="160" />
+        <span asp-validation-for="Email"></span>
+    </div>
+</div>
+
+<div class="form-field">
+    <label asp-for="Role"></label>
+    <input asp-for="Role" class="form-control" type="text" maxlength="80" data-lab4-validate="required" data-lab4-max-length="80" />
+    <span asp-validation-for="Role"></span>
+</div>
+
+<div class="form-grid">
+    <partial name="_DateTimePicker" model="@(new DateTimePickerViewModel
+    {
+        FieldName = nameof(Model.CreatedDateText),
+        Label = "Created Date",
+        Value = Model.CreatedDateText,
+        IsRequired = true
+    })" />
+
+    <partial name="_DateTimePicker" model="@(new DateTimePickerViewModel
+    {
+        FieldName = nameof(Model.LastLoginText),
+        Label = "Last Login",
+        Value = Model.LastLoginText,
+        IsRequired = true
+    })" />
+</div>
+
+<fieldset class="form-field tag-selection">
+    <legend>Managed NAS Servers</legend>
+    <small class="field-hint">Optional. Delete is blocked while any server is assigned.</small>
+    <span asp-validation-for="SelectedNasServerIds"></span>
+    @if (Model.AvailableNasServers.Any())
+    {
+        <div class="checkbox-grid">
+            @foreach (var server in Model.AvailableNasServers)
+            {
+                <label class="checkbox-chip">
+                    <input type="checkbox" name="SelectedNasServerIds" value="@server.Id" checked="@server.IsSelected" />
+                    <span>@server.Name</span>
+                    <small class="field-hint">@server.Address</small>
+                </label>
+            }
+        </div>
+    }
+    else
+    {
+        <p class="muted">No NAS servers are available.</p>
+    }
+</fieldset>

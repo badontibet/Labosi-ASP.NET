@@ -1,0 +1,61 @@
+@model SystemAdmin
+
+@{
+    ViewData["Title"] = "Delete System Admin " + Model.Username;
+    var deleteBlocked = ViewData["DeleteBlocked"] as bool? == true;
+}
+
+<nav class="breadcrumb" aria-label="Breadcrumb">
+    <a asp-controller="Home" asp-action="Index">Dashboard</a>
+    <span>/</span>
+    <a asp-controller="Admins" asp-action="Index">Admins</a>
+    <span>/</span>
+    <span>Delete @Model.Username</span>
+</nav>
+
+<section class="page-hero">
+    <span class="eyebrow">Delete confirmation</span>
+    <h1>Delete System Admin @Model.Username</h1>
+    <p>Deletion is allowed only when this admin is not assigned to any NAS server.</p>
+</section>
+
+<section class="panel delete-panel" data-lab4-delete-panel>
+    <div asp-validation-summary="ModelOnly" class="validation-summary"></div>
+
+    <dl class="detail-list">
+        <dt>Username</dt>
+        <dd>@Model.Username</dd>
+        <dt>Email</dt>
+        <dd>@Model.Email</dd>
+        <dt>Role</dt>
+        <dd>@Model.Role</dd>
+        <dt>Managed Servers</dt>
+        <dd>@Model.ManagedServers.Count</dd>
+    </dl>
+
+    @if (deleteBlocked)
+    {
+        <div class="alert-danger">
+            Delete is blocked because this admin is assigned to one or more NAS servers.
+        </div>
+        <div class="form-actions">
+            <a class="link-chip" asp-controller="Admins" asp-action="Details" asp-route-id="@Model.Id">Back to details</a>
+            <a class="link-chip" asp-controller="Admins" asp-action="Index">Back to list</a>
+        </div>
+    }
+    else
+    {
+        <form asp-controller="Admins" asp-action="Delete" asp-route-id="@Model.Id" method="post" data-lab4-delete-form data-confirm-message="Delete this system admin?">
+            @Html.AntiForgeryToken()
+            <p class="delete-warning">This action deletes the admin metadata only. It cannot be undone.</p>
+            <div class="form-actions">
+                <button type="submit" class="danger-action">Delete admin</button>
+                <a class="link-chip" asp-controller="Admins" asp-action="Details" asp-route-id="@Model.Id">Cancel</a>
+            </div>
+        </form>
+    }
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

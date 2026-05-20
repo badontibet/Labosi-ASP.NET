@@ -51,6 +51,12 @@ namespace NasIndexer.Repositories
         bool UpdateTag(FileTag tag);
         bool DeleteTag(int id);
         List<SystemAdmin> GetAllAdmins();
+        List<SystemAdmin> SearchAdmins(string? query);
         SystemAdmin? GetAdminById(int id);
+        SystemAdmin? GetAdminForEdit(int id);
+        bool SystemAdminHasManagedServers(int id);
+        void AddAdmin(SystemAdmin admin, IEnumerable<int> selectedNasServerIds);
+        bool UpdateAdmin(SystemAdmin admin, IEnumerable<int> selectedNasServerIds);
+        bool DeleteAdmin(int id);
     }
 }

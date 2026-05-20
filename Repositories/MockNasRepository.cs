@@ -5,6 +5,7 @@ namespace NasIndexer.Repositories
     public class MockNasRepository : INasRepository
     {
         private static readonly List<NasServer> Servers = CreateSampleData();
+        private static readonly List<SystemAdmin> Admins = CreateSampleAdmins();
 
         public List<NasServer> GetAllNasServers()
         {
@@ -549,49 +550,96 @@ namespace NasIndexer.Repositories
 
         public List<SystemAdmin> GetAllAdmins()
         {
-            var admins = new List<SystemAdmin>
-            {
-                new SystemAdmin
-                {
-                    Id = 1,
-                    Username = "admin",
-                    Password = "hashed_password",
-                    Email = "admin@company.com",
-                    Role = "SuperAdmin",
-                    CreatedDate = DateTime.Now.AddYears(-1),
-                    LastLogin = DateTime.Now.AddHours(-1),
-                    ManagedServers = { Servers[0] }
-                },
-                new SystemAdmin
-                {
-                    Id = 2,
-                    Username = "backup_admin",
-                    Password = "hashed_backup_password",
-                    Email = "backup.admin@company.com",
-                    Role = "BackupOperator",
-                    CreatedDate = DateTime.Now.AddMonths(-10),
-                    LastLogin = DateTime.Now.AddHours(-5),
-                    ManagedServers = { Servers[1] }
-                },
-                new SystemAdmin
-                {
-                    Id = 3,
-                    Username = "dev_admin",
-                    Password = "hashed_dev_password",
-                    Email = "dev.admin@company.com",
-                    Role = "Developer",
-                    CreatedDate = DateTime.Now.AddMonths(-8),
-                    LastLogin = DateTime.Now.AddDays(-2),
-                    ManagedServers = { Servers[2] }
-                }
-            };
+            return Admins;
+        }
 
-            return admins;
+        public List<SystemAdmin> SearchAdmins(string? query)
+        {
+            var admins = Admins.AsEnumerable();
+
+            if (!string.IsNullOrWhiteSpace(query))
+            {
+                admins = admins.Where(admin =>
+                    admin.Username.Contains(query, StringComparison.OrdinalIgnoreCase) ||
+                    admin.Email.Contains(query, StringComparison.OrdinalIgnoreCase) ||
+                    admin.Role.Contains(query, StringComparison.OrdinalIgnoreCase) ||
+                    admin.ManagedServers.Any(server => server.Name.Contains(query, StringComparison.OrdinalIgnoreCase)));
+            }
+
+            return admins
+                .OrderBy(admin => admin.Username)
+                .ToList();
         }
 
         public SystemAdmin? GetAdminById(int id)
         {
-            return GetAllAdmins().FirstOrDefault(admin => admin.Id == id);
+            return Admins.FirstOrDefault(admin => admin.Id == id);
+        }
+
+        public SystemAdmin? GetAdminForEdit(int id)
+        {
+            return GetAdminById(id);
+        }
+
+        public bool SystemAdminHasManagedServers(int id)
+        {
+            return GetAdminById(id)?.ManagedServers.Any() == true;
+        }
+
+        public void AddAdmin(SystemAdmin admin, IEnumerable<int> selectedNasServerIds)
+        {
+            admin.Id = Admins.Select(existingAdmin => existingAdmin.Id).DefaultIfEmpty().Max() + 1;
+            admin.Password = string.Empty;
+
+            foreach (var server in Servers.Where(server => selectedNasServerIds.Contains(server.Id)))
+            {
+                admin.ManagedServers.Add(server);
+                server.ManagedAdmins.Add(admin);
+            }
+
+            Admins.Add(admin);
+        }
+
+        public bool UpdateAdmin(SystemAdmin admin, IEnumerable<int> selectedNasServerIds)
+        {
+            var existingAdmin = GetAdminById(admin.Id);
+
+            if (existingAdmin == null)
+            {
+                return false;
+            }
+
+            foreach (var server in existingAdmin.ManagedServers)
+            {
+                server.ManagedAdmins.Remove(existingAdmin);
+            }
+
+            existingAdmin.Username = admin.Username;
+            existingAdmin.Email = admin.Email;
+            existingAdmin.Role = admin.Role;
+            existingAdmin.CreatedDate = admin.CreatedDate;
+            existingAdmin.LastLogin = admin.LastLogin;
+            existingAdmin.ManagedServers.Clear();
+
+            foreach (var server in Servers.Where(server => selectedNasServerIds.Contains(server.Id)))
+            {
+                existingAdmin.ManagedServers.Add(server);
+                server.ManagedAdmins.Add(existingAdmin);
+            }
+
+            return true;
+        }
+
+        public bool DeleteAdmin(int id)
+        {
+            var admin = GetAdminById(id);
+
+            if (admin == null || admin.ManagedServers.Any())
+            {
+                return false;
+            }
+
+            return Admins.Remove(admin);
         }
 
         private static IEnumerable<DirectoryItem> GetDirectoryAndChildren(DirectoryItem directory)
@@ -900,6 +948,58 @@ namespace NasIndexer.Repositories
             servers.Add(server3);
 
             return servers;
+        }
+
+        private static List<SystemAdmin> CreateSampleAdmins()
+        {
+            var admins = new List<SystemAdmin>
+            {
+                new SystemAdmin
+                {
+                    Id = 1,
+                    Username = "admin",
+                    Password = "hashed_password",
+                    Email = "admin@company.com",
+                    Role = "SuperAdmin",
+                    CreatedDate = DateTime.Now.AddYears(-1),
+                    LastLogin = DateTime.Now.AddHours(-1)
+                },
+                new SystemAdmin
+                {
+                    Id = 2,
+                    Username = "backup_admin",
+                    Password = "hashed_backup_password",
+                    Email = "backup.admin@company.com",
+                    Role = "BackupOperator",
+                    CreatedDate = DateTime.Now.AddMonths(-10),
+                    LastLogin = DateTime.Now.AddHours(-5)
+                },
+                new SystemAdmin
+                {
+                    Id = 3,
+                    Username = "dev_admin",
+                    Password = "hashed_dev_password",
+                    Email = "dev.admin@company.com",
+                    Role = "Developer",
+                    CreatedDate = DateTime.Now.AddMonths(-8),
+                    LastLogin = DateTime.Now.AddDays(-2)
+                }
+            };
+
+            var assignments = new[]
+            {
+                new { Admin = admins[0], Server = Servers[0] },
+                new { Admin = admins[1], Server = Servers[1] },
+                new { Admin = admins[2], Server = Servers[2] }
+            };
+
+            foreach (var assignment in assignments)
+            {
+                assignment.Admin.ManagedServers.Add(assignment.Server);
+                assignment.Server.ManagedAdmins.Add(assignment.Admin);
+            }
+
+            return admins;
         }
     }
 }

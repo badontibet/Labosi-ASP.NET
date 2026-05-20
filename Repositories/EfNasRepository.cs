@@ -675,6 +675,28 @@ namespace NasIndexer.Repositories
                 .ToList();
         }
 
+        public List<SystemAdmin> SearchAdmins(string? query)
+        {
+            var admins = context.SystemAdmins
+                .AsNoTracking()
+                .Include(admin => admin.ManagedServers)
+                .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(query))
+            {
+                var normalizedQuery = query.Trim();
+                admins = admins.Where(admin =>
+                    admin.Username.Contains(normalizedQuery) ||
+                    admin.Email.Contains(normalizedQuery) ||
+                    admin.Role.Contains(normalizedQuery) ||
+                    admin.ManagedServers.Any(server => server.Name.Contains(normalizedQuery)));
+            }
+
+            return admins
+                .OrderBy(admin => admin.Username)
+                .ToList();
+        }
+
         public SystemAdmin? GetAdminById(int id)
         {
             return context.SystemAdmins
@@ -682,6 +704,73 @@ namespace NasIndexer.Repositories
                 .Include(admin => admin.ManagedServers)
                     .ThenInclude(server => server.ScanJobs)
                 .FirstOrDefault(admin => admin.Id == id);
+        }
+
+        public SystemAdmin? GetAdminForEdit(int id)
+        {
+            return context.SystemAdmins
+                .AsNoTracking()
+                .Include(admin => admin.ManagedServers)
+                .FirstOrDefault(admin => admin.Id == id);
+        }
+
+        public bool SystemAdminHasManagedServers(int id)
+        {
+            return context.SystemAdmins.Any(admin =>
+                admin.Id == id &&
+                admin.ManagedServers.Any());
+        }
+
+        public void AddAdmin(SystemAdmin admin, IEnumerable<int> selectedNasServerIds)
+        {
+            foreach (var server in context.NasServers.Where(server => selectedNasServerIds.Contains(server.Id)))
+            {
+                admin.ManagedServers.Add(server);
+            }
+
+            context.SystemAdmins.Add(admin);
+            context.SaveChanges();
+        }
+
+        public bool UpdateAdmin(SystemAdmin admin, IEnumerable<int> selectedNasServerIds)
+        {
+            var existingAdmin = context.SystemAdmins
+                .Include(currentAdmin => currentAdmin.ManagedServers)
+                .FirstOrDefault(currentAdmin => currentAdmin.Id == admin.Id);
+
+            if (existingAdmin == null)
+            {
+                return false;
+            }
+
+            existingAdmin.Username = admin.Username;
+            existingAdmin.Email = admin.Email;
+            existingAdmin.Role = admin.Role;
+            existingAdmin.CreatedDate = admin.CreatedDate;
+            existingAdmin.LastLogin = admin.LastLogin;
+
+            existingAdmin.ManagedServers.Clear();
+            foreach (var server in context.NasServers.Where(server => selectedNasServerIds.Contains(server.Id)))
+            {
+                existingAdmin.ManagedServers.Add(server);
+            }
+
+            context.SaveChanges();
+            return true;
+        }
+
+        public bool DeleteAdmin(int id)
+        {
+            var admin = context.SystemAdmins.FirstOrDefault(currentAdmin => currentAdmin.Id == id);
+
+            if (admin == null || SystemAdminHasManagedServers(id))
+            {
+                return false;
+            }
+
+            context.SystemAdmins.Remove(admin);
+            context.SaveChanges();
+            return true;
         }
 
         private static void LinkChangeLogsToFiles(IEnumerable<FileItem> files)

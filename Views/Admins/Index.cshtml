@@ -13,12 +13,39 @@
 <section class="page-hero">
     <span class="eyebrow">Operators</span>
     <h1>System Admin Roster</h1>
-    <p>Read-only view of administrators and managed NAS servers from the EF database.</p>
+    <p>Search, create, and manage operator metadata and NAS server assignments without exposing stored secrets.</p>
+    <div class="hero-actions">
+        <a class="link-chip" asp-controller="Admins" asp-action="Create">Create admin</a>
+    </div>
 </section>
 
+@if (TempData["StatusMessage"] is string statusMessage)
+{
+    <div class="alert-success">@statusMessage</div>
+}
+
 <section class="panel">
+    <div class="panel-heading">
+        <div>
+            <h2>Search Admins</h2>
+            <p>Search by username, email, role, or managed server name.</p>
+        </div>
+        <div class="search-box">
+            <label for="admin-search">Search</label>
+            <input id="admin-search"
+                   class="form-control"
+                   type="search"
+                   placeholder="Username, email, role, or server..."
+                   autocomplete="off"
+                   data-lab4-search
+                   data-url="@Url.Action("Search", "Admins")"
+                   data-target="#admins-table-body"
+                   data-loading="#admin-search-loading" />
+            <span id="admin-search-loading" class="inline-loading" hidden>Loading...</span>
+        </div>
+    </div>
     <div class="table-wrap">
-        <table>
+        <table data-highlight-id="@TempData["HighlightAdminId"]">
             <thead>
                 <tr>
                     <th>Username</th>
@@ -26,21 +53,11 @@
                     <th>Role</th>
                     <th>Managed Servers</th>
                     <th>Last Login</th>
-                    <th>Details</th>
+                    <th>Actions</th>
                 </tr>
             </thead>
-            <tbody>
-                @foreach (var admin in Model)
-                {
-                    <tr>
-                        <td><strong>@admin.Username</strong></td>
-                        <td>@admin.Email</td>
-                        <td><span class="tag-chip">@admin.Role</span></td>
-                        <td>@admin.ManagedServers.Count</td>
-                        <td>@admin.LastLogin.ToString("yyyy-MM-dd HH:mm")</td>
-                        <td><a class="link-chip" asp-controller="Admins" asp-action="Details" asp-route-id="@admin.Id">Open admin</a></td>
-                    </tr>
-                }
+            <tbody id="admins-table-body">
+                <partial name="_AdminRows" model="Model" />
             </tbody>
         </table>
     </div>

@@ -16,6 +16,11 @@
     <span class="eyebrow">Operator profile</span>
     <h1>@Model.Username</h1>
     <span class="tag-chip">@Model.Role</span>
+    <div class="hero-actions">
+        <a class="link-chip" asp-controller="Admins" asp-action="Edit" asp-route-id="@Model.Id">Edit</a>
+        <a class="link-chip link-danger" asp-controller="Admins" asp-action="Delete" asp-route-id="@Model.Id">Delete</a>
+        <a class="link-chip" asp-controller="Admins" asp-action="Index">Back to admins</a>
+    </div>
 </section>
 
 <section class="metadata-grid">
@@ -23,6 +28,7 @@
     <article class="metadata-card"><span>Created</span><strong>@Model.CreatedDate.ToString("yyyy-MM-dd HH:mm")</strong></article>
     <article class="metadata-card"><span>Last Login</span><strong>@Model.LastLogin.ToString("yyyy-MM-dd HH:mm")</strong></article>
     <article class="metadata-card"><span>Managed Servers</span><strong>@Model.ManagedServers.Count</strong></article>
+    <article class="metadata-card"><span>Stored Secret</span><strong>Protected outside normal CRUD</strong></article>
 </section>
 
 <section class="panel">

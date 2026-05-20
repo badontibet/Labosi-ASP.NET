@@ -19,6 +19,7 @@ Scope: pre-implementation audit only. No Labos 4 application code has been imple
 - Etapa 4 implementation status: `FileItem` metadata CRUD implemented with AJAX search, form view model, required DirectoryItem autocomplete, checkbox FileTag selection, text DateTime partials, server-side validation, and delete blocking when change logs exist.
 - Etapa 5 implementation status: `FileChangeLog` read-only Index/Details/AJAX search implemented with ChangeType filter and no Create/Edit/Delete UI or POST CRUD endpoints.
 - Etapa 6 implementation status: `NasServer` restricted CRUD implemented with AJAX search, form view model, text LastScan partial, protected stored secret handling, and delete blocking when scan jobs or managed admins exist.
+- Etapa 7 implementation status: `SystemAdmin` restricted CRUD implemented with AJAX search, form view model, text CreatedDate/LastLogin partials, checkbox ManagedServers selection, protected stored secret handling, and delete blocking when managed servers exist.
 
 ## Entity Checklist
 
@@ -30,7 +31,7 @@ Scope: pre-implementation audit only. No Labos 4 application code has been imple
 | `FileItem` | `FileItemsController` | `Views/FileItems/Index.cshtml`, `Details.cshtml`, `Create.cshtml`, `Edit.cshtml`, `Delete.cshtml`, `_FileForm.cshtml`, `_FileRows.cshtml` | Allowed/Implemented metadata CRUD; Delete Restricted when change logs exist | Implemented with debounce and partial row refresh | Implemented server-side POST validation and blur validation for name/path/size/date/directory fields; tag IDs validated server-side | Implemented required `DirectoryItem` autocomplete and checkbox FileTag selection | `CreatedDate`, `ModifiedDate` via shared text DateTime partial | Restricted: change logs remain read-only and block delete |
 | `FileTag` | `TagsController` | `Views/Tags/Index.cshtml`, `Details.cshtml`, `Create.cshtml`, `Edit.cshtml`, `Delete.cshtml`, `_TagForm.cshtml`, `_TagRows.cshtml` | Allowed/Implemented full CRUD; Delete Restricted when connected to files | Implemented with debounce and partial row refresh | Implemented server-side POST validation and blur client validation for name, description length, and hex color | Planned optional use in future `FileItem` tag assignment | None | Restricted: many-to-many with files; delete remains blocked when any files use the tag |
 | `FileChangeLog` | `FileChangeLogsController` | `Views/FileChangeLogs/Index.cshtml`, `Details.cshtml`, `_FileChangeLogRows.cshtml` | Read-only Implemented: Index/Details/AJAX search only; Create/Edit/Delete forbidden | Implemented with debounce, partial row refresh, and ChangeType dropdown filter | Implemented for search/filter inputs only; no POST CRUD validation because no writes exist | Implemented `ChangeType` dropdown filter; FileItem filter handled through text search by file name/path | `Timestamp` display-only | Read-only: audit/history record; normal CRUD would weaken audit trail |
-| `SystemAdmin` | `AdminsController` | `Views/Admins/Index.cshtml`, `Details.cshtml` | Restricted/Planned CRUD; Needs implementation; no raw password workflow; Delete Restricted when assigned to servers | Planned; Needs implementation | Planned; Needs implementation for username/email/role/date/server rules; protect password | Planned managed `NasServer` multi-select/autocomplete and role dropdown | `CreatedDate`, `LastLogin` | Restricted: credential-like field and many-to-many server responsibility relationship |
+| `SystemAdmin` | `AdminsController` | `Views/Admins/Index.cshtml`, `Details.cshtml`, `Create.cshtml`, `Edit.cshtml`, `Delete.cshtml`, `_AdminForm.cshtml`, `_AdminRows.cshtml` | Restricted/Implemented CRUD; Delete Restricted when managed servers exist; no raw password workflow | Implemented with debounce and partial row refresh | Implemented server-side POST validation and blur client validation for username, email, role, CreatedDate, LastLogin, and selected server IDs | Implemented checkbox ManagedServers selection | `CreatedDate`, `LastLogin` via shared text DateTime partial | Restricted: credential-like field is not shown or edited; many-to-many server responsibility relationship blocks delete |
 
 ## Implementation Order Proposal
 
@@ -125,6 +126,43 @@ Review timestamp: 2026-05-20 23:45:00 +02:00
 | No native datepicker | PASS | Verification found no `type="date"` or `type="datetime-local"`. |
 | FileChangeLog read-only preserved | PASS | Verification found no FileChangeLog Create/Edit/Delete additions in FileChangeLog controller/views. |
 | No mass unrelated CRUD | PASS | Changes are scoped to NasServer plus reusable JS validation support. |
+| Build | PASS | `dotnet build` succeeds with 0 warnings and 0 errors. |
+
+## SystemAdmin Manual Test Checklist
+
+1. Open `/Admins` and search by username, email, role, or managed server name; results should update without a full page reload and rows should highlight.
+2. Open `/Admins/Create`, submit empty Username/Email/Role/CreatedDate/LastLogin or invalid Email, and confirm validation errors appear.
+3. Test CreatedDate/LastLogin date formats: `20.05.2026 14:30`, `05/20/2026 14:30`, and `2026-05-20 14:30`; invalid dates should fail.
+4. Set LastLogin before CreatedDate and confirm server/client validation blocks submit.
+5. Select one or more Managed NAS Server checkboxes and save; Details should show selected servers.
+6. Open `/Admins/Edit/{id}` and confirm existing metadata, date text, and selected server checkboxes are shown.
+7. Open `/Admins/Delete/{seeded-id}` for an admin with managed servers and confirm delete is blocked.
+8. Create a new admin with no managed servers and confirm Delete POST works after confirmation.
+9. Confirm no native browser datepicker appears.
+
+## SystemAdmin Restricted CRUD PASS/FAIL
+
+Review timestamp: 2026-05-21 00:15:00 +02:00
+
+| Requirement | Status | Evidence/notes |
+|---|---|---|
+| SystemAdmin Index AJAX search without full reload | PASS | `/Admins/Search` returns `_AdminRows`; Index uses `data-lab4-search`, loading indicator, partial tbody replacement, and row highlight. |
+| Search by username/email/role/server | PASS | Repository search checks username, email, role, and managed server name. |
+| Details preserved/improved | PASS | Details keeps profile, managed servers, and managed-server scan jobs, with Edit/Delete/Back actions. |
+| Create GET/POST | PASS | `AdminsController.Create` GET/POST uses `SystemAdminFormViewModel` and anti-forgery. |
+| Edit GET/POST | PASS | `AdminsController.Edit` GET/POST uses `SystemAdminFormViewModel`; repository updates safe metadata and server assignments. |
+| Delete GET/POST with confirmation | PASS | Delete view confirms deletion; POST uses `[ValidateAntiForgeryToken]`. |
+| Delete blocked when managed servers exist | PASS | `SystemAdminHasManagedServers` blocks delete when server assignments exist. |
+| Username required/bounded | PASS | Form model uses `[Required]` and `[StringLength(80)]`; client uses required/max length blur validation. |
+| Email required/valid/bounded | PASS | Form model uses `[Required]`, `[EmailAddress]`, and `[StringLength(160)]`; client uses email/max length blur validation. |
+| Role required/bounded | PASS | Form model uses `[Required]` and `[StringLength(80)]`; client uses required/max length blur validation. |
+| CreatedDate/LastLogin text DateTime validation | PASS | Shared `_DateTimePicker` is used for both fields; form model parses with `DateTimeInputParser`. |
+| LastLogin >= CreatedDate | PASS | Form model and controller validate the range; `lab4.js` checks the same pair on blur/submit. |
+| ManagedServers selection | PASS | Form uses checkbox list, Edit redisplays selected servers, and POST validates selected IDs exist. |
+| Stored secret field not exposed | PASS | Form model and Admins views omit the stored secret field; repository edit preserves existing value. |
+| No native datepicker | PASS | Verification found no `type="date"` or `type="datetime-local"`. |
+| FileChangeLog read-only preserved | PASS | Verification found no FileChangeLog Create/Edit/Delete additions in FileChangeLog controller/views. |
+| No mass unrelated CRUD | PASS | Changes are scoped to SystemAdmin/Admins plus reusable JS validation support. |
 | Build | PASS | `dotnet build` succeeds with 0 warnings and 0 errors. |
 
 ## FileChangeLog Read-only PASS/FAIL
