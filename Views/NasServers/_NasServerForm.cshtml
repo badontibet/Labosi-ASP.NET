@@ -1,0 +1,51 @@
+@model NasServerFormViewModel
+
+<div asp-validation-summary="ModelOnly" class="validation-summary"></div>
+
+<div class="form-grid">
+    <div class="form-field">
+        <label asp-for="Name"></label>
+        <input asp-for="Name" class="form-control" type="text" maxlength="120" data-lab4-validate="required" data-lab4-max-length="120" />
+        <span asp-validation-for="Name"></span>
+    </div>
+
+    <div class="form-field">
+        <label asp-for="IpAddress"></label>
+        <input asp-for="IpAddress" class="form-control" type="text" maxlength="45" data-lab4-validate="ipaddress" data-lab4-max-length="45" />
+        <span asp-validation-for="IpAddress"></span>
+    </div>
+</div>
+
+<div class="form-grid">
+    <div class="form-field">
+        <label asp-for="Port"></label>
+        <input asp-for="Port" class="form-control" type="number" min="1" max="65535" data-lab4-validate="integer-range" data-lab4-min="1" data-lab4-max="65535" />
+        <span asp-validation-for="Port"></span>
+    </div>
+
+    <div class="form-field">
+        <label asp-for="Username"></label>
+        <input asp-for="Username" class="form-control" type="text" maxlength="80" data-lab4-validate="optional-text" data-lab4-max-length="80" />
+        <small class="field-hint">Operational account label only. Secrets are managed outside this CRUD screen.</small>
+        <span asp-validation-for="Username"></span>
+    </div>
+</div>
+
+<div class="form-grid">
+    <partial name="_DateTimePicker" model="@(new DateTimePickerViewModel
+    {
+        FieldName = nameof(Model.LastScanText),
+        Label = "Last Scan",
+        Value = Model.LastScanText,
+        IsRequired = true
+    })" />
+
+    <div class="form-field">
+        <label asp-for="IsActive"></label>
+        <label class="checkbox-chip">
+            <input asp-for="IsActive" />
+            <span>Server is active</span>
+        </label>
+        <span asp-validation-for="IsActive"></span>
+    </div>
+</div>

@@ -24,13 +24,65 @@ namespace NasIndexer.Repositories
             {
                 servers = servers.Where(server =>
                     server.Name.Contains(query, StringComparison.OrdinalIgnoreCase) ||
-                    server.IpAddress.Contains(query, StringComparison.OrdinalIgnoreCase));
+                    server.IpAddress.Contains(query, StringComparison.OrdinalIgnoreCase) ||
+                    server.Port.ToString().Contains(query, StringComparison.OrdinalIgnoreCase) ||
+                    server.Username.Contains(query, StringComparison.OrdinalIgnoreCase) ||
+                    (server.IsActive ? "Active" : "Inactive").Contains(query, StringComparison.OrdinalIgnoreCase) ||
+                    server.ScanJobs.Any(scanJob => scanJob.RootPath.Contains(query, StringComparison.OrdinalIgnoreCase)));
             }
 
             return servers
                 .OrderBy(server => server.Name)
                 .Take(take)
                 .ToList();
+        }
+
+        public NasServer? GetNasServerForEdit(int id)
+        {
+            return GetNasServerById(id);
+        }
+
+        public bool NasServerHasScanJobsOrManagedAdmins(int id)
+        {
+            var server = GetNasServerById(id);
+            return server?.ScanJobs.Any() == true || server?.ManagedAdmins.Any() == true;
+        }
+
+        public void AddNasServer(NasServer server)
+        {
+            server.Id = Servers.Select(existingServer => existingServer.Id).DefaultIfEmpty().Max() + 1;
+            server.Password = string.Empty;
+            Servers.Add(server);
+        }
+
+        public bool UpdateNasServer(NasServer server)
+        {
+            var existingServer = GetNasServerById(server.Id);
+
+            if (existingServer == null)
+            {
+                return false;
+            }
+
+            existingServer.Name = server.Name;
+            existingServer.IpAddress = server.IpAddress;
+            existingServer.Port = server.Port;
+            existingServer.Username = server.Username;
+            existingServer.IsActive = server.IsActive;
+            existingServer.LastScan = server.LastScan;
+            return true;
+        }
+
+        public bool DeleteNasServer(int id)
+        {
+            var server = GetNasServerById(id);
+
+            if (server == null || NasServerHasScanJobsOrManagedAdmins(id))
+            {
+                return false;
+            }
+
+            return Servers.Remove(server);
         }
 
         public List<ScanJob> GetAllScanJobs()

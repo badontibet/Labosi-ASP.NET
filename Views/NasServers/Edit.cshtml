@@ -1,0 +1,35 @@
+@model NasServerFormViewModel
+
+@{
+    ViewData["Title"] = "Edit NAS Server";
+}
+
+<nav class="breadcrumb" aria-label="Breadcrumb">
+    <a asp-controller="Home" asp-action="Index">Dashboard</a>
+    <span>/</span>
+    <a asp-controller="NasServers" asp-action="Index">NAS Servers</a>
+    <span>/</span>
+    <span>Edit @Model.Name</span>
+</nav>
+
+<section class="page-hero">
+    <span class="eyebrow">Restricted CRUD</span>
+    <h1>Edit NAS Server</h1>
+    <p>Update server metadata. Stored secrets remain protected and are not part of this form.</p>
+</section>
+
+<section class="panel form-panel">
+    <form asp-controller="NasServers" asp-action="Edit" asp-route-id="@Model.Id" method="post" data-lab4-form>
+        @Html.AntiForgeryToken()
+        <input asp-for="Id" type="hidden" />
+        <partial name="_NasServerForm" model="Model" />
+        <div class="form-actions">
+            <button type="submit" class="primary-action">Save server</button>
+            <a class="link-chip" asp-controller="NasServers" asp-action="Details" asp-route-id="@Model.Id">Cancel</a>
+        </div>
+    </form>
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -103,6 +103,29 @@
             return false;
         }
 
+        if (rule === "ipaddress") {
+            if (!value) {
+                setMessage(input, "This field is required.");
+                return false;
+            }
+
+            if (!isValidIpAddress(value)) {
+                setMessage(input, "Enter a valid IPv4 or IPv6 address.");
+                return false;
+            }
+        }
+
+        if (rule === "integer-range") {
+            var integerValue = Number(value);
+            var minimum = Number(input.getAttribute("data-lab4-min"));
+            var maximum = Number(input.getAttribute("data-lab4-max"));
+
+            if (!Number.isInteger(integerValue) || integerValue < minimum || integerValue > maximum) {
+                setMessage(input, "Enter a value from " + minimum + " to " + maximum + ".");
+                return false;
+            }
+        }
+
         if (rule === "datetime") {
             var isRequired = input.getAttribute("data-lab4-required") === "true";
             if (isRequired && !value) {
@@ -209,6 +232,13 @@
                 }
             });
         });
+    }
+
+    function isValidIpAddress(value) {
+        var ipv4 = /^(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}$/;
+        var ipv6 = /^([0-9A-Fa-f]{1,4}:){2,7}[0-9A-Fa-f]{1,4}$/;
+
+        return ipv4.test(value) || ipv6.test(value);
     }
 
     function setupSearch() {

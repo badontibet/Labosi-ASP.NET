@@ -18,12 +18,13 @@ Scope: pre-implementation audit only. No Labos 4 application code has been imple
 - Etapa 3 implementation status: `DirectoryItem` CRUD implemented with AJAX search, form view model, optional ScanJob and parent directory autocomplete, text DateTime partials, server-side hierarchy validation, and delete blocking when child directories/files exist.
 - Etapa 4 implementation status: `FileItem` metadata CRUD implemented with AJAX search, form view model, required DirectoryItem autocomplete, checkbox FileTag selection, text DateTime partials, server-side validation, and delete blocking when change logs exist.
 - Etapa 5 implementation status: `FileChangeLog` read-only Index/Details/AJAX search implemented with ChangeType filter and no Create/Edit/Delete UI or POST CRUD endpoints.
+- Etapa 6 implementation status: `NasServer` restricted CRUD implemented with AJAX search, form view model, text LastScan partial, protected stored secret handling, and delete blocking when scan jobs or managed admins exist.
 
 ## Entity Checklist
 
 | Entity | Existing controller | Existing views | CRUD status | AJAX search status | Validation status | Dropdown/autocomplete need | DateTime fields | Risk |
 |---|---|---|---|---|---|---|---|---|
-| `NasServer` | `NasServersController` | `Views/NasServers/Index.cshtml`, `Details.cshtml` | Allowed/Planned full CRUD; Needs implementation; Delete Restricted when related data exists | Planned; Needs implementation | Planned; Needs implementation for every POST; protect credential-like fields | Planned autocomplete/multi-select for managed admins if relationship editing is included | `LastScan` | Restricted: deleting server could cascade scan jobs; password must not be exposed; port/IP validation needed |
+| `NasServer` | `NasServersController` | `Views/NasServers/Index.cshtml`, `Details.cshtml`, `Create.cshtml`, `Edit.cshtml`, `Delete.cshtml`, `_NasServerForm.cshtml`, `_NasServerRows.cshtml` | Restricted/Implemented CRUD; Delete Restricted when scan jobs or managed admins exist | Implemented with debounce and partial row refresh | Implemented server-side POST validation and blur client validation for name, IP address, port, username length, and LastScan text | Managed admin assignment remains out of scope; scan job selection is handled by ScanJob CRUD | `LastScan` via shared text DateTime partial | Restricted: stored secret field is not shown or edited; delete remains blocked when relationships exist |
 | `ScanJob` | `ScanJobsController` | `Views/ScanJobs/Index.cshtml`, `Details.cshtml`, `Create.cshtml`, `Edit.cshtml`, `Delete.cshtml`, `_ScanJobForm.cshtml`, `_ScanJobRows.cshtml` | Allowed/Implemented full CRUD as Labos 4 gold example; Delete Restricted when directories exist | Implemented with debounce and partial row refresh | Implemented server-side POST validation and blur client validation for NAS server, DateTime, counts, and path | Implemented `NasServer` autocomplete and `ScanStatus` dropdown | `StartTime`, nullable `EndTime` via shared text DateTime partial | Restricted: delete remains blocked when scanned directories exist; continue using this as pattern for later entities |
 | `DirectoryItem` | `DirectoriesController` | `Views/Directories/Index.cshtml`, `Details.cshtml`, `Create.cshtml`, `Edit.cshtml`, `Delete.cshtml`, `_DirectoryForm.cshtml`, `_DirectoryRows.cshtml` | Allowed/Implemented full CRUD; Delete Restricted when child directories/files exist | Implemented with debounce and partial row refresh | Implemented server-side POST validation and blur validation for name/path/date fields; server-side self-reference and cycle checks | Implemented optional `ScanJob` and parent directory autocomplete/dropdown | `CreatedDate`, `ModifiedDate` via shared text DateTime partial | Restricted: self-reference/cycle validation enforced; delete remains blocked when child directories or files exist |
 | `FileItem` | `FileItemsController` | `Views/FileItems/Index.cshtml`, `Details.cshtml`, `Create.cshtml`, `Edit.cshtml`, `Delete.cshtml`, `_FileForm.cshtml`, `_FileRows.cshtml` | Allowed/Implemented metadata CRUD; Delete Restricted when change logs exist | Implemented with debounce and partial row refresh | Implemented server-side POST validation and blur validation for name/path/size/date/directory fields; tag IDs validated server-side | Implemented required `DirectoryItem` autocomplete and checkbox FileTag selection | `CreatedDate`, `ModifiedDate` via shared text DateTime partial | Restricted: change logs remain read-only and block delete |
@@ -91,6 +92,40 @@ Scope: pre-implementation audit only. No Labos 4 application code has been imple
 4. Open `/FileChangeLogs/Details/{id}` from an `Open` row link and confirm file, directory, timestamp, change type, user, old value, and new value are visible.
 5. Confirm no Create, Edit, or Delete links/forms appear on FileChangeLog Index or Details.
 6. Confirm no native browser datepicker appears.
+
+## NasServer Manual Test Checklist
+
+1. Open `/NasServers` and search by name, IP address, port, username, status, or scan root path; results should update without a full page reload and rows should highlight.
+2. Open `/NasServers/Create`, submit empty Name/IP/LastScan or invalid Port/IP, and confirm validation errors appear.
+3. Test LastScan date formats: `20.05.2026 14:30`, `05/20/2026 14:30`, and `2026-05-20 14:30`; invalid dates should fail.
+4. Open `/NasServers/Edit/{id}` and confirm existing metadata is shown while stored secrets are not shown or editable.
+5. Open `/NasServers/Delete/{seeded-id}` for a server with scan jobs or managed admins and confirm delete is blocked.
+6. Create a new server with no scan jobs/admins and confirm Delete POST works after confirmation.
+7. Confirm no native browser datepicker appears.
+
+## NasServer Restricted CRUD PASS/FAIL
+
+Review timestamp: 2026-05-20 23:45:00 +02:00
+
+| Requirement | Status | Evidence/notes |
+|---|---|---|
+| NasServer Index AJAX search without full reload | PASS | `/NasServers/Search` returns `_NasServerRows`; Index uses `data-lab4-search`, loading indicator, partial tbody replacement, and row highlight. |
+| Search by name/IP/port/status/path | PASS | Repository search checks name, IP address, parsed port, username, active/inactive status, and scan job root path. |
+| Details preserved/improved | PASS | Details keeps server metadata, scan jobs, and directories, with Edit/Delete/Back actions. |
+| Create GET/POST | PASS | `NasServersController.Create` GET/POST uses `NasServerFormViewModel` and anti-forgery. |
+| Edit GET/POST | PASS | `NasServersController.Edit` GET/POST uses `NasServerFormViewModel`; repository updates editable scalar metadata only. |
+| Delete GET/POST with confirmation | PASS | Delete view confirms deletion; POST uses `[ValidateAntiForgeryToken]`. |
+| Delete blocked when related data exists | PASS | `NasServerHasScanJobsOrManagedAdmins` blocks delete when scan jobs or managed admins exist. |
+| Name required/bounded | PASS | Form model uses `[Required]` and `[StringLength(120)]`; client uses required/max length blur validation. |
+| IP address required/valid | PASS | Form model uses `IPAddress.TryParse`; client uses `ipaddress` blur validation. |
+| Port range 1-65535 | PASS | Form model uses `[Range(1, 65535)]`; client uses `integer-range` blur validation. |
+| Username optional/bounded | PASS | Form model uses `[StringLength(80)]`; client uses max length validation. |
+| LastScan text DateTime validation | PASS | Shared `_DateTimePicker` is used; form model parses with `DateTimeInputParser`. |
+| Stored secret field not exposed | PASS | Form model and views omit the stored secret field; repository edit preserves existing value. |
+| No native datepicker | PASS | Verification found no `type="date"` or `type="datetime-local"`. |
+| FileChangeLog read-only preserved | PASS | Verification found no FileChangeLog Create/Edit/Delete additions in FileChangeLog controller/views. |
+| No mass unrelated CRUD | PASS | Changes are scoped to NasServer plus reusable JS validation support. |
+| Build | PASS | `dotnet build` succeeds with 0 warnings and 0 errors. |
 
 ## FileChangeLog Read-only PASS/FAIL
 

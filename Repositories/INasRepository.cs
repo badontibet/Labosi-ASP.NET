@@ -7,6 +7,11 @@ namespace NasIndexer.Repositories
         List<NasServer> GetAllNasServers();
         NasServer? GetNasServerById(int id);
         List<NasServer> SearchNasServers(string? query, int take = 10);
+        NasServer? GetNasServerForEdit(int id);
+        bool NasServerHasScanJobsOrManagedAdmins(int id);
+        void AddNasServer(NasServer server);
+        bool UpdateNasServer(NasServer server);
+        bool DeleteNasServer(int id);
         List<ScanJob> GetAllScanJobs();
         List<ScanJob> SearchScanJobs(string? query);
         ScanJob? GetScanJobById(int id);

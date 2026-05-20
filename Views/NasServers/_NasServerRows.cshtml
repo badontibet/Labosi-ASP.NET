@@ -1,0 +1,36 @@
+@model List<NasServer>
+
+@if (Model.Any())
+{
+    @foreach (var server in Model)
+    {
+        <tr data-lab4-row data-row-id="@server.Id">
+            <td><strong>@server.Name</strong></td>
+            <td><code>@server.IpAddress:@server.Port</code></td>
+            <td>
+                @if (server.IsActive)
+                {
+                    <span class="status-badge status-good">Active</span>
+                }
+                else
+                {
+                    <span class="status-badge status-bad">Inactive</span>
+                }
+            </td>
+            <td>@server.LastScan.ToString("yyyy-MM-dd HH:mm")</td>
+            <td>@server.Username</td>
+            <td>@server.ScanJobs.Count jobs / @server.ManagedAdmins.Count admins</td>
+            <td class="action-cell">
+                <a class="link-chip" asp-controller="NasServers" asp-action="Details" asp-route-id="@server.Id">Open</a>
+                <a class="link-chip" asp-controller="NasServers" asp-action="Edit" asp-route-id="@server.Id">Edit</a>
+                <a class="link-chip link-danger" asp-controller="NasServers" asp-action="Delete" asp-route-id="@server.Id">Delete</a>
+            </td>
+        </tr>
+    }
+}
+else
+{
+    <tr>
+        <td colspan="7" class="empty-cell">No NAS servers match the current search.</td>
+    </tr>
+}

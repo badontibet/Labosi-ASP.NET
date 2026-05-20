@@ -18,6 +18,7 @@ namespace NasIndexer.Repositories
             return context.NasServers
                 .AsNoTracking()
                 .Include(server => server.ScanJobs)
+                .Include(server => server.ManagedAdmins)
                 .OrderBy(server => server.Name)
                 .ToList();
         }
@@ -28,25 +29,93 @@ namespace NasIndexer.Repositories
                 .AsNoTracking()
                 .Include(server => server.ScanJobs)
                     .ThenInclude(scanJob => scanJob.ScannedDirectories)
+                .Include(server => server.ManagedAdmins)
                 .FirstOrDefault(server => server.Id == id);
         }
 
         public List<NasServer> SearchNasServers(string? query, int take = 10)
         {
-            var servers = context.NasServers.AsNoTracking();
+            var servers = context.NasServers
+                .AsNoTracking()
+                .Include(server => server.ScanJobs)
+                .Include(server => server.ManagedAdmins)
+                .AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(query))
             {
                 var normalizedQuery = query.Trim();
+                var hasPortQuery = int.TryParse(normalizedQuery, out var portQuery);
+                var matchesActive = "Active".Contains(normalizedQuery, StringComparison.OrdinalIgnoreCase);
+                var matchesInactive = "Inactive".Contains(normalizedQuery, StringComparison.OrdinalIgnoreCase);
+
                 servers = servers.Where(server =>
                     server.Name.Contains(normalizedQuery) ||
-                    server.IpAddress.Contains(normalizedQuery));
+                    server.IpAddress.Contains(normalizedQuery) ||
+                    (hasPortQuery && server.Port == portQuery) ||
+                    server.Username.Contains(normalizedQuery) ||
+                    (matchesActive && server.IsActive) ||
+                    (matchesInactive && !server.IsActive) ||
+                    server.ScanJobs.Any(scanJob => scanJob.RootPath.Contains(normalizedQuery)));
             }
 
             return servers
                 .OrderBy(server => server.Name)
                 .Take(take)
                 .ToList();
+        }
+
+        public NasServer? GetNasServerForEdit(int id)
+        {
+            return context.NasServers
+                .AsNoTracking()
+                .FirstOrDefault(server => server.Id == id);
+        }
+
+        public bool NasServerHasScanJobsOrManagedAdmins(int id)
+        {
+            return context.NasServers.Any(server =>
+                server.Id == id &&
+                (server.ScanJobs.Any() || server.ManagedAdmins.Any()));
+        }
+
+        public void AddNasServer(NasServer server)
+        {
+            context.NasServers.Add(server);
+            context.SaveChanges();
+        }
+
+        public bool UpdateNasServer(NasServer server)
+        {
+            var existingServer = context.NasServers.FirstOrDefault(currentServer => currentServer.Id == server.Id);
+
+            if (existingServer == null)
+            {
+                return false;
+            }
+
+            existingServer.Name = server.Name;
+            existingServer.IpAddress = server.IpAddress;
+            existingServer.Port = server.Port;
+            existingServer.Username = server.Username;
+            existingServer.IsActive = server.IsActive;
+            existingServer.LastScan = server.LastScan;
+
+            context.SaveChanges();
+            return true;
+        }
+
+        public bool DeleteNasServer(int id)
+        {
+            var server = context.NasServers.FirstOrDefault(currentServer => currentServer.Id == id);
+
+            if (server == null || NasServerHasScanJobsOrManagedAdmins(id))
+            {
+                return false;
+            }
+
+            context.NasServers.Remove(server);
+            context.SaveChanges();
+            return true;
         }
 
         public List<ScanJob> GetAllScanJobs()

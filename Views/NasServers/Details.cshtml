@@ -23,13 +23,20 @@
     {
         <span class="status-badge status-bad">Inactive</span>
     }
+    <div class="hero-actions">
+        <a class="link-chip" asp-controller="NasServers" asp-action="Edit" asp-route-id="@Model.Id">Edit</a>
+        <a class="link-chip link-danger" asp-controller="NasServers" asp-action="Delete" asp-route-id="@Model.Id">Delete</a>
+        <a class="link-chip" asp-controller="NasServers" asp-action="Index">Back to servers</a>
+    </div>
 </section>
 
 <section class="metadata-grid">
     <article class="metadata-card"><span>Address</span><strong>@Model.IpAddress:@Model.Port</strong></article>
-    <article class="metadata-card"><span>Username</span><strong>@Model.Username</strong></article>
+    <article class="metadata-card"><span>Username</span><strong>@(string.IsNullOrWhiteSpace(Model.Username) ? "Not set" : Model.Username)</strong></article>
     <article class="metadata-card"><span>Last Scan</span><strong>@Model.LastScan.ToString("yyyy-MM-dd HH:mm")</strong></article>
     <article class="metadata-card"><span>Scan Jobs</span><strong>@Model.ScanJobs.Count</strong></article>
+    <article class="metadata-card"><span>Managed Admins</span><strong>@Model.ManagedAdmins.Count</strong></article>
+    <article class="metadata-card"><span>Stored Secret</span><strong>Protected outside normal CRUD</strong></article>
 </section>
 
 <section class="panel">
