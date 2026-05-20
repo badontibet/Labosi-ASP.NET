@@ -20,7 +20,13 @@ namespace NasIndexer.Repositories
         List<FileItem> GetAllFiles();
         FileItem? GetFileById(int id);
         List<FileTag> GetAllTags();
+        List<FileTag> SearchTags(string? query);
         FileTag? GetTagById(int id);
+        FileTag? GetTagForEdit(int id);
+        bool FileTagHasFiles(int id);
+        void AddTag(FileTag tag);
+        bool UpdateTag(FileTag tag);
+        bool DeleteTag(int id);
         List<SystemAdmin> GetAllAdmins();
         SystemAdmin? GetAdminById(int id);
     }

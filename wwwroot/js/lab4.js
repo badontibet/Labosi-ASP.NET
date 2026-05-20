@@ -87,6 +87,17 @@
             return false;
         }
 
+        var maxLength = Number(input.getAttribute("data-lab4-max-length"));
+        if (maxLength && value.length > maxLength) {
+            setMessage(input, "Use " + maxLength + " characters or fewer.");
+            return false;
+        }
+
+        if (rule === "hexcolor" && value && !/^#[0-9A-Fa-f]{6}$/.test(value)) {
+            setMessage(input, "Use a hex color like #AABBCC.");
+            return false;
+        }
+
         if (rule === "datetime") {
             var isRequired = input.getAttribute("data-lab4-required") === "true";
             if (isRequired && !value) {
@@ -140,6 +151,13 @@
             input.addEventListener("blur", function () {
                 validateInput(input);
             });
+
+            if (input.hasAttribute("data-lab4-color-input")) {
+                input.addEventListener("input", function () {
+                    updateColorPreview(input);
+                });
+                updateColorPreview(input);
+            }
         });
 
         document.querySelectorAll("[data-lab4-form]").forEach(function (form) {
@@ -167,6 +185,8 @@
             }
 
             var runSearch = debounce(function () {
+                var table = target.closest("table");
+                var columnCount = table ? table.querySelectorAll("thead th").length : 1;
                 if (loading) {
                     loading.hidden = false;
                 }
@@ -185,7 +205,7 @@
                         highlightRows(target);
                     })
                     .catch(function () {
-                        target.innerHTML = "<tr><td colspan=\"7\" class=\"empty-cell\">Search failed. Try again.</td></tr>";
+                        target.innerHTML = "<tr><td colspan=\"" + columnCount + "\" class=\"empty-cell\">Search failed. Try again.</td></tr>";
                     })
                     .finally(function () {
                         if (loading) {
@@ -312,11 +332,24 @@
     function setupDeleteConfirmation() {
         document.querySelectorAll("[data-lab4-delete-form]").forEach(function (form) {
             form.addEventListener("submit", function (event) {
-                if (!window.confirm("Delete this scan job?")) {
+                var message = form.getAttribute("data-confirm-message") || "Delete this item?";
+                if (!window.confirm(message)) {
                     event.preventDefault();
                 }
             });
         });
+    }
+
+    function updateColorPreview(input) {
+        var root = input.closest(".form-field");
+        var preview = root ? root.querySelector("[data-lab4-color-preview]") : null;
+        var value = input.value.trim();
+
+        if (!preview) {
+            return;
+        }
+
+        preview.style.backgroundColor = /^#[0-9A-Fa-f]{6}$/.test(value) ? value : "transparent";
     }
 
     function highlightRows(root) {

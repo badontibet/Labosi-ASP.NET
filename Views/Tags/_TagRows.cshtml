@@ -1,0 +1,25 @@
+@model List<FileTag>
+
+@if (Model.Any())
+{
+    @foreach (var tag in Model)
+    {
+        <tr data-lab4-row data-row-id="@tag.Id">
+            <td><span class="tag-chip">@tag.Name</span></td>
+            <td>@tag.Description</td>
+            <td><span class="swatch" style="background-color:@tag.Color"></span> @tag.Color</td>
+            <td>@tag.Files.Count</td>
+            <td class="action-cell">
+                <a class="link-chip" asp-controller="Tags" asp-action="Details" asp-route-id="@tag.Id">Open</a>
+                <a class="link-chip" asp-controller="Tags" asp-action="Edit" asp-route-id="@tag.Id">Edit</a>
+                <a class="link-chip link-danger" asp-controller="Tags" asp-action="Delete" asp-route-id="@tag.Id">Delete</a>
+            </td>
+        </tr>
+    }
+}
+else
+{
+    <tr>
+        <td colspan="5" class="empty-cell">No tags match the current search.</td>
+    </tr>
+}

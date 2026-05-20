@@ -13,32 +13,50 @@
 <section class="page-hero">
     <span class="eyebrow">Classification</span>
     <h1>File Tag Registry</h1>
-    <p>Read-only labels connected to indexed files.</p>
+    <p>Search, create, and manage reusable labels connected to indexed files.</p>
+    <div class="hero-actions">
+        <a class="link-chip" asp-controller="Tags" asp-action="Create">Create tag</a>
+    </div>
 </section>
 
+@if (TempData["StatusMessage"] is string statusMessage)
+{
+    <div class="alert-success">@statusMessage</div>
+}
+
 <section class="panel">
+    <div class="panel-heading">
+        <div>
+            <h2>Search Tags</h2>
+            <p>Search by name, description, or color. Results update without a full page reload.</p>
+        </div>
+        <div class="search-box">
+            <label for="tag-search">Search</label>
+            <input id="tag-search"
+                   class="form-control"
+                   type="search"
+                   placeholder="Name, description, or #AABBCC..."
+                   autocomplete="off"
+                   data-lab4-search
+                   data-url="@Url.Action("Search", "Tags")"
+                   data-target="#tags-table-body"
+                   data-loading="#tag-search-loading" />
+            <span id="tag-search-loading" class="inline-loading" hidden>Loading...</span>
+        </div>
+    </div>
     <div class="table-wrap">
-        <table>
+        <table data-highlight-id="@TempData["HighlightTagId"]">
             <thead>
                 <tr>
                     <th>Name</th>
                     <th>Description</th>
                     <th>Color</th>
                     <th>Files</th>
-                    <th>Details</th>
+                    <th>Actions</th>
                 </tr>
             </thead>
-            <tbody>
-                @foreach (var tag in Model)
-                {
-                    <tr>
-                        <td><span class="tag-chip">@tag.Name</span></td>
-                        <td>@tag.Description</td>
-                        <td><span class="swatch" style="background-color:@tag.Color"></span> @tag.Color</td>
-                        <td>@tag.Files.Count</td>
-                        <td><a class="link-chip" asp-controller="Tags" asp-action="Details" asp-route-id="@tag.Id">Open tag</a></td>
-                    </tr>
-                }
+            <tbody id="tags-table-body">
+                <partial name="_TagRows" model="Model" />
             </tbody>
         </table>
     </div>

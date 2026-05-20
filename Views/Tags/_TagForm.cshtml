@@ -1,0 +1,25 @@
+@model FileTagFormViewModel
+
+<div asp-validation-summary="ModelOnly" class="validation-summary"></div>
+
+<div class="form-field">
+    <label asp-for="Name"></label>
+    <input asp-for="Name" class="form-control" type="text" maxlength="60" data-lab4-validate="required" data-lab4-max-length="60" />
+    <span asp-validation-for="Name"></span>
+</div>
+
+<div class="form-field">
+    <label asp-for="Description"></label>
+    <textarea asp-for="Description" class="form-control" rows="4" maxlength="220" data-lab4-validate="maxlength" data-lab4-max-length="220"></textarea>
+    <span asp-validation-for="Description"></span>
+</div>
+
+<div class="form-field">
+    <label asp-for="Color"></label>
+    <div class="color-input-row">
+        <input asp-for="Color" class="form-control" type="text" placeholder="#AABBCC" maxlength="7" data-lab4-validate="hexcolor" data-lab4-color-input />
+        <span class="swatch color-preview" style="background-color:@Model.Color" data-lab4-color-preview></span>
+    </div>
+    <small class="field-hint">Optional. Use a 6-digit hex color such as #59B8FF.</small>
+    <span asp-validation-for="Color"></span>
+</div>

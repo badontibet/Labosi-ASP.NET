@@ -205,12 +205,83 @@ namespace NasIndexer.Repositories
                 .ToList();
         }
 
+        public List<FileTag> SearchTags(string? query)
+        {
+            var tags = context.FileTags
+                .AsNoTracking()
+                .Include(tag => tag.Files)
+                .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(query))
+            {
+                var normalizedQuery = query.Trim();
+                tags = tags.Where(tag =>
+                    tag.Name.Contains(normalizedQuery) ||
+                    tag.Description.Contains(normalizedQuery) ||
+                    tag.Color.Contains(normalizedQuery));
+            }
+
+            return tags
+                .OrderBy(tag => tag.Name)
+                .ToList();
+        }
+
         public FileTag? GetTagById(int id)
         {
             return context.FileTags
                 .AsNoTracking()
                 .Include(tag => tag.Files)
                 .FirstOrDefault(tag => tag.Id == id);
+        }
+
+        public FileTag? GetTagForEdit(int id)
+        {
+            return context.FileTags
+                .AsNoTracking()
+                .FirstOrDefault(tag => tag.Id == id);
+        }
+
+        public bool FileTagHasFiles(int id)
+        {
+            return context.FileTags
+                .Any(tag => tag.Id == id && tag.Files.Any());
+        }
+
+        public void AddTag(FileTag tag)
+        {
+            context.FileTags.Add(tag);
+            context.SaveChanges();
+        }
+
+        public bool UpdateTag(FileTag tag)
+        {
+            var existingTag = context.FileTags.FirstOrDefault(currentTag => currentTag.Id == tag.Id);
+
+            if (existingTag == null)
+            {
+                return false;
+            }
+
+            existingTag.Name = tag.Name;
+            existingTag.Description = tag.Description;
+            existingTag.Color = tag.Color;
+
+            context.SaveChanges();
+            return true;
+        }
+
+        public bool DeleteTag(int id)
+        {
+            var tag = context.FileTags.FirstOrDefault(currentTag => currentTag.Id == id);
+
+            if (tag == null || FileTagHasFiles(id))
+            {
+                return false;
+            }
+
+            context.FileTags.Remove(tag);
+            context.SaveChanges();
+            return true;
         }
 
         public List<SystemAdmin> GetAllAdmins()

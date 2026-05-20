@@ -156,9 +156,68 @@ namespace NasIndexer.Repositories
                 .ToList();
         }
 
+        public List<FileTag> SearchTags(string? query)
+        {
+            var tags = GetAllTags().AsEnumerable();
+
+            if (!string.IsNullOrWhiteSpace(query))
+            {
+                tags = tags.Where(tag =>
+                    tag.Name.Contains(query, StringComparison.OrdinalIgnoreCase) ||
+                    tag.Description.Contains(query, StringComparison.OrdinalIgnoreCase) ||
+                    tag.Color.Contains(query, StringComparison.OrdinalIgnoreCase));
+            }
+
+            return tags
+                .OrderBy(tag => tag.Name)
+                .ToList();
+        }
+
         public FileTag? GetTagById(int id)
         {
             return GetAllTags().FirstOrDefault(tag => tag.Id == id);
+        }
+
+        public FileTag? GetTagForEdit(int id)
+        {
+            return GetTagById(id);
+        }
+
+        public bool FileTagHasFiles(int id)
+        {
+            return GetTagById(id)?.Files.Any() == true;
+        }
+
+        public void AddTag(FileTag tag)
+        {
+            tag.Id = GetAllTags().Select(existingTag => existingTag.Id).DefaultIfEmpty().Max() + 1;
+        }
+
+        public bool UpdateTag(FileTag tag)
+        {
+            var existingTag = GetTagById(tag.Id);
+
+            if (existingTag == null)
+            {
+                return false;
+            }
+
+            existingTag.Name = tag.Name;
+            existingTag.Description = tag.Description;
+            existingTag.Color = tag.Color;
+            return true;
+        }
+
+        public bool DeleteTag(int id)
+        {
+            var tag = GetTagById(id);
+
+            if (tag == null || tag.Files.Any())
+            {
+                return false;
+            }
+
+            return true;
         }
 
         public List<SystemAdmin> GetAllAdmins()
