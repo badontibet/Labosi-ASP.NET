@@ -1,0 +1,28 @@
+@model List<FileChangeLog>
+
+@if (Model.Any())
+{
+    @foreach (var changeLog in Model)
+    {
+        <tr data-lab4-row data-row-id="@changeLog.Id">
+            <td>@changeLog.Timestamp.ToString("yyyy-MM-dd HH:mm")</td>
+            <td>
+                <strong>@changeLog.File.Name</strong>
+                <div class="field-hint">@changeLog.File.Path</div>
+            </td>
+            <td><span class="status-badge">@changeLog.ChangeType</span></td>
+            <td>@changeLog.User</td>
+            <td>@(string.IsNullOrWhiteSpace(changeLog.OldValue) ? "No previous value" : changeLog.OldValue)</td>
+            <td>@(string.IsNullOrWhiteSpace(changeLog.NewValue) ? "No new value" : changeLog.NewValue)</td>
+            <td class="action-cell">
+                <a class="link-chip" asp-controller="FileChangeLogs" asp-action="Details" asp-route-id="@changeLog.Id">Open</a>
+            </td>
+        </tr>
+    }
+}
+else
+{
+    <tr>
+        <td colspan="7" class="empty-cell">No audit records match the current filters.</td>
+    </tr>
+}

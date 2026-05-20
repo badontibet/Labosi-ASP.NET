@@ -34,6 +34,9 @@ namespace NasIndexer.Repositories
         void AddFile(FileItem file, IEnumerable<int> selectedTagIds);
         bool UpdateFile(FileItem file, IEnumerable<int> selectedTagIds);
         bool DeleteFile(int id);
+        List<FileChangeLog> GetAllFileChangeLogs();
+        List<FileChangeLog> SearchFileChangeLogs(string? query, ChangeType? changeType);
+        FileChangeLog? GetFileChangeLogById(int id);
         List<FileTag> GetAllTags();
         List<FileTag> SearchTags(string? query);
         FileTag? GetTagById(int id);

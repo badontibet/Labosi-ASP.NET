@@ -1,0 +1,42 @@
+@model FileChangeLog
+
+@{
+    ViewData["Title"] = $"Change Log #{Model.Id}";
+}
+
+<nav class="breadcrumb" aria-label="Breadcrumb">
+    <a asp-controller="Home" asp-action="Index">Dashboard</a>
+    <span>/</span>
+    <a asp-controller="FileChangeLogs" asp-action="Index">File Change Logs</a>
+    <span>/</span>
+    <span>#@Model.Id</span>
+</nav>
+
+<section class="page-hero">
+    <span class="eyebrow">Read-only audit record</span>
+    <h1>Change Log #@Model.Id</h1>
+    <p>This audit/history entry is immutable in the Labos 4 UI. Use the file metadata screen for editable file fields.</p>
+    <div class="hero-actions">
+        <a class="link-chip" asp-controller="FileItems" asp-action="Details" asp-route-id="@Model.FileId">Open file</a>
+        <a class="link-chip" asp-controller="FileChangeLogs" asp-action="Index">Back to audit log</a>
+    </div>
+</section>
+
+<section class="metadata-grid">
+    <article class="metadata-card"><span>Timestamp</span><strong>@Model.Timestamp.ToString("yyyy-MM-dd HH:mm")</strong></article>
+    <article class="metadata-card"><span>Change Type</span><strong>@Model.ChangeType</strong></article>
+    <article class="metadata-card"><span>User</span><strong>@Model.User</strong></article>
+    <article class="metadata-card"><span>File</span><strong><a asp-controller="FileItems" asp-action="Details" asp-route-id="@Model.FileId">@Model.File.Name</a></strong></article>
+    <article class="metadata-card"><span>Directory</span><strong><a asp-controller="Directories" asp-action="Details" asp-route-id="@Model.File.DirectoryId">@Model.File.Directory.Name</a></strong></article>
+    <article class="metadata-card"><span>File Path</span><strong>@Model.File.Path</strong></article>
+</section>
+
+<section class="panel">
+    <h2>Value Snapshot</h2>
+    <dl class="details-list">
+        <dt>Old Value</dt>
+        <dd>@(string.IsNullOrWhiteSpace(Model.OldValue) ? "No previous value" : Model.OldValue)</dd>
+        <dt>New Value</dt>
+        <dd>@(string.IsNullOrWhiteSpace(Model.NewValue) ? "No new value" : Model.NewValue)</dd>
+    </dl>
+</section>

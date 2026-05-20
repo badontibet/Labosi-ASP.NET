@@ -17,6 +17,7 @@ Scope: pre-implementation audit only. No Labos 4 application code has been imple
 - Etapa 2 implementation status: `FileTag` CRUD implemented with AJAX search, form view model, server-side POST validation, blur client validation, hex color validation, and delete blocking when connected files exist.
 - Etapa 3 implementation status: `DirectoryItem` CRUD implemented with AJAX search, form view model, optional ScanJob and parent directory autocomplete, text DateTime partials, server-side hierarchy validation, and delete blocking when child directories/files exist.
 - Etapa 4 implementation status: `FileItem` metadata CRUD implemented with AJAX search, form view model, required DirectoryItem autocomplete, checkbox FileTag selection, text DateTime partials, server-side validation, and delete blocking when change logs exist.
+- Etapa 5 implementation status: `FileChangeLog` read-only Index/Details/AJAX search implemented with ChangeType filter and no Create/Edit/Delete UI or POST CRUD endpoints.
 
 ## Entity Checklist
 
@@ -27,7 +28,7 @@ Scope: pre-implementation audit only. No Labos 4 application code has been imple
 | `DirectoryItem` | `DirectoriesController` | `Views/Directories/Index.cshtml`, `Details.cshtml`, `Create.cshtml`, `Edit.cshtml`, `Delete.cshtml`, `_DirectoryForm.cshtml`, `_DirectoryRows.cshtml` | Allowed/Implemented full CRUD; Delete Restricted when child directories/files exist | Implemented with debounce and partial row refresh | Implemented server-side POST validation and blur validation for name/path/date fields; server-side self-reference and cycle checks | Implemented optional `ScanJob` and parent directory autocomplete/dropdown | `CreatedDate`, `ModifiedDate` via shared text DateTime partial | Restricted: self-reference/cycle validation enforced; delete remains blocked when child directories or files exist |
 | `FileItem` | `FileItemsController` | `Views/FileItems/Index.cshtml`, `Details.cshtml`, `Create.cshtml`, `Edit.cshtml`, `Delete.cshtml`, `_FileForm.cshtml`, `_FileRows.cshtml` | Allowed/Implemented metadata CRUD; Delete Restricted when change logs exist | Implemented with debounce and partial row refresh | Implemented server-side POST validation and blur validation for name/path/size/date/directory fields; tag IDs validated server-side | Implemented required `DirectoryItem` autocomplete and checkbox FileTag selection | `CreatedDate`, `ModifiedDate` via shared text DateTime partial | Restricted: change logs remain read-only and block delete |
 | `FileTag` | `TagsController` | `Views/Tags/Index.cshtml`, `Details.cshtml`, `Create.cshtml`, `Edit.cshtml`, `Delete.cshtml`, `_TagForm.cshtml`, `_TagRows.cshtml` | Allowed/Implemented full CRUD; Delete Restricted when connected to files | Implemented with debounce and partial row refresh | Implemented server-side POST validation and blur client validation for name, description length, and hex color | Planned optional use in future `FileItem` tag assignment | None | Restricted: many-to-many with files; delete remains blocked when any files use the tag |
-| `FileChangeLog` | Missing dedicated controller | Missing dedicated views | Read-only Planned: Index/Details/AJAX search only; Create/Edit/Delete forbidden | Planned; Needs implementation for read-only search | Planned for search/filter inputs only; no POST CRUD validation | Planned read-only filter/autocomplete by `FileItem`; `ChangeType` filter dropdown | `Timestamp` | Read-only: audit/history record; normal CRUD would weaken audit trail |
+| `FileChangeLog` | `FileChangeLogsController` | `Views/FileChangeLogs/Index.cshtml`, `Details.cshtml`, `_FileChangeLogRows.cshtml` | Read-only Implemented: Index/Details/AJAX search only; Create/Edit/Delete forbidden | Implemented with debounce, partial row refresh, and ChangeType dropdown filter | Implemented for search/filter inputs only; no POST CRUD validation because no writes exist | Implemented `ChangeType` dropdown filter; FileItem filter handled through text search by file name/path | `Timestamp` display-only | Read-only: audit/history record; normal CRUD would weaken audit trail |
 | `SystemAdmin` | `AdminsController` | `Views/Admins/Index.cshtml`, `Details.cshtml` | Restricted/Planned CRUD; Needs implementation; no raw password workflow; Delete Restricted when assigned to servers | Planned; Needs implementation | Planned; Needs implementation for username/email/role/date/server rules; protect password | Planned managed `NasServer` multi-select/autocomplete and role dropdown | `CreatedDate`, `LastLogin` | Restricted: credential-like field and many-to-many server responsibility relationship |
 
 ## Implementation Order Proposal
@@ -81,6 +82,39 @@ Scope: pre-implementation audit only. No Labos 4 application code has been imple
 7. Open `/FileItems/Edit/{id}` and verify existing directory label, dates, and tag checkboxes are shown.
 8. Open `/FileItems/Delete/{seeded-id}` for a file with change logs and confirm delete is blocked.
 9. Create a new file without change logs and confirm Delete POST works after confirmation.
+
+## FileChangeLog Manual Test Checklist
+
+1. Open `/FileChangeLogs` and confirm the page states that records are audit/read-only entries.
+2. Search by file name, file path, directory, user, old value, new value, or change type. Results should update without a full page reload and rows should highlight.
+3. Use the Change Type dropdown filter and confirm results update without a full page reload.
+4. Open `/FileChangeLogs/Details/{id}` from an `Open` row link and confirm file, directory, timestamp, change type, user, old value, and new value are visible.
+5. Confirm no Create, Edit, or Delete links/forms appear on FileChangeLog Index or Details.
+6. Confirm no native browser datepicker appears.
+
+## FileChangeLog Read-only PASS/FAIL
+
+Review timestamp: 2026-05-20 23:03:00 +02:00
+
+| Requirement | Status | Evidence/notes |
+|---|---|---|
+| Dedicated FileChangeLogs controller | PASS | `FileChangeLogsController` has only `Index`, `Search`, and `Details` GET actions. |
+| Index view | PASS | `Views/FileChangeLogs/Index.cshtml` lists audit records and states they are read-only. |
+| Details view | PASS | `Views/FileChangeLogs/Details.cshtml` displays audit metadata and links back to file/audit list. |
+| AJAX search endpoint | PASS | `FileChangeLogs/Search` returns `_FileChangeLogRows` partial. |
+| Search without full page reload | PASS | Index uses `data-lab4-search`; `lab4.js` fetches rows and replaces tbody. |
+| Search file name/path | PASS | Repository search checks `File.Name` and `File.Path`. |
+| Search change type | PASS | Repository search matches `ChangeType`; Index also has a ChangeType dropdown filter. |
+| Search user/actor | PASS | Repository search checks `User`. |
+| Search old/new value | PASS | Repository search checks `OldValue` and `NewValue`. |
+| ChangeType filter dropdown | PASS | Index has `changeType` select and `SearchFileChangeLogs` filters by enum. |
+| FileItem autocomplete/filter | PASS | Stable file filtering is provided through text search by file name/path; no autocomplete added to avoid extra UI complexity. |
+| No Create/Edit/Delete links | PASS | FileChangeLog rows expose only `Open`; Details exposes only `Open file` and `Back to audit log`. |
+| No POST CRUD endpoints | PASS | Controller contains no `[HttpPost]`, Create, Edit, or Delete actions. |
+| Reuse Labos 4 JS/CSS | PASS | Uses existing AJAX search, loading indicator, and row highlight from `lab4.js`/`lab4.css`. |
+| Repository methods | PASS | Added `GetAllFileChangeLogs`, `GetFileChangeLogById`, and `SearchFileChangeLogs`. |
+| No native date inputs | PASS | Verification found no `type="date"` or `type="datetime-local"`. |
+| Build | PASS | `dotnet build` succeeds with 0 warnings and 0 errors. |
 
 ## ScanJob Strict Review PASS/FAIL
 

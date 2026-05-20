@@ -454,6 +454,61 @@ namespace NasIndexer.Repositories
             return true;
         }
 
+        public List<FileChangeLog> GetAllFileChangeLogs()
+        {
+            return context.FileChangeLogs
+                .AsNoTracking()
+                .Include(changeLog => changeLog.File)
+                    .ThenInclude(file => file.Directory)
+                .OrderByDescending(changeLog => changeLog.Timestamp)
+                .ToList();
+        }
+
+        public List<FileChangeLog> SearchFileChangeLogs(string? query, ChangeType? changeType)
+        {
+            var changeLogs = context.FileChangeLogs
+                .AsNoTracking()
+                .Include(changeLog => changeLog.File)
+                    .ThenInclude(file => file.Directory)
+                .AsQueryable();
+
+            if (changeType.HasValue)
+            {
+                changeLogs = changeLogs.Where(changeLog => changeLog.ChangeType == changeType.Value);
+            }
+
+            if (!string.IsNullOrWhiteSpace(query))
+            {
+                var normalizedQuery = query.Trim();
+                var typeMatches = Enum.GetValues<ChangeType>()
+                    .Where(type => type.ToString().Contains(normalizedQuery, StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+
+                changeLogs = changeLogs.Where(changeLog =>
+                    changeLog.File.Name.Contains(normalizedQuery) ||
+                    changeLog.File.Path.Contains(normalizedQuery) ||
+                    changeLog.File.Directory.Name.Contains(normalizedQuery) ||
+                    changeLog.File.Directory.Path.Contains(normalizedQuery) ||
+                    changeLog.User.Contains(normalizedQuery) ||
+                    changeLog.OldValue.Contains(normalizedQuery) ||
+                    changeLog.NewValue.Contains(normalizedQuery) ||
+                    typeMatches.Contains(changeLog.ChangeType));
+            }
+
+            return changeLogs
+                .OrderByDescending(changeLog => changeLog.Timestamp)
+                .ToList();
+        }
+
+        public FileChangeLog? GetFileChangeLogById(int id)
+        {
+            return context.FileChangeLogs
+                .AsNoTracking()
+                .Include(changeLog => changeLog.File)
+                    .ThenInclude(file => file.Directory)
+                .FirstOrDefault(changeLog => changeLog.Id == id);
+        }
+
         public List<FileTag> GetAllTags()
         {
             return context.FileTags

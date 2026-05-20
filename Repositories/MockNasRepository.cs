@@ -382,6 +382,46 @@ namespace NasIndexer.Repositories
             return true;
         }
 
+        public List<FileChangeLog> GetAllFileChangeLogs()
+        {
+            return GetAllFiles()
+                .SelectMany(file => file.ChangeLogs)
+                .OrderByDescending(changeLog => changeLog.Timestamp)
+                .ToList();
+        }
+
+        public List<FileChangeLog> SearchFileChangeLogs(string? query, ChangeType? changeType)
+        {
+            var changeLogs = GetAllFileChangeLogs().AsEnumerable();
+
+            if (changeType.HasValue)
+            {
+                changeLogs = changeLogs.Where(changeLog => changeLog.ChangeType == changeType.Value);
+            }
+
+            if (!string.IsNullOrWhiteSpace(query))
+            {
+                changeLogs = changeLogs.Where(changeLog =>
+                    changeLog.File.Name.Contains(query, StringComparison.OrdinalIgnoreCase) ||
+                    changeLog.File.Path.Contains(query, StringComparison.OrdinalIgnoreCase) ||
+                    changeLog.File.Directory.Name.Contains(query, StringComparison.OrdinalIgnoreCase) ||
+                    changeLog.File.Directory.Path.Contains(query, StringComparison.OrdinalIgnoreCase) ||
+                    changeLog.ChangeType.ToString().Contains(query, StringComparison.OrdinalIgnoreCase) ||
+                    changeLog.User.Contains(query, StringComparison.OrdinalIgnoreCase) ||
+                    changeLog.OldValue.Contains(query, StringComparison.OrdinalIgnoreCase) ||
+                    changeLog.NewValue.Contains(query, StringComparison.OrdinalIgnoreCase));
+            }
+
+            return changeLogs
+                .OrderByDescending(changeLog => changeLog.Timestamp)
+                .ToList();
+        }
+
+        public FileChangeLog? GetFileChangeLogById(int id)
+        {
+            return GetAllFileChangeLogs().FirstOrDefault(changeLog => changeLog.Id == id);
+        }
+
         public List<FileTag> GetAllTags()
         {
             return GetAllFiles()

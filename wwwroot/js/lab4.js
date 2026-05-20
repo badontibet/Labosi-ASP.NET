@@ -221,6 +221,23 @@
                 return;
             }
 
+            function buildSearchUrl() {
+                var parameters = new URLSearchParams();
+                var searchForm = input.closest("[data-lab4-search-form]");
+
+                if (searchForm) {
+                    searchForm.querySelectorAll("[name]").forEach(function (field) {
+                        if (field.value) {
+                            parameters.set(field.name, field.value);
+                        }
+                    });
+                } else {
+                    parameters.set(input.name || "query", input.value);
+                }
+
+                return url + "?" + parameters.toString();
+            }
+
             var runSearch = debounce(function () {
                 var table = target.closest("table");
                 var columnCount = table ? table.querySelectorAll("thead th").length : 1;
@@ -228,7 +245,7 @@
                     loading.hidden = false;
                 }
 
-                fetch(url + "?query=" + encodeURIComponent(input.value), {
+                fetch(buildSearchUrl(), {
                     headers: { "X-Requested-With": "XMLHttpRequest" }
                 })
                     .then(function (response) {
@@ -252,6 +269,7 @@
             }, debounceDelay);
 
             input.addEventListener("input", runSearch);
+            input.addEventListener("change", runSearch);
         });
     }
 

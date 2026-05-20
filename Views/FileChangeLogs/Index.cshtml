@@ -1,0 +1,72 @@
+@model List<FileChangeLog>
+
+@{
+    ViewData["Title"] = "File Change Logs";
+}
+
+<nav class="breadcrumb" aria-label="Breadcrumb">
+    <a asp-controller="Home" asp-action="Index">Dashboard</a>
+    <span>/</span>
+    <span>File Change Logs</span>
+</nav>
+
+<section class="page-hero">
+    <span class="eyebrow">Audit trail</span>
+    <h1>File Change Logs</h1>
+    <p>Read-only audit records for indexed file history. These entries can be searched and inspected, but not created, edited, or deleted through this UI.</p>
+</section>
+
+<section class="panel">
+    <div class="panel-heading">
+        <div>
+            <h2>Search Audit Records</h2>
+            <p>Search by file, directory, change type, user, old value, or new value.</p>
+        </div>
+        <div class="search-box" data-lab4-search-form>
+            <label for="change-log-search">Search</label>
+            <input id="change-log-search"
+                   name="query"
+                   class="form-control"
+                   type="search"
+                   placeholder="File, path, user, old/new value..."
+                   autocomplete="off"
+                   data-lab4-search
+                   data-url="@Url.Action("Search", "FileChangeLogs")"
+                   data-target="#change-logs-table-body"
+                   data-loading="#change-log-search-loading" />
+            <label for="change-type-filter">Change type</label>
+            <select id="change-type-filter"
+                    name="changeType"
+                    class="form-control"
+                    data-lab4-search
+                    data-url="@Url.Action("Search", "FileChangeLogs")"
+                    data-target="#change-logs-table-body"
+                    data-loading="#change-log-search-loading">
+                <option value="">All change types</option>
+                @foreach (var changeType in Enum.GetValues<ChangeType>())
+                {
+                    <option value="@changeType">@changeType</option>
+                }
+            </select>
+            <span id="change-log-search-loading" class="inline-loading" hidden>Loading...</span>
+        </div>
+    </div>
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Timestamp</th>
+                    <th>File</th>
+                    <th>Change</th>
+                    <th>User</th>
+                    <th>Old Value</th>
+                    <th>New Value</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="change-logs-table-body">
+                <partial name="_FileChangeLogRows" model="Model" />
+            </tbody>
+        </table>
+    </div>
+</section>
