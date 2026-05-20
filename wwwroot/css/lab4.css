@@ -118,6 +118,21 @@
     height: 2.4rem;
 }
 
+.checkbox-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+    gap: 0.6rem;
+}
+
+.checkbox-chip {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.6rem 0.7rem;
+    border: 1px solid var(--line);
+    background: var(--panel-soft);
+}
+
 .inline-loading,
 .autocomplete-loading {
     color: var(--warn);

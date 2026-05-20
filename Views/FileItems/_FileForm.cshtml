@@ -1,0 +1,83 @@
+@model FileItemFormViewModel
+
+<div asp-validation-summary="ModelOnly" class="validation-summary"></div>
+
+<div class="form-grid">
+    <div class="form-field">
+        <label asp-for="Name"></label>
+        <input asp-for="Name" class="form-control" type="text" maxlength="120" data-lab4-validate="required" data-lab4-max-length="120" />
+        <span asp-validation-for="Name"></span>
+    </div>
+
+    <div class="form-field">
+        <label asp-for="Extension"></label>
+        <input asp-for="Extension" class="form-control" type="text" maxlength="20" data-lab4-validate="maxlength" data-lab4-max-length="20" placeholder=".cs" />
+        <span asp-validation-for="Extension"></span>
+    </div>
+</div>
+
+<div class="form-field">
+    <label asp-for="Path"></label>
+    <input asp-for="Path" class="form-control" type="text" maxlength="260" data-lab4-validate="required" data-lab4-max-length="260" />
+    <span asp-validation-for="Path"></span>
+</div>
+
+<partial name="_AutocompleteDropdown" model="@(new AutocompleteDropdownViewModel
+{
+    HiddenInputName = nameof(Model.DirectoryId),
+    TextInputName = nameof(Model.DirectoryLabel),
+    SelectedId = Model.DirectoryId,
+    SelectedText = Model.DirectoryLabel,
+    EndpointUrl = Url.Action("DirectoryAutocomplete", "FileItems") ?? string.Empty,
+    Label = "Directory",
+    Placeholder = "Type at least 2 characters...",
+    ValidationFieldName = nameof(Model.DirectoryId),
+    IsRequired = true,
+    RequiredMessage = "Choose a directory from the list."
+})" />
+
+<div class="form-grid">
+    <div class="form-field">
+        <label asp-for="Size"></label>
+        <input asp-for="Size" class="form-control" type="number" min="0" data-lab4-validate="nonnegative" />
+        <span asp-validation-for="Size"></span>
+    </div>
+
+    <partial name="_DateTimePicker" model="@(new DateTimePickerViewModel
+    {
+        FieldName = nameof(Model.CreatedDateText),
+        Label = "Created Date",
+        Value = Model.CreatedDateText,
+        IsRequired = true
+    })" />
+
+    <partial name="_DateTimePicker" model="@(new DateTimePickerViewModel
+    {
+        FieldName = nameof(Model.ModifiedDateText),
+        Label = "Modified Date",
+        Value = Model.ModifiedDateText,
+        IsRequired = true
+    })" />
+</div>
+
+<fieldset class="form-field tag-selection">
+    <legend>Tags</legend>
+    <span asp-validation-for="SelectedTagIds"></span>
+    @if (Model.AvailableTags.Any())
+    {
+        <div class="checkbox-grid">
+            @foreach (var tag in Model.AvailableTags)
+            {
+                <label class="checkbox-chip">
+                    <input type="checkbox" name="SelectedTagIds" value="@tag.Id" checked="@tag.IsSelected" />
+                    <span class="swatch" style="background-color:@tag.Color"></span>
+                    <span>@tag.Name</span>
+                </label>
+            }
+        </div>
+    }
+    else
+    {
+        <p class="muted">No tags are available.</p>
+    }
+</fieldset>

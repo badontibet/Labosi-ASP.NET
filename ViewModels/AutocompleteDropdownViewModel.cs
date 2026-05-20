@@ -10,5 +10,7 @@ namespace NasIndexer.ViewModels
         public string Label { get; set; } = string.Empty;
         public string Placeholder { get; set; } = string.Empty;
         public string ValidationFieldName { get; set; } = string.Empty;
+        public bool IsRequired { get; set; } = true;
+        public string RequiredMessage { get; set; } = "Choose an item from the list.";
     }
 }

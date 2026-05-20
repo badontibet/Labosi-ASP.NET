@@ -1,0 +1,63 @@
+@model DirectoryItemFormViewModel
+
+<div asp-validation-summary="ModelOnly" class="validation-summary"></div>
+
+<div class="form-grid">
+    <div class="form-field">
+        <label asp-for="Name"></label>
+        <input asp-for="Name" class="form-control" type="text" maxlength="@DirectoryItemFormViewModel.NameHardLimit" data-lab4-validate="required" data-lab4-max-length="@DirectoryItemFormViewModel.NameHardLimit" />
+        <small class="field-hint">Names over @DirectoryItemFormViewModel.NameSoftLimit characters are saved with three dots. Hard limit: @DirectoryItemFormViewModel.NameHardLimit characters.</small>
+        <span asp-validation-for="Name"></span>
+    </div>
+
+    <div class="form-field">
+        <label asp-for="Path"></label>
+        <input asp-for="Path" class="form-control" type="text" maxlength="@DirectoryItemFormViewModel.PathHardLimit" data-lab4-validate="required" data-lab4-max-length="@DirectoryItemFormViewModel.PathHardLimit" />
+        <small class="field-hint">Paths over @DirectoryItemFormViewModel.PathSoftLimit characters are saved shortened. Hard limit: @DirectoryItemFormViewModel.PathHardLimit characters.</small>
+        <span asp-validation-for="Path"></span>
+    </div>
+</div>
+
+<partial name="_AutocompleteDropdown" model="@(new AutocompleteDropdownViewModel
+{
+    HiddenInputName = nameof(Model.ScanJobId),
+    TextInputName = nameof(Model.ScanJobLabel),
+    SelectedId = Model.ScanJobId,
+    SelectedText = Model.ScanJobLabel ?? string.Empty,
+    EndpointUrl = Url.Action("ScanJobAutocomplete", "Directories") ?? string.Empty,
+    Label = "Scan Job",
+    Placeholder = "Optional. Type at least 2 characters...",
+    ValidationFieldName = nameof(Model.ScanJobId),
+    IsRequired = false
+})" />
+
+<partial name="_AutocompleteDropdown" model="@(new AutocompleteDropdownViewModel
+{
+    HiddenInputName = nameof(Model.ParentDirectoryId),
+    TextInputName = nameof(Model.ParentDirectoryLabel),
+    SelectedId = Model.ParentDirectoryId,
+    SelectedText = Model.ParentDirectoryLabel ?? string.Empty,
+    EndpointUrl = Url.Action("ParentDirectoryAutocomplete", "Directories", new { excludeId = Model.Id }) ?? string.Empty,
+    Label = "Parent Directory",
+    Placeholder = "Optional. Type at least 2 characters...",
+    ValidationFieldName = nameof(Model.ParentDirectoryId),
+    IsRequired = false
+})" />
+
+<div class="form-grid">
+    <partial name="_DateTimePicker" model="@(new DateTimePickerViewModel
+    {
+        FieldName = nameof(Model.CreatedDateText),
+        Label = "Created Date",
+        Value = Model.CreatedDateText,
+        IsRequired = true
+    })" />
+
+    <partial name="_DateTimePicker" model="@(new DateTimePickerViewModel
+    {
+        FieldName = nameof(Model.ModifiedDateText),
+        Label = "Modified Date",
+        Value = Model.ModifiedDateText,
+        IsRequired = true
+    })" />
+</div>

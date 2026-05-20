@@ -1,0 +1,27 @@
+@model List<FileItem>
+
+@if (Model.Any())
+{
+    @foreach (var file in Model)
+    {
+        <tr data-lab4-row data-row-id="@file.Id">
+            <td><strong>@file.Name</strong></td>
+            <td><span class="tag-chip">@file.Extension</span></td>
+            <td>@file.Size bytes</td>
+            <td>@file.ModifiedDate.ToString("yyyy-MM-dd HH:mm")</td>
+            <td><a asp-controller="Directories" asp-action="Details" asp-route-id="@file.DirectoryId">@file.Directory.Name</a></td>
+            <td>@file.Tags.Count tags / @file.ChangeLogs.Count changes</td>
+            <td class="action-cell">
+                <a class="link-chip" asp-controller="FileItems" asp-action="Details" asp-route-id="@file.Id">Open</a>
+                <a class="link-chip" asp-controller="FileItems" asp-action="Edit" asp-route-id="@file.Id">Edit</a>
+                <a class="link-chip link-danger" asp-controller="FileItems" asp-action="Delete" asp-route-id="@file.Id">Delete</a>
+            </td>
+        </tr>
+    }
+}
+else
+{
+    <tr>
+        <td colspan="7" class="empty-cell">No files match the current search.</td>
+    </tr>
+}

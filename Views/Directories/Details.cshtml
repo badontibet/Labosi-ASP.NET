@@ -16,6 +16,11 @@
     <span class="eyebrow">Directory details</span>
     <h1>@Model.Name</h1>
     <p class="path-text">@Model.Path</p>
+    <div class="hero-actions">
+        <a class="link-chip" asp-controller="Directories" asp-action="Edit" asp-route-id="@Model.Id">Edit</a>
+        <a class="link-chip link-danger" asp-controller="Directories" asp-action="Delete" asp-route-id="@Model.Id">Delete</a>
+        <a class="link-chip" asp-controller="Directories" asp-action="Index">Back to directories</a>
+    </div>
 </section>
 
 <section class="metadata-grid">
@@ -35,6 +40,19 @@
     <article class="metadata-card"><span>Created</span><strong>@Model.CreatedDate.ToString("yyyy-MM-dd HH:mm")</strong></article>
     <article class="metadata-card"><span>Modified</span><strong>@Model.ModifiedDate.ToString("yyyy-MM-dd HH:mm")</strong></article>
     <article class="metadata-card"><span>Files</span><strong>@Model.Files.Count</strong></article>
+    <article class="metadata-card">
+        <span>Scan Job</span>
+        <strong>
+            @if (Model.ScanJob != null)
+            {
+                <a asp-controller="ScanJobs" asp-action="Details" asp-route-id="@Model.ScanJobId">Job @Model.ScanJobId</a>
+            }
+            else
+            {
+                <span>Not connected</span>
+            }
+        </strong>
+    </article>
 </section>
 
 <section class="panel">

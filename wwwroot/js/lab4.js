@@ -87,6 +87,11 @@
             return false;
         }
 
+        if (rule === "optional-autocomplete") {
+            setMessage(input, "");
+            return true;
+        }
+
         var maxLength = Number(input.getAttribute("data-lab4-max-length"));
         if (maxLength && value.length > maxLength) {
             setMessage(input, "Use " + maxLength + " characters or fewer.");
@@ -111,16 +116,25 @@
             }
 
             var form = input.closest("form");
-            var startInput = form ? form.querySelector("[name='StartTimeText']") : null;
-            var endInput = form ? form.querySelector("[name='EndTimeText']") : null;
+            if (form) {
+                var invalidRange = validateDateRange(
+                    form,
+                    "StartTimeText",
+                    "EndTimeText",
+                    "End time cannot be before start time.");
 
-            if (startInput && endInput && startInput.value.trim() && endInput.value.trim()) {
-                var startDate = getDateTimeParts(startInput.value.trim());
-                var endDate = getDateTimeParts(endInput.value.trim());
+                if (invalidRange && input.name === "EndTimeText") {
+                    return false;
+                }
 
-                if (startDate && endDate && endDate < startDate) {
-                    setMessage(endInput, "End time cannot be before start time.");
-                    return input === endInput ? false : true;
+                invalidRange = validateDateRange(
+                    form,
+                    "CreatedDateText",
+                    "ModifiedDateText",
+                    "Modified date cannot be before created date.");
+
+                if (invalidRange && input.name === "ModifiedDateText") {
+                    return false;
                 }
             }
         }
@@ -144,6 +158,29 @@
 
         setMessage(input, "");
         return true;
+    }
+
+    function validateDateRange(form, startFieldName, endFieldName, message) {
+        var startInput = form.querySelector("[name='" + startFieldName + "']");
+        var endInput = form.querySelector("[name='" + endFieldName + "']");
+
+        if (!startInput || !endInput || !startInput.value.trim() || !endInput.value.trim()) {
+            return false;
+        }
+
+        var startDate = getDateTimeParts(startInput.value.trim());
+        var endDate = getDateTimeParts(endInput.value.trim());
+
+        if (startDate && endDate && endDate < startDate) {
+            setMessage(endInput, message);
+            return true;
+        }
+
+        if (endDate) {
+            setMessage(endInput, "");
+        }
+
+        return false;
     }
 
     function setupValidation() {
@@ -304,7 +341,7 @@
                     })
                     .then(renderResults)
                     .catch(function () {
-                        menu.innerHTML = "<div class=\"autocomplete-error\">Could not load NAS servers.</div>";
+                        menu.innerHTML = "<div class=\"autocomplete-error\">Could not load autocomplete results.</div>";
                         openMenu();
                     })
                     .finally(function () {
@@ -320,8 +357,11 @@
             });
             textInput.addEventListener("blur", function () {
                 window.setTimeout(function () {
-                    if (!idInput.value) {
-                        setMessage(textInput, "Choose a NAS server from the list.");
+                    var isRequired = textInput.getAttribute("data-lab4-autocomplete-required") === "true";
+                    if (isRequired && !idInput.value) {
+                        setMessage(textInput, textInput.getAttribute("data-lab4-autocomplete-message") || "Choose an item from the list.");
+                    } else if (!isRequired) {
+                        setMessage(textInput, "");
                     }
                     closeMenu();
                 }, 180);

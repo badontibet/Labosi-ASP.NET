@@ -130,9 +130,155 @@ namespace NasIndexer.Repositories
                 .ToList();
         }
 
+        public List<DirectoryItem> SearchDirectories(string? query)
+        {
+            var directories = GetAllDirectories().AsEnumerable();
+
+            if (!string.IsNullOrWhiteSpace(query))
+            {
+                directories = directories.Where(directory =>
+                    directory.Name.Contains(query, StringComparison.OrdinalIgnoreCase) ||
+                    directory.Path.Contains(query, StringComparison.OrdinalIgnoreCase) ||
+                    (directory.Parent != null &&
+                        (directory.Parent.Name.Contains(query, StringComparison.OrdinalIgnoreCase) ||
+                         directory.Parent.Path.Contains(query, StringComparison.OrdinalIgnoreCase))) ||
+                    (directory.ScanJob != null && directory.ScanJob.RootPath.Contains(query, StringComparison.OrdinalIgnoreCase)));
+            }
+
+            return directories
+                .OrderBy(directory => directory.Path)
+                .ToList();
+        }
+
         public DirectoryItem? GetDirectoryById(int id)
         {
             return GetAllDirectories().FirstOrDefault(directory => directory.Id == id);
+        }
+
+        public DirectoryItem? GetDirectoryForEdit(int id)
+        {
+            return GetDirectoryById(id);
+        }
+
+        public List<DirectoryItem> SearchDirectoriesForAutocomplete(string? query, int? excludeId = null, int take = 10)
+        {
+            var directories = GetAllDirectories().AsEnumerable();
+
+            if (excludeId.HasValue)
+            {
+                directories = directories.Where(directory => directory.Id != excludeId.Value);
+            }
+
+            if (!string.IsNullOrWhiteSpace(query))
+            {
+                directories = directories.Where(directory =>
+                    directory.Name.Contains(query, StringComparison.OrdinalIgnoreCase) ||
+                    directory.Path.Contains(query, StringComparison.OrdinalIgnoreCase));
+            }
+
+            return directories
+                .OrderBy(directory => directory.Path)
+                .Take(take)
+                .ToList();
+        }
+
+        public List<ScanJob> SearchScanJobsForAutocomplete(string? query, int take = 10)
+        {
+            var scanJobs = GetAllScanJobs().AsEnumerable();
+
+            if (!string.IsNullOrWhiteSpace(query))
+            {
+                scanJobs = scanJobs.Where(scanJob =>
+                    scanJob.RootPath.Contains(query, StringComparison.OrdinalIgnoreCase) ||
+                    scanJob.NasServer.Name.Contains(query, StringComparison.OrdinalIgnoreCase));
+            }
+
+            return scanJobs
+                .OrderByDescending(scanJob => scanJob.StartTime)
+                .Take(take)
+                .ToList();
+        }
+
+        public bool DirectoryHasChildrenOrFiles(int id)
+        {
+            var directory = GetDirectoryById(id);
+            return directory?.SubDirectories.Any() == true || directory?.Files.Any() == true;
+        }
+
+        public bool DirectoryParentWouldCreateCycle(int id, int? parentId)
+        {
+            if (id <= 0 || !parentId.HasValue)
+            {
+                return false;
+            }
+
+            if (id == parentId.Value)
+            {
+                return true;
+            }
+
+            var currentParent = GetDirectoryById(parentId.Value);
+            var visited = new HashSet<int>();
+
+            while (currentParent != null)
+            {
+                if (!visited.Add(currentParent.Id))
+                {
+                    return true;
+                }
+
+                if (currentParent.Id == id)
+                {
+                    return true;
+                }
+
+                currentParent = currentParent.ParentId.HasValue ? GetDirectoryById(currentParent.ParentId.Value) : null;
+            }
+
+            return false;
+        }
+
+        public void AddDirectory(DirectoryItem directory)
+        {
+            directory.Id = GetAllDirectories().Select(existingDirectory => existingDirectory.Id).DefaultIfEmpty().Max() + 1;
+            directory.Parent = directory.ParentId.HasValue ? GetDirectoryById(directory.ParentId.Value) : null;
+            directory.ScanJob = directory.ScanJobId.HasValue ? GetScanJobById(directory.ScanJobId.Value) : null;
+            directory.Parent?.SubDirectories.Add(directory);
+            directory.ScanJob?.ScannedDirectories.Add(directory);
+        }
+
+        public bool UpdateDirectory(DirectoryItem directory)
+        {
+            var existingDirectory = GetDirectoryById(directory.Id);
+
+            if (existingDirectory == null)
+            {
+                return false;
+            }
+
+            existingDirectory.Name = directory.Name;
+            existingDirectory.Path = directory.Path;
+            existingDirectory.ScanJobId = directory.ScanJobId;
+            existingDirectory.ScanJob = directory.ScanJobId.HasValue ? GetScanJobById(directory.ScanJobId.Value) : null;
+            existingDirectory.ParentId = directory.ParentId;
+            existingDirectory.Parent = directory.ParentId.HasValue ? GetDirectoryById(directory.ParentId.Value) : null;
+            existingDirectory.CreatedDate = directory.CreatedDate;
+            existingDirectory.ModifiedDate = directory.ModifiedDate;
+            return true;
+        }
+
+        public bool DeleteDirectory(int id)
+        {
+            var directory = GetDirectoryById(id);
+
+            if (directory == null || DirectoryHasChildrenOrFiles(id))
+            {
+                return false;
+            }
+
+            directory.Parent?.SubDirectories.Remove(directory);
+            directory.ScanJob?.ScannedDirectories.Remove(directory);
+            return true;
         }
 
         public List<FileItem> GetAllFiles()
@@ -142,9 +288,98 @@ namespace NasIndexer.Repositories
                 .ToList();
         }
 
+        public List<FileItem> SearchFiles(string? query)
+        {
+            var files = GetAllFiles().AsEnumerable();
+
+            if (!string.IsNullOrWhiteSpace(query))
+            {
+                files = files.Where(file =>
+                    file.Name.Contains(query, StringComparison.OrdinalIgnoreCase) ||
+                    file.Path.Contains(query, StringComparison.OrdinalIgnoreCase) ||
+                    file.Extension.Contains(query, StringComparison.OrdinalIgnoreCase) ||
+                    file.Directory.Name.Contains(query, StringComparison.OrdinalIgnoreCase) ||
+                    file.Directory.Path.Contains(query, StringComparison.OrdinalIgnoreCase) ||
+                    file.Tags.Any(tag => tag.Name.Contains(query, StringComparison.OrdinalIgnoreCase)));
+            }
+
+            return files.OrderBy(file => file.Name).ToList();
+        }
+
         public FileItem? GetFileById(int id)
         {
             return GetAllFiles().FirstOrDefault(file => file.Id == id);
+        }
+
+        public FileItem? GetFileForEdit(int id)
+        {
+            return GetFileById(id);
+        }
+
+        public bool FileItemHasChangeLogs(int id)
+        {
+            return GetFileById(id)?.ChangeLogs.Any() == true;
+        }
+
+        public void AddFile(FileItem file, IEnumerable<int> selectedTagIds)
+        {
+            file.Id = GetAllFiles().Select(existingFile => existingFile.Id).DefaultIfEmpty().Max() + 1;
+            var directory = GetDirectoryById(file.DirectoryId);
+
+            if (directory == null)
+            {
+                return;
+            }
+
+            file.Directory = directory;
+            directory.Files.Add(file);
+
+            foreach (var tag in GetAllTags().Where(tag => selectedTagIds.Contains(tag.Id)))
+            {
+                file.Tags.Add(tag);
+                tag.Files.Add(file);
+            }
+        }
+
+        public bool UpdateFile(FileItem file, IEnumerable<int> selectedTagIds)
+        {
+            var existingFile = GetFileById(file.Id);
+            var directory = GetDirectoryById(file.DirectoryId);
+
+            if (existingFile == null || directory == null)
+            {
+                return false;
+            }
+
+            existingFile.Name = file.Name;
+            existingFile.Path = file.Path;
+            existingFile.Extension = file.Extension;
+            existingFile.Size = file.Size;
+            existingFile.DirectoryId = file.DirectoryId;
+            existingFile.Directory = directory;
+            existingFile.CreatedDate = file.CreatedDate;
+            existingFile.ModifiedDate = file.ModifiedDate;
+            existingFile.Tags.Clear();
+
+            foreach (var tag in GetAllTags().Where(tag => selectedTagIds.Contains(tag.Id)))
+            {
+                existingFile.Tags.Add(tag);
+            }
+
+            return true;
+        }
+
+        public bool DeleteFile(int id)
+        {
+            var file = GetFileById(id);
+
+            if (file == null || file.ChangeLogs.Any())
+            {
+                return false;
+            }
+
+            file.Directory.Files.Remove(file);
+            return true;
         }
 
         public List<FileTag> GetAllTags()

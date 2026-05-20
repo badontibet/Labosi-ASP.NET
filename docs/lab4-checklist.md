@@ -15,6 +15,8 @@ Scope: pre-implementation audit only. No Labos 4 application code has been imple
 - Business rules status: planned in `docs/lab4-business-rules.md`
 - Etapa 1 implementation status: `ScanJob` gold example implemented with CRUD, AJAX search, NasServer autocomplete, text DateTime partial, server-side POST validation, blur client validation, and safe delete blocking.
 - Etapa 2 implementation status: `FileTag` CRUD implemented with AJAX search, form view model, server-side POST validation, blur client validation, hex color validation, and delete blocking when connected files exist.
+- Etapa 3 implementation status: `DirectoryItem` CRUD implemented with AJAX search, form view model, optional ScanJob and parent directory autocomplete, text DateTime partials, server-side hierarchy validation, and delete blocking when child directories/files exist.
+- Etapa 4 implementation status: `FileItem` metadata CRUD implemented with AJAX search, form view model, required DirectoryItem autocomplete, checkbox FileTag selection, text DateTime partials, server-side validation, and delete blocking when change logs exist.
 
 ## Entity Checklist
 
@@ -22,8 +24,8 @@ Scope: pre-implementation audit only. No Labos 4 application code has been imple
 |---|---|---|---|---|---|---|---|---|
 | `NasServer` | `NasServersController` | `Views/NasServers/Index.cshtml`, `Details.cshtml` | Allowed/Planned full CRUD; Needs implementation; Delete Restricted when related data exists | Planned; Needs implementation | Planned; Needs implementation for every POST; protect credential-like fields | Planned autocomplete/multi-select for managed admins if relationship editing is included | `LastScan` | Restricted: deleting server could cascade scan jobs; password must not be exposed; port/IP validation needed |
 | `ScanJob` | `ScanJobsController` | `Views/ScanJobs/Index.cshtml`, `Details.cshtml`, `Create.cshtml`, `Edit.cshtml`, `Delete.cshtml`, `_ScanJobForm.cshtml`, `_ScanJobRows.cshtml` | Allowed/Implemented full CRUD as Labos 4 gold example; Delete Restricted when directories exist | Implemented with debounce and partial row refresh | Implemented server-side POST validation and blur client validation for NAS server, DateTime, counts, and path | Implemented `NasServer` autocomplete and `ScanStatus` dropdown | `StartTime`, nullable `EndTime` via shared text DateTime partial | Restricted: delete remains blocked when scanned directories exist; continue using this as pattern for later entities |
-| `DirectoryItem` | `DirectoriesController` | `Views/Directories/Index.cshtml`, `Details.cshtml` | Allowed/Planned full CRUD; Needs implementation; Delete Restricted when child directories/files exist | Planned; Needs implementation | Planned; Needs implementation for path/name/parent and cycle prevention | Planned optional `ScanJob` and parent directory autocomplete/dropdown | `CreatedDate`, `ModifiedDate` | Restricted: self-reference cycles; DbContext restricts parent delete and files cascade from directory |
-| `FileItem` | `FileItemsController` | `Views/FileItems/Index.cshtml`, `Details.cshtml` | Allowed/Planned metadata CRUD; Needs implementation; Delete Restricted when change logs exist | Planned; Needs implementation | Planned; Needs implementation for size/path/extension/date/directory rules | Planned required `DirectoryItem` autocomplete and tag multi-select/autocomplete | `CreatedDate`, `ModifiedDate` | Restricted: required directory; many-to-many tags; change logs must not be silently deleted |
+| `DirectoryItem` | `DirectoriesController` | `Views/Directories/Index.cshtml`, `Details.cshtml`, `Create.cshtml`, `Edit.cshtml`, `Delete.cshtml`, `_DirectoryForm.cshtml`, `_DirectoryRows.cshtml` | Allowed/Implemented full CRUD; Delete Restricted when child directories/files exist | Implemented with debounce and partial row refresh | Implemented server-side POST validation and blur validation for name/path/date fields; server-side self-reference and cycle checks | Implemented optional `ScanJob` and parent directory autocomplete/dropdown | `CreatedDate`, `ModifiedDate` via shared text DateTime partial | Restricted: self-reference/cycle validation enforced; delete remains blocked when child directories or files exist |
+| `FileItem` | `FileItemsController` | `Views/FileItems/Index.cshtml`, `Details.cshtml`, `Create.cshtml`, `Edit.cshtml`, `Delete.cshtml`, `_FileForm.cshtml`, `_FileRows.cshtml` | Allowed/Implemented metadata CRUD; Delete Restricted when change logs exist | Implemented with debounce and partial row refresh | Implemented server-side POST validation and blur validation for name/path/size/date/directory fields; tag IDs validated server-side | Implemented required `DirectoryItem` autocomplete and checkbox FileTag selection | `CreatedDate`, `ModifiedDate` via shared text DateTime partial | Restricted: change logs remain read-only and block delete |
 | `FileTag` | `TagsController` | `Views/Tags/Index.cshtml`, `Details.cshtml`, `Create.cshtml`, `Edit.cshtml`, `Delete.cshtml`, `_TagForm.cshtml`, `_TagRows.cshtml` | Allowed/Implemented full CRUD; Delete Restricted when connected to files | Implemented with debounce and partial row refresh | Implemented server-side POST validation and blur client validation for name, description length, and hex color | Planned optional use in future `FileItem` tag assignment | None | Restricted: many-to-many with files; delete remains blocked when any files use the tag |
 | `FileChangeLog` | Missing dedicated controller | Missing dedicated views | Read-only Planned: Index/Details/AJAX search only; Create/Edit/Delete forbidden | Planned; Needs implementation for read-only search | Planned for search/filter inputs only; no POST CRUD validation | Planned read-only filter/autocomplete by `FileItem`; `ChangeType` filter dropdown | `Timestamp` | Read-only: audit/history record; normal CRUD would weaken audit trail |
 | `SystemAdmin` | `AdminsController` | `Views/Admins/Index.cshtml`, `Details.cshtml` | Restricted/Planned CRUD; Needs implementation; no raw password workflow; Delete Restricted when assigned to servers | Planned; Needs implementation | Planned; Needs implementation for username/email/role/date/server rules; protect password | Planned managed `NasServer` multi-select/autocomplete and role dropdown | `CreatedDate`, `LastLogin` | Restricted: credential-like field and many-to-many server responsibility relationship |
@@ -31,8 +33,8 @@ Scope: pre-implementation audit only. No Labos 4 application code has been imple
 ## Implementation Order Proposal
 
 1. Planned/complete for this document step: define Labos 4 business rules per entity in `docs/lab4-business-rules.md`.
-2. Implemented for `ScanJob` and `FileTag`; still Planned/Needs implementation for other allowed entities: repository write/search/autocomplete APIs and view models for form input, preserving existing read-only methods and routes.
-3. Implemented for `ScanJob` and `FileTag`; still Planned/Needs implementation for other allowed entities: MVC Create/Edit/Delete GET/POST endpoints with anti-forgery and server-side `ModelState` validation.
+2. Implemented for `ScanJob`, `FileTag`, `DirectoryItem`, and `FileItem`; still Planned/Needs implementation for other allowed entities: repository write/search/autocomplete APIs and view models for form input, preserving existing read-only methods and routes.
+3. Implemented for `ScanJob`, `FileTag`, `DirectoryItem`, and `FileItem`; still Planned/Needs implementation for other allowed entities: MVC Create/Edit/Delete GET/POST endpoints with anti-forgery and server-side `ModelState` validation.
 4. Implemented initial shared infrastructure: DateTime partial uses text inputs only, supports documented hr/en/server-safe formats, and reusable validation helpers exist in `wwwroot/js/lab4.js`.
 5. Implemented for `ScanJob` and reusable components: AJAX list search and reusable autocomplete dropdown JavaScript/CSS.
 6. Build verification complete for `ScanJob` slice; still Planned/Needs implementation: EF/database smoke checks and browser walkthrough for later entity slices.
@@ -55,6 +57,30 @@ Scope: pre-implementation audit only. No Labos 4 application code has been imple
 5. Open `/Tags/Edit/{id}` and verify existing Name, Description, and Color are redisplayed after invalid POST.
 6. Open `/Tags/Delete/{seeded-id}` for a tag assigned to files and confirm delete is blocked with a clear message.
 7. Create a new tag with no files, open its Delete page, and confirm POST delete works after browser confirmation.
+
+## DirectoryItem Manual Test Checklist
+
+1. Open `/directories` and search by directory name, path, parent name/path, or scan job root path. Results should update without a full page reload and rows should highlight.
+2. Open `/Directories/Create`, submit empty Name/Path, and confirm validation errors appear.
+3. Test Created/Modified date formats: `20.05.2026 14:30`, `05/20/2026 14:30`, and `2026-05-20 14:30`; invalid dates should fail.
+4. Use Scan Job autocomplete with at least two characters from a server/root path and choose a result.
+5. Use Parent Directory autocomplete with at least two characters from a directory name/path and choose a result.
+6. Open `/Directories/Edit/{id}` and verify existing parent/scan job labels and date text are shown.
+7. Try setting a directory as its own parent or a descendant as parent; server-side validation should block it.
+8. Open `/Directories/Delete/{seeded-id}` for a directory with files or child directories and confirm delete is blocked.
+9. Create a new directory with no child directories/files and confirm Delete POST works after confirmation.
+
+## FileItem Manual Test Checklist
+
+1. Open `/files` and search by file name, path, extension, directory name/path, or tag name. Results should update without a full page reload and rows should highlight.
+2. Open `/FileItems/Create`, submit empty Name/Path/Directory, and confirm validation errors appear.
+3. Test Created/Modified date formats: `20.05.2026 14:30`, `05/20/2026 14:30`, and `2026-05-20 14:30`; invalid dates should fail.
+4. Enter a negative Size and confirm validation blocks it.
+5. Use Directory autocomplete with at least two characters from a directory name/path and choose a result.
+6. Select one or more FileTag checkboxes and save; Details should show selected tags.
+7. Open `/FileItems/Edit/{id}` and verify existing directory label, dates, and tag checkboxes are shown.
+8. Open `/FileItems/Delete/{seeded-id}` for a file with change logs and confirm delete is blocked.
+9. Create a new file without change logs and confirm Delete POST works after confirmation.
 
 ## ScanJob Strict Review PASS/FAIL
 
@@ -83,6 +109,32 @@ Review timestamp: 2026-05-20 19:17:58 +02:00
 | `lab4.js` robust when elements are absent | PASS | Setup functions query optional data elements and return when targets/endpoints are missing. |
 | Build | PASS | `dotnet build` succeeds with 0 warnings and 0 errors. |
 
+## FileItem Etapa 4 PASS/FAIL
+
+Review timestamp: 2026-05-20 22:34:16 +02:00
+
+| Requirement | Status | Evidence/notes |
+|---|---|---|
+| FileItem Index AJAX search without full reload | PASS | `/FileItems/Search` returns `_FileRows`; Index uses `data-lab4-search`, loading indicator, partial tbody replacement, and row highlight. |
+| Search by file name/path/extension/directory/tag | PASS | `EfNasRepository.SearchFiles` filters `Name`, `Path`, `Extension`, directory name/path, and tag name. |
+| Details preserved/improved | PASS | Details keeps metadata/tags/change-log display and adds Edit/Delete/Back actions. |
+| Create GET/POST | PASS | `FileItemsController.Create` GET/POST uses `FileItemFormViewModel` and anti-forgery. |
+| Edit GET/POST | PASS | `FileItemsController.Edit` GET/POST uses `FileItemFormViewModel` and updates scalar/FK metadata plus tag joins. |
+| Delete GET/POST with confirmation | PASS | Delete view confirms delete; POST uses `[ValidateAntiForgeryToken]`. |
+| Delete blocked when ChangeLogs exist | PASS | `FileItemHasChangeLogs` is checked in GET/POST; blocked view does not render POST delete form. |
+| Name required/bounded | PASS | Form model uses `[Required]` and `[StringLength(120)]`; client uses required/max length blur validation. |
+| Path required/bounded | PASS | Form model uses `[Required]` and `[StringLength(260)]`; client uses required/max length blur validation. |
+| Extension optional/bounded | PASS | Form model uses `[StringLength(20)]`; client uses max length validation. |
+| Size nonnegative | PASS | Form model uses `[Range(0, long.MaxValue)]`; client uses nonnegative blur validation. |
+| Required DirectoryItem autocomplete | PASS | `DirectoryAutocomplete` endpoint returns `{ id, text }`; form requires and redisplays selected directory label. |
+| FileTag selection | PASS | Form shows checkbox list from current tags and validates selected tag IDs server-side. |
+| CreatedDate/ModifiedDate text DateTime validation | PASS | Shared `_DateTimePicker` is used for both fields; form model parses both through `DateTimeInputParser`. |
+| No native datepicker | PASS | Verification found no `type="date"` or `type="datetime-local"`. |
+| FileChangeLog no Create/Edit/Delete additions | PASS | Verification found no FileChangeLog CRUD additions; change logs remain display-only. |
+| No raw password/credential exposure | PASS | Verification found no password/credential references in FileItem views. |
+| No mass unrelated entity CRUD | PASS | Changes are scoped to FileItems/FileItem plus reusable autocomplete message/CSS support. |
+| Build | PASS | `dotnet build` succeeds with 0 warnings and 0 errors. |
+
 ## FileTag Etapa 2 PASS/FAIL
 
 Review timestamp: 2026-05-20 21:22:36 +02:00
@@ -104,3 +156,30 @@ Review timestamp: 2026-05-20 21:22:36 +02:00
 | No native date inputs | PASS | Verification found no `type="date"` or `type="datetime-local"`. |
 | No mass unrelated entity CRUD | PASS | Changes are scoped to Tags/FileTag plus reusable JS/CSS support and repository interface methods. |
 | Build | PASS | `dotnet build` succeeds with 0 warnings and 0 errors after stopping a stale local app process that locked the output exe. |
+
+## DirectoryItem Etapa 3 PASS/FAIL
+
+Review timestamp: 2026-05-20 21:44:56 +02:00
+
+| Requirement | Status | Evidence/notes |
+|---|---|---|
+| DirectoryItem Index AJAX search without full reload | PASS | `/Directories/Search` returns `_DirectoryRows`; Index uses `data-lab4-search`, loading indicator, partial tbody replacement, and row highlight. |
+| Search by name/path, parent, and scan job root | PASS | `EfNasRepository.SearchDirectories` filters directory name/path, parent name/path, and scan job root path. |
+| Details preserved/improved | PASS | Details keeps parent/date/files/subdirectories and adds scan job plus Edit/Delete/Back actions. |
+| Create GET/POST | PASS | `DirectoriesController.Create` GET/POST uses `DirectoryItemFormViewModel` and anti-forgery. |
+| Edit GET/POST | PASS | `DirectoriesController.Edit` GET/POST uses `DirectoryItemFormViewModel` and updates scalar/FK metadata only. |
+| Delete GET/POST with confirmation | PASS | Delete view confirms delete; POST uses `[ValidateAntiForgeryToken]`. |
+| Delete blocked when child directories/files exist | PASS | `DirectoryHasChildrenOrFiles` is checked in GET/POST; blocked view does not render POST delete form. |
+| Name required/bounded | PASS | Form model uses `[Required]` and `[StringLength(100)]`; client uses required/max length blur validation. |
+| Path required/bounded | PASS | Form model uses `[Required]` and `[StringLength(260)]`; client uses required/max length blur validation. |
+| CreatedDate/ModifiedDate text DateTime validation | PASS | Shared `_DateTimePicker` is used for both fields; form model parses both through `DateTimeInputParser`. |
+| No native datepicker | PASS | Verification found no `type="date"` or `type="datetime-local"`. |
+| Optional ScanJob autocomplete | PASS | `ScanJobAutocomplete` endpoint returns `{ id, text }`; form redisplays selected label on Edit/invalid POST. |
+| Optional parent directory autocomplete | PASS | `ParentDirectoryAutocomplete` endpoint returns `{ id, text }`, excludes current directory on Edit, and form redisplays selected label. |
+| Self-reference prevention | PASS | ViewModel and controller reject `ParentDirectoryId == Id`. |
+| Parent cycle prevention | PASS | Repository walks persisted parent chain and controller rejects descendant parent choices. |
+| Server-side validation in POST endpoints | PASS | Create/Edit call `TryBuildDirectory` and return View(model) when `ModelState` is invalid. |
+| Client-side blur/focus-loss validation | PASS | Existing `lab4.js` validates required/max length/date fields on blur/submit; hierarchy checks remain server-owned. |
+| FileChangeLog no Create/Edit/Delete additions | PASS | Verification found no FileChangeLog CRUD additions. |
+| No mass unrelated entity CRUD | PASS | Changes are scoped to Directories/DirectoryItem plus reusable optional autocomplete support. |
+| Build | PASS | `dotnet build` succeeds with 0 warnings and 0 errors. |

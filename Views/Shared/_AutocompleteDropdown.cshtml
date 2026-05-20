@@ -20,7 +20,9 @@
            placeholder="@Model.Placeholder"
            autocomplete="off"
            data-lab4-autocomplete-text
-           data-lab4-validate="required"
+           data-lab4-validate="@(Model.IsRequired ? "required" : "optional-autocomplete")"
+           data-lab4-autocomplete-required="@Model.IsRequired.ToString().ToLowerInvariant()"
+           data-lab4-autocomplete-message="@Model.RequiredMessage"
            data-lab4-error-target="[data-valmsg-for='@Model.ValidationFieldName']" />
     <div class="autocomplete-loading" data-lab4-autocomplete-loading hidden>Loading...</div>
     <div class="autocomplete-menu" data-lab4-autocomplete-menu hidden></div>

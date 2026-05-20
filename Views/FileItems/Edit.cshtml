@@ -1,0 +1,36 @@
+@model FileItemFormViewModel
+
+@{
+    ViewData["Title"] = "Edit File " + Model.Name;
+}
+
+<nav class="breadcrumb" aria-label="Breadcrumb">
+    <a asp-controller="Home" asp-action="Index">Dashboard</a>
+    <span>/</span>
+    <a asp-controller="FileItems" asp-action="Index">Files</a>
+    <span>/</span>
+    <span>Edit @Model.Name</span>
+</nav>
+
+<section class="page-hero">
+    <span class="eyebrow">File metadata</span>
+    <h1>Edit File</h1>
+    <p>Update metadata, directory assignment, and tags without editing change history.</p>
+</section>
+
+<section class="panel form-panel">
+    <form asp-controller="FileItems" asp-action="Edit" asp-route-id="@Model.Id" method="post" novalidate data-lab4-form>
+        @Html.AntiForgeryToken()
+        <input asp-for="Id" type="hidden" />
+        <partial name="_FileForm" model="Model" />
+
+        <div class="form-actions">
+            <button type="submit" class="primary-action">Save changes</button>
+            <a class="link-chip" asp-controller="FileItems" asp-action="Details" asp-route-id="@Model.Id">Cancel</a>
+        </div>
+    </form>
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

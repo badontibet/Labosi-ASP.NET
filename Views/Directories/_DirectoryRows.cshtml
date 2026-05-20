@@ -1,0 +1,46 @@
+@model List<DirectoryItem>
+
+@if (Model.Any())
+{
+    @foreach (var directory in Model)
+    {
+        <tr data-lab4-row data-row-id="@directory.Id">
+            <td><strong>@directory.Name</strong></td>
+            <td><span class="path-text">@directory.Path</span></td>
+            <td>
+                @if (directory.Parent != null)
+                {
+                    <a asp-controller="Directories" asp-action="Details" asp-route-id="@directory.ParentId">@directory.Parent.Name</a>
+                }
+                else
+                {
+                    <span class="status-badge">Root</span>
+                }
+            </td>
+            <td>
+                @if (directory.ScanJob != null)
+                {
+                    <a asp-controller="ScanJobs" asp-action="Details" asp-route-id="@directory.ScanJobId">Job @directory.ScanJobId</a>
+                    <span class="muted">@directory.ScanJob.RootPath</span>
+                }
+                else
+                {
+                    <span class="muted">None</span>
+                }
+            </td>
+            <td>@directory.Files.Count</td>
+            <td>@directory.SubDirectories.Count</td>
+            <td class="action-cell">
+                <a class="link-chip" asp-controller="Directories" asp-action="Details" asp-route-id="@directory.Id">Open</a>
+                <a class="link-chip" asp-controller="Directories" asp-action="Edit" asp-route-id="@directory.Id">Edit</a>
+                <a class="link-chip link-danger" asp-controller="Directories" asp-action="Delete" asp-route-id="@directory.Id">Delete</a>
+            </td>
+        </tr>
+    }
+}
+else
+{
+    <tr>
+        <td colspan="7" class="empty-cell">No directories match the current search.</td>
+    </tr>
+}
