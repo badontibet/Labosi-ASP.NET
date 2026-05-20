@@ -45,7 +45,7 @@
             @foreach (var directory in Model.SubDirectories)
             {
                 <li>
-                    <a asp-action="Details" asp-route-id="@directory.Id">@directory.Name</a>
+                    <a asp-controller="Directories" asp-action="Details" asp-route-id="@directory.Id">@directory.Name</a>
                     <span class="path-text">@directory.Path</span>
                 </li>
             }

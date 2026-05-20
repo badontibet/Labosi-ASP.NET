@@ -6,7 +6,7 @@
 
 <section class="dashboard-section">
     <div class="page-hero">
-        <span class="eyebrow">Read-only mock repository feed</span>
+        <span class="eyebrow">Read-only EF SQLite feed</span>
         <h1>NAS Operations Control Center</h1>
         <p>Live-style inventory, scan health, and recent file activity for the NAS Indexer lab.</p>
     </div>
@@ -34,14 +34,7 @@
             @foreach (var job in Model.WarningScanJobs)
             {
                 <li>
-                    @if (job.Status == ScanStatus.Running)
-                    {
-                        <span class="status-badge status-running">@job.Status</span>
-                    }
-                    else
-                    {
-                        <span class="status-badge status-bad">@job.Status</span>
-                    }
+                    <partial name="_ScanStatusBadge" model="job.Status" />
                     <strong>Job @job.Id</strong> on
                     <a asp-controller="NasServers" asp-action="Details" asp-route-id="@job.NasServerId">@job.NasServer.Name</a>
                     <span class="muted">@job.ProcessedFiles / @job.TotalFiles files since @job.StartTime.ToString("yyyy-MM-dd HH:mm")</span>

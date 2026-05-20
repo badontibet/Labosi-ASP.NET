@@ -204,7 +204,8 @@ namespace NasIndexer.Repositories
                 Directory = subDir1
             };
 
-            subDir1.Files.AddRange(new[] { file1, file2 });
+            subDir1.Files.Add(file1);
+            subDir1.Files.Add(file2);
 
             var tag1 = new FileTag
             {
@@ -384,7 +385,8 @@ namespace NasIndexer.Repositories
                 Directory = subDir2
             };
 
-            subDir2.Files.AddRange(new[] { file4, file5 });
+            subDir2.Files.Add(file4);
+            subDir2.Files.Add(file5);
 
             var tag3 = new FileTag
             {
@@ -396,7 +398,8 @@ namespace NasIndexer.Repositories
 
             file4.Tags.Add(tag3);
             file5.Tags.Add(tag3);
-            tag3.Files.AddRange(new[] { file4, file5 });
+            tag3.Files.Add(file4);
+            tag3.Files.Add(file5);
 
             var changeLog3 = new FileChangeLog
             {

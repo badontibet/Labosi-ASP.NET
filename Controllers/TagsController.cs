@@ -3,7 +3,6 @@ using NasIndexer.Repositories;
 
 namespace NasIndexer.Controllers
 {
-    [Route("FileTag")]
     public class TagsController : Controller
     {
         private readonly INasRepository repository;
@@ -13,13 +12,11 @@ namespace NasIndexer.Controllers
             this.repository = repository;
         }
 
-        [HttpGet("")]
         public IActionResult Index()
         {
             return View(repository.GetAllTags());
         }
 
-        [HttpGet("Details/{id:int}")]
         public IActionResult Details(int id)
         {
             var tag = repository.GetTagById(id);

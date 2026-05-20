@@ -36,7 +36,7 @@
                         <td>@tag.Description</td>
                         <td><span class="swatch" style="background-color:@tag.Color"></span> @tag.Color</td>
                         <td>@tag.Files.Count</td>
-                        <td><a class="link-chip" asp-action="Details" asp-route-id="@tag.Id">Open tag</a></td>
+                        <td><a class="link-chip" asp-controller="Tags" asp-action="Details" asp-route-id="@tag.Id">Open tag</a></td>
                     </tr>
                 }
             </tbody>

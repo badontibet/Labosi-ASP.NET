@@ -13,7 +13,7 @@
 <section class="page-hero">
     <span class="eyebrow">Directory map</span>
     <h1>Indexed Directory Hierarchy</h1>
-    <p>Root and child directories discovered by mock scan jobs.</p>
+    <p>Root and child directories discovered by EF-backed scan jobs.</p>
 </section>
 
 <section class="panel">
@@ -38,7 +38,7 @@
                         <td>
                             @if (directory.Parent != null)
                             {
-                                <a asp-action="Details" asp-route-id="@directory.ParentId">@directory.Parent.Name</a>
+                                <a asp-controller="Directories" asp-action="Details" asp-route-id="@directory.ParentId">@directory.Parent.Name</a>
                             }
                             else
                             {
@@ -47,7 +47,7 @@
                         </td>
                         <td>@directory.Files.Count</td>
                         <td>@directory.SubDirectories.Count</td>
-                        <td><a class="link-chip" asp-action="Details" asp-route-id="@directory.Id">Open directory</a></td>
+                        <td><a class="link-chip" asp-controller="Directories" asp-action="Details" asp-route-id="@directory.Id">Open directory</a></td>
                     </tr>
                 }
             </tbody>

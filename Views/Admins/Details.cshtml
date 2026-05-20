@@ -27,53 +27,52 @@
 
 <section class="panel">
     <h3>Managed Servers</h3>
-    <ul class="file-list">
-        @foreach (var server in Model.ManagedServers)
-        {
-            <li>
-                @if (server.IsActive)
-                {
-                    <span class="status-badge status-good">Active</span>
-                }
-                else
-                {
-                    <span class="status-badge status-bad">Inactive</span>
-                }
-                <a asp-controller="NasServers" asp-action="Details" asp-route-id="@server.Id">@server.Name</a>
-                <span class="muted">@server.ScanJobs.Count scan jobs</span>
-            </li>
-        }
-    </ul>
+    @if (Model.ManagedServers.Any())
+    {
+        <ul class="file-list">
+            @foreach (var server in Model.ManagedServers)
+            {
+                <li>
+                    @if (server.IsActive)
+                    {
+                        <span class="status-badge status-good">Active</span>
+                    }
+                    else
+                    {
+                        <span class="status-badge status-bad">Inactive</span>
+                    }
+                    <a asp-controller="NasServers" asp-action="Details" asp-route-id="@server.Id">@server.Name</a>
+                    <span class="muted">@server.ScanJobs.Count scan jobs</span>
+                </li>
+            }
+        </ul>
+    }
+    else
+    {
+        <p>This admin is not assigned to any NAS servers.</p>
+    }
 </section>
 
 <section class="panel">
     <h3>Scan Jobs On Managed Servers</h3>
-    <ul class="timeline-list">
-        @foreach (var server in Model.ManagedServers)
-        {
-            @foreach (var job in server.ScanJobs)
+    @if (Model.ManagedServers.Any(server => server.ScanJobs.Any()))
+    {
+        <ul class="timeline-list">
+            @foreach (var server in Model.ManagedServers)
             {
-                <li>
-                    @if (job.Status == ScanStatus.Completed)
-                    {
-                        <span class="status-badge status-good">@job.Status</span>
-                    }
-                    else if (job.Status == ScanStatus.Running)
-                    {
-                        <span class="status-badge status-running">@job.Status</span>
-                    }
-                    else if (job.Status == ScanStatus.Failed)
-                    {
-                        <span class="status-badge status-bad">@job.Status</span>
-                    }
-                    else
-                    {
-                        <span class="status-badge status-pending">@job.Status</span>
-                    }
-                    <a asp-controller="ScanJobs" asp-action="Details" asp-route-id="@job.Id">Job @job.Id</a>
-                    <span class="muted">on @server.Name</span>
-                </li>
+                @foreach (var job in server.ScanJobs)
+                {
+                    <li>
+                        <partial name="_ScanStatusBadge" model="job.Status" />
+                        <a asp-controller="ScanJobs" asp-action="Details" asp-route-id="@job.Id">Job @job.Id</a>
+                        <span class="muted">on @server.Name</span>
+                    </li>
+                }
             }
-        }
-    </ul>
+        </ul>
+    }
+    else
+    {
+        <p>No scan jobs are connected to this admin's managed servers.</p>
+    }
 </section>

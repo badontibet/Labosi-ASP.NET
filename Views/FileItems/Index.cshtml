@@ -40,7 +40,7 @@
                         <td>@file.ModifiedDate.ToString("yyyy-MM-dd HH:mm")</td>
                         <td><a asp-controller="Directories" asp-action="Details" asp-route-id="@file.DirectoryId">@file.Directory.Name</a></td>
                         <td>@file.Tags.Count tags / @file.ChangeLogs.Count changes</td>
-                        <td><a class="link-chip" asp-action="Details" asp-route-id="@file.Id">Open file</a></td>
+                        <td><a class="link-chip" asp-controller="FileItems" asp-action="Details" asp-route-id="@file.Id">Open file</a></td>
                     </tr>
                 }
             </tbody>

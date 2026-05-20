@@ -13,7 +13,7 @@
 <section class="page-hero">
     <span class="eyebrow">Server inventory</span>
     <h1>NAS Server Grid</h1>
-    <p>Read-only list of NAS endpoints from the mock repository.</p>
+    <p>Read-only list of NAS endpoints from the EF repository.</p>
 </section>
 
 <section class="panel">
@@ -47,7 +47,7 @@
                         </td>
                         <td>@server.LastScan.ToString("yyyy-MM-dd HH:mm")</td>
                         <td>@server.ScanJobs.Count</td>
-                        <td><a class="link-chip" asp-action="Details" asp-route-id="@server.Id">Open server</a></td>
+                        <td><a class="link-chip" asp-controller="NasServers" asp-action="Details" asp-route-id="@server.Id">Open server</a></td>
                     </tr>
                 }
             </tbody>

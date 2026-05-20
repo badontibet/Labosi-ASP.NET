@@ -1,0 +1,13 @@
+@model ScanStatus
+
+@{
+    var statusClass = Model switch
+    {
+        ScanStatus.Completed => "status-good",
+        ScanStatus.Running => "status-running",
+        ScanStatus.Failed => "status-bad",
+        _ => "status-pending"
+    };
+}
+
+<span class="status-badge @statusClass">@Model</span>
