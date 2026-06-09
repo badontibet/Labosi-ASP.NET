@@ -197,6 +197,18 @@ Create controllers deriving from `ControllerBase`, marked with `[ApiController]`
 | `SystemAdminsApiController` | `api/system-admins` | `GET ?query=&nasServerId=`, `GET {id}`, `POST`, `PUT {id}`, `DELETE {id}` using password-safe NAS domain DTOs |
 | `FileAttachmentsApiController` | `api/files/{fileItemId}/attachments` | `GET`, `POST multipart/form-data`, `DELETE {attachmentId}` |
 
+### Implemented API Status
+
+| Slice | Status | Files | Notes |
+|---|---|---|---|
+| `FileTag` DTOs | Implemented | `Dtos/FileTagDto.cs`, `Dtos/CreateFileTagDto.cs`, `Dtos/UpdateFileTagDto.cs` | DTOs are separate from MVC form view models and do not expose EF entities directly |
+| `FileTag` API controller | Implemented | `Controllers/Api/FileTagsApiController.cs` | Uses `[ApiController]`, `ControllerBase`, route `api/tags`, manual mapping, existing repository methods, validation limits matching `FileTagFormViewModel`, and existing delete guard for assigned files |
+| `FileTag` API integration tests | Implemented | `Labosi-ASP.NET.Tests/CustomWebApplicationFactory.cs`, `Labosi-ASP.NET.Tests/TestDataFactory.cs`, `Labosi-ASP.NET.Tests/Api/FileTagsApiTests.cs` | Tests call real HTTP endpoints through `HttpClient` using `WebApplicationFactory` and isolated SQLite in-memory database |
+| Other entity APIs | Not started | None | Deferred intentionally; do not implement until explicitly requested |
+| Identity/auth | Not started | None | Deferred intentionally |
+| Upload support | Not started | None | Deferred intentionally |
+| Other integration tests | Not started | None | Deferred intentionally |
+
 Authorization should be applied consistently to MVC and API surfaces:
 
 | Operation | Access rule |
@@ -246,22 +258,22 @@ Important identity decision:
 
 ## Integration Test Project/Files Likely Added Later
 
-Create a separate test project, for example:
+Current status: the first integration test foundation exists for the `FileTag` API slice only. Other API controller tests are still planned.
 
 | File/folder | Purpose |
 |---|---|
-| `Labosi-ASP.NET.Tests/Labosi-ASP.NET.Tests.csproj` | xUnit integration test project |
-| `Labosi-ASP.NET.Tests/CustomWebApplicationFactory.cs` | `WebApplicationFactory<Program>` with test configuration |
-| `Labosi-ASP.NET.Tests/TestAuthHandler.cs` | Fake authenticated users/roles for protected API tests |
-| `Labosi-ASP.NET.Tests/TestDataFactory.cs` | Seed minimal NAS Indexer test graphs |
-| `Labosi-ASP.NET.Tests/Api/NasServersApiTests.cs` | CRUD and validation tests |
-| `Labosi-ASP.NET.Tests/Api/ScanJobsApiTests.cs` | CRUD, status/date/progress validation, missing ID tests |
-| `Labosi-ASP.NET.Tests/Api/DirectoriesApiTests.cs` | CRUD, parent-cycle, missing ID, delete-block tests |
-| `Labosi-ASP.NET.Tests/Api/FileItemsApiTests.cs` | CRUD, directory/tag validation, delete-block tests |
-| `Labosi-ASP.NET.Tests/Api/FileTagsApiTests.cs` | CRUD, hex color, delete-block tests |
-| `Labosi-ASP.NET.Tests/Api/FileChangeLogsApiTests.cs` | Read-only GET/search/details and no write tests |
-| `Labosi-ASP.NET.Tests/Api/SystemAdminsApiTests.cs` | Restricted DTO/password omission, CRUD/authorization tests |
-| `Labosi-ASP.NET.Tests/Api/FileAttachmentsApiTests.cs` | Upload/list/delete attachment tests |
+| `Labosi-ASP.NET.Tests/Labosi-ASP.NET.Tests.csproj` | Implemented xUnit integration test project |
+| `Labosi-ASP.NET.Tests/CustomWebApplicationFactory.cs` | Implemented `WebApplicationFactory` infrastructure using `FileTagsApiController` as the public entry assembly marker and replacing the development DB with SQLite in-memory |
+| `Labosi-ASP.NET.Tests/TestDataFactory.cs` | Implemented helper for isolated FileTag test data, including assigned-tag relationship data |
+| `Labosi-ASP.NET.Tests/Api/FileTagsApiTests.cs` | Implemented FileTag API coverage for list/search/get/create/update/delete, invalid input, missing IDs, ID mismatch, and assigned-tag delete conflict |
+| `Labosi-ASP.NET.Tests/TestAuthHandler.cs` | Planned later for protected API tests |
+| `Labosi-ASP.NET.Tests/Api/NasServersApiTests.cs` | Planned later |
+| `Labosi-ASP.NET.Tests/Api/ScanJobsApiTests.cs` | Planned later |
+| `Labosi-ASP.NET.Tests/Api/DirectoriesApiTests.cs` | Planned later |
+| `Labosi-ASP.NET.Tests/Api/FileItemsApiTests.cs` | Planned later |
+| `Labosi-ASP.NET.Tests/Api/FileChangeLogsApiTests.cs` | Planned later |
+| `Labosi-ASP.NET.Tests/Api/SystemAdminsApiTests.cs` | Planned later |
+| `Labosi-ASP.NET.Tests/Api/FileAttachmentsApiTests.cs` | Planned later |
 
 Likely test packages:
 
@@ -294,10 +306,11 @@ Minimum test coverage per API controller:
 
 ### Checkpoint 1 - API Foundation
 
-- Add DTO folder and shared mapping approach.
-- Add first API controller for `FileTag` because it is simple and low-risk.
-- Add consistent status codes: `200`, `201`, `204`, `400`, `404`, `409`/`422`.
-- Run build and smoke tests for `api/tags`.
+- Status: implemented for the first `FileTag` vertical slice.
+- Added DTO folder and `FileTag` DTOs.
+- Added first API controller for `FileTag` because it is simple and low-risk.
+- Added consistent status codes: `200`, `201`, `204`, `400`, `404`, `409`.
+- Build passed; manual HTTP smoke requests are listed in `lab-1/agent_log.txt`.
 
 ### Checkpoint 2 - Core Metadata API CRUD
 
@@ -338,10 +351,11 @@ Minimum test coverage per API controller:
 
 ### Checkpoint 7 - Integration Tests
 
-- Add test project and factory.
-- Prove one vertical endpoint end-to-end first.
-- Replicate the pattern across all API controllers.
-- Add auth role test coverage and attachment upload/list/delete tests.
+- Status: first `FileTag` API integration foundation implemented.
+- Added test project and WebApplicationFactory-based factory.
+- Proved one vertical endpoint end-to-end through real `HttpClient` calls and SQLite in-memory data isolation.
+- Next later step: replicate the pattern across remaining API controllers only after those APIs exist.
+- Auth role coverage and attachment upload/list/delete tests remain deferred.
 
 ### Checkpoint 8 - Final Audit
 

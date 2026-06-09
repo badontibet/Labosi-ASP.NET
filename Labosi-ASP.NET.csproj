@@ -8,6 +8,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Labosi-ASP.NET.Tests\**\*.cs" />
+    <Content Remove="Labosi-ASP.NET.Tests\**\*" />
+    <EmbeddedResource Remove="Labosi-ASP.NET.Tests\**\*" />
+    <None Remove="Labosi-ASP.NET.Tests\**\*" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.27">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
