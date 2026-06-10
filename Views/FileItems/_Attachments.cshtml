@@ -1,0 +1,37 @@
+@model int
+
+@if (User.Identity?.IsAuthenticated == true)
+{
+    var canUpload = User.IsInRole("Admin") || User.IsInRole("Manager");
+    var canDelete = User.IsInRole("Admin");
+
+    <section class="panel attachment-panel"
+             data-file-attachments
+             data-file-id="@Model"
+             data-can-delete="@canDelete.ToString().ToLowerInvariant()">
+        <div class="panel-heading">
+            <div>
+                <h3>Attachments</h3>
+            </div>
+            <span class="inline-loading" data-attachments-loading hidden>Loading...</span>
+        </div>
+
+        <div class="alert-success" data-attachments-success hidden></div>
+        <div class="alert-danger" data-attachments-error hidden></div>
+
+        @if (canUpload)
+        {
+            <form class="attachment-upload" data-attachments-form>
+                <label class="attachment-drop-zone" data-attachments-drop-zone>
+                    <span>Choose file</span>
+                    <input type="file" name="file" data-attachments-file />
+                </label>
+                <button type="submit" class="primary-action">Upload</button>
+            </form>
+        }
+
+        <div data-attachments-list>
+            <p class="empty-cell">Loading attachments...</p>
+        </div>
+    </section>
+}

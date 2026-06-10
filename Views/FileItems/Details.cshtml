@@ -49,6 +49,8 @@
     }
 </section>
 
+<partial name="_Attachments" model="Model.Id" />
+
 <section class="panel">
     <h3>Change Log</h3>
     @if (Model.ChangeLogs.Any())
@@ -84,3 +86,7 @@
         <p>No change log entries found.</p>
     }
 </section>
+
+@section Scripts {
+    <script src="~/js/file-attachments.js" asp-append-version="true"></script>
+}
