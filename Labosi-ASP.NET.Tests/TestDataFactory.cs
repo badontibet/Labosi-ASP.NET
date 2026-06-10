@@ -529,5 +529,55 @@ namespace Labosi_ASP.NET.Tests
 
             return changeLog;
         }
+
+        public static async Task<SystemAdmin> CreateSystemAdminAsync(
+            CustomWebApplicationFactory factory,
+            string? username = null,
+            string? email = null,
+            string? role = null,
+            string? password = null,
+            IEnumerable<int>? managedNasServerIds = null)
+        {
+            using var scope = factory.Services.CreateScope();
+            var dbContext = scope.ServiceProvider.GetRequiredService<NasIndexerDbContext>();
+            var now = new DateTime(2026, 6, 10, 23, 0, 0, DateTimeKind.Utc);
+            var selectedServerIds = managedNasServerIds?.Distinct().ToList() ?? new List<int>();
+
+            var admin = new SystemAdmin
+            {
+                Username = username ?? $"admin-{Guid.NewGuid():N}",
+                Email = email ?? $"admin-{Guid.NewGuid():N}@example.test",
+                Role = role ?? "StorageAdmin",
+                Password = password ?? "test-admin-secret",
+                CreatedDate = now.AddDays(-7),
+                LastLogin = now
+            };
+
+            if (selectedServerIds.Count > 0)
+            {
+                foreach (var server in dbContext.NasServers.Where(server => selectedServerIds.Contains(server.Id)))
+                {
+                    admin.ManagedServers.Add(server);
+                }
+            }
+
+            dbContext.SystemAdmins.Add(admin);
+            await dbContext.SaveChangesAsync();
+
+            return admin;
+        }
+
+        public static async Task<SystemAdmin?> FindSystemAdminAsync(
+            CustomWebApplicationFactory factory,
+            int id)
+        {
+            using var scope = factory.Services.CreateScope();
+            var dbContext = scope.ServiceProvider.GetRequiredService<NasIndexerDbContext>();
+
+            return await dbContext.SystemAdmins
+                .AsNoTracking()
+                .Include(admin => admin.ManagedServers)
+                .FirstOrDefaultAsync(admin => admin.Id == id);
+        }
     }
 }
