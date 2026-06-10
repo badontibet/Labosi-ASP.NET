@@ -16,6 +16,7 @@ namespace NasIndexer.Data
         public DbSet<FileItem> FileItems { get; set; } = null!;
         public DbSet<FileTag> FileTags { get; set; } = null!;
         public DbSet<FileChangeLog> FileChangeLogs { get; set; } = null!;
+        public DbSet<FileAttachment> FileAttachments { get; set; } = null!;
         public DbSet<SystemAdmin> SystemAdmins { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -28,6 +29,7 @@ namespace NasIndexer.Data
             modelBuilder.Entity<FileItem>().ToTable("FileItems");
             modelBuilder.Entity<FileTag>().ToTable("FileTags");
             modelBuilder.Entity<FileChangeLog>().ToTable("FileChangeLogs");
+            modelBuilder.Entity<FileAttachment>().ToTable("FileAttachments");
             modelBuilder.Entity<SystemAdmin>().ToTable("SystemAdmins");
 
             modelBuilder.Entity<NasServer>()
@@ -59,6 +61,34 @@ namespace NasIndexer.Data
                 .WithOne(changeLog => changeLog.File)
                 .HasForeignKey(changeLog => changeLog.FileId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<FileItem>()
+                .HasMany(file => file.Attachments)
+                .WithOne(attachment => attachment.FileItem)
+                .HasForeignKey(attachment => attachment.FileItemId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<FileAttachment>(entity =>
+            {
+                entity.Property(attachment => attachment.OriginalFileName)
+                    .HasMaxLength(260)
+                    .IsRequired();
+
+                entity.Property(attachment => attachment.StoredFileName)
+                    .HasMaxLength(120)
+                    .IsRequired();
+
+                entity.Property(attachment => attachment.RelativePath)
+                    .HasMaxLength(512)
+                    .IsRequired();
+
+                entity.Property(attachment => attachment.ContentType)
+                    .HasMaxLength(120)
+                    .IsRequired();
+
+                entity.Property(attachment => attachment.UploadedByUserId)
+                    .HasMaxLength(450);
+            });
 
             modelBuilder.Entity<FileItem>()
                 .HasMany(file => file.Tags)

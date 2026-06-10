@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using NasIndexer.Controllers.Api;
@@ -13,6 +14,8 @@ namespace Labosi_ASP.NET.Tests
 {
     public class CustomWebApplicationFactory : WebApplicationFactory<FileTagsApiController>
     {
+        public string AttachmentStorageRoot { get; } = Path.Combine(Path.GetTempPath(), "nas-indexer-tests", Guid.NewGuid().ToString("N"));
+
         public HttpClient CreateAuthenticatedClient(params string[] roles)
         {
             var client = CreateClient();
@@ -38,6 +41,14 @@ namespace Labosi_ASP.NET.Tests
 
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
+            builder.ConfigureAppConfiguration((_, configurationBuilder) =>
+            {
+                configurationBuilder.AddInMemoryCollection(new Dictionary<string, string?>
+                {
+                    ["FileAttachmentStorage:RootPath"] = AttachmentStorageRoot
+                });
+            });
+
             builder.ConfigureServices(services =>
             {
                 services.RemoveAll<DbContextOptions<NasIndexerDbContext>>();
@@ -66,6 +77,16 @@ namespace Labosi_ASP.NET.Tests
                     })
                     .AddScheme<AuthenticationSchemeOptions, TestAuthHandler>(TestAuthHandler.SchemeName, _ => { });
             });
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            base.Dispose(disposing);
+
+            if (disposing && Directory.Exists(AttachmentStorageRoot))
+            {
+                Directory.Delete(AttachmentStorageRoot, recursive: true);
+            }
         }
     }
 }

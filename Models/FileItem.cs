@@ -22,5 +22,6 @@ namespace NasIndexer.Model
 
         public virtual ICollection<FileTag> Tags { get; set; } = new List<FileTag>();
         public virtual ICollection<FileChangeLog> ChangeLogs { get; set; } = new List<FileChangeLog>();
+        public virtual ICollection<FileAttachment> Attachments { get; set; } = new List<FileAttachment>();
     }
 }

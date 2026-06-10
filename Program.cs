@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using NasIndexer.Data;
 using NasIndexer.Model;
 using NasIndexer.Repositories;
+using NasIndexer.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -26,6 +27,7 @@ builder.Services.AddDefaultIdentity<AppUser>(options =>
     .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<NasIndexerDbContext>();
 builder.Services.AddScoped<INasRepository, EfNasRepository>();
+builder.Services.AddScoped<FileAttachmentStorageService>();
 
 var app = builder.Build();
 

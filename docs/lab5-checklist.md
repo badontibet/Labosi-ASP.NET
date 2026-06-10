@@ -224,8 +224,8 @@ Create controllers deriving from `ControllerBase`, marked with `[ApiController]`
 | `SystemAdmin` API integration tests | Implemented | `Labosi-ASP.NET.Tests/Api/SystemAdminsApiTests.cs`, `Labosi-ASP.NET.Tests/TestDataFactory.cs` | Tests call real HTTP endpoints through `HttpClient` and verify CRUD/filter/status codes, managed server validation/replacement, delete conflict, password omission, raw password absence, submitted password ignored on create, and password preservation on update |
 | Identity local account foundation | Implemented | `Models/AppUser.cs`, `Data/NasIndexerDbContext.cs`, `Program.cs`, `Areas/Identity/Pages/Account/Register.cshtml`, `Areas/Identity/Pages/Account/Register.cshtml.cs`, `Views/Shared/_LoginPartial.cshtml`, `Views/Shared/_Layout.cshtml`, `Migrations/20260610190429_AddIdentityAppUser.cs` | Uses ASP.NET Core Identity with separate `AppUser`, required OIB/JMBG fields, local registration/login/logout, and Identity UI Razor Pages |
 | Role-based authorization | Implemented | `Data/IdentitySeedData.cs`, `Program.cs`, `Controllers/*.cs`, `Controllers/Api/*.cs`, `Labosi-ASP.NET.Tests/TestAuthHandler.cs`, `Labosi-ASP.NET.Tests/CustomWebApplicationFactory.cs`, `Labosi-ASP.NET.Tests/Api/AuthorizationTests.cs`, existing API test files | Seeds `Admin` and `Manager`, keeps anonymous list/search, requires authenticated details, allows Admin/Manager writes, restricts deletes to Admin, and preserves read-only FileChangeLog |
-| Upload support | Not started | None | Deferred intentionally |
-| Attachment integration tests | Not started | None | Upload tests are deferred intentionally |
+| FileAttachment model/storage/API | Implemented backend only | `Models/FileAttachment.cs`, `Models/FileItem.cs`, `Data/NasIndexerDbContext.cs`, `Services/FileAttachmentStorageService.cs`, `Dtos/FileAttachmentDto.cs`, `Controllers/Api/FileAttachmentsApiController.cs`, `Migrations/20260610212249_AddFileAttachments.cs` | Adds `FileItem` attachments, safe generated disk filenames, metadata storage, authenticated list, Admin/Manager upload, Admin delete, and no MVC Dropzone/AJAX UI yet |
+| Attachment integration tests | Implemented backend only | `Labosi-ASP.NET.Tests/Api/FileAttachmentsApiTests.cs`, `Labosi-ASP.NET.Tests/CustomWebApplicationFactory.cs`, `Labosi-ASP.NET.Tests/TestDataFactory.cs` | Tests real HTTP multipart upload/list/delete with SQLite in-memory and isolated temp file storage |
 
 Authorization should be applied consistently to MVC and API surfaces:
 
@@ -278,7 +278,7 @@ Important identity decision:
 
 ## Integration Test Project/Files Likely Added Later
 
-Current status: the integration test foundation exists and covers the implemented `FileTag`, `NasServer`, `ScanJob`, `DirectoryItem`, `FileItem`, read-only `FileChangeLog`, `SystemAdmin`, and role authorization behavior. Upload tests remain planned later.
+Current status: the integration test foundation exists and covers the implemented `FileTag`, `NasServer`, `ScanJob`, `DirectoryItem`, `FileItem`, read-only `FileChangeLog`, `SystemAdmin`, role authorization behavior, and backend FileAttachment upload/list/delete behavior. MVC upload UI tests remain planned later.
 
 | File/folder | Purpose |
 |---|---|
@@ -294,7 +294,7 @@ Current status: the integration test foundation exists and covers the implemente
 | `Labosi-ASP.NET.Tests/Api/SystemAdminsApiTests.cs` | Implemented SystemAdmin API coverage for list/query/nasServerId filters, get/create/update/delete, invalid input, invalid managed server IDs, ID mismatch, missing IDs, password omission/raw-secret absence, ignored submitted password, password preservation, managed server replacement, and managed-server delete conflict |
 | `Labosi-ASP.NET.Tests/TestAuthHandler.cs` | Implemented test-only authentication handler for anonymous, authenticated, Manager, and Admin API/MVC authorization tests |
 | `Labosi-ASP.NET.Tests/Api/AuthorizationTests.cs` | Implemented focused authorization coverage for anonymous list/search, unauthorized details, authenticated details, non-role forbidden writes, Manager create/edit without delete, Admin create/edit/delete, FileChangeLog write absence, and representative MVC authorization behavior |
-| `Labosi-ASP.NET.Tests/Api/FileAttachmentsApiTests.cs` | Planned later |
+| `Labosi-ASP.NET.Tests/Api/FileAttachmentsApiTests.cs` | Implemented backend attachment coverage for authenticated list, missing file, valid multipart upload, physical disk write, missing file upload, empty file, disallowed extension, delete metadata/disk file, missing attachment, mismatched file ID, missing disk file tolerance, and role authorization |
 
 Likely test packages:
 
@@ -353,12 +353,14 @@ Minimum test coverage per API controller:
 
 ### Checkpoint 4 - Attachment Upload
 
-- Add `FileAttachment` model and DbSet.
-- Add migration for attachments only.
-- Add disk storage service or scoped helper.
-- Add `FileAttachmentsApiController` and MVC attachment UI on `FileItems/Edit` or `FileItems/Details`.
-- Use Dropzone or maintained equivalent for async upload.
-- Add AJAX attachment list and delete behavior.
+- Status: backend foundation implemented; MVC Dropzone/AJAX UI remains deferred.
+- Added `FileAttachment` model and `DbSet`.
+- Added migration `20260610212249_AddFileAttachments`; `dotnet ef database update` was not run.
+- Added disk storage service with generated safe stored filenames, 10 MB size limit, safe extension allow-list, original filename as metadata only, and deletion that tolerates missing disk files.
+- Added `FileAttachmentsApiController` under `api/files/{fileItemId}/attachments` with authenticated list, Admin/Manager multipart upload, and Admin-only delete.
+- Added integration tests for upload/list/delete, physical file creation/removal, invalid files, missing IDs, and authorization.
+- Review migration `20260610212249_AddFileAttachments`, then run `dotnet ef database update` when ready to apply it.
+- Later step: add MVC attachment UI on `FileItems/Edit` or `FileItems/Details`, Dropzone or maintained equivalent, and AJAX attachment list/delete behavior.
 
 ### Checkpoint 5 - Local Identity And Roles
 
@@ -381,11 +383,12 @@ Minimum test coverage per API controller:
 
 ### Checkpoint 7 - Integration Tests
 
-- Status: API integration foundation implemented for `FileTag`, `NasServer`, `ScanJob`, `DirectoryItem`, `FileItem`, read-only `FileChangeLog`, `SystemAdmin`, and role authorization.
+- Status: API integration foundation implemented for `FileTag`, `NasServer`, `ScanJob`, `DirectoryItem`, `FileItem`, read-only `FileChangeLog`, `SystemAdmin`, role authorization, and backend file attachments.
 - Added test project and WebApplicationFactory-based factory.
 - Proved implemented vertical endpoints end-to-end through real `HttpClient` calls and SQLite in-memory data isolation.
 - Added test-only auth handler for anonymous/authenticated/Manager/Admin requests.
-- Attachment upload/list/delete tests remain deferred.
+- Added isolated temp storage configuration for attachment tests so tests do not write into the production upload folder.
+- MVC Dropzone/AJAX UI tests remain deferred.
 
 ### Checkpoint 8 - Final Audit
 
@@ -443,5 +446,5 @@ Minimum test coverage per API controller:
 - Inspected current `DbContext`, models, controllers, view models, repository interface, business rules, layout, JavaScript/AJAX markers, migrations, project file, and auth/upload-related references.
 - Confirmed current branch is `lab-5`.
 - Initial planning confirmed the app had no Identity setup and no attachment/upload model at that time.
-- Current implementation now includes local ASP.NET Core Identity/AppUser support. Upload support is still not implemented.
+- Current implementation now includes local ASP.NET Core Identity/AppUser support and backend FileItem attachment upload/list/delete support. MVC upload UI is still not implemented.
 - The original planning step changed only `docs/lab5-checklist.md` and `lab-1/agent_log.txt`; later implementation steps changed the files listed in the implemented status sections above.

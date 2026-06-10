@@ -473,7 +473,64 @@ namespace Labosi_ASP.NET.Tests
                 .Include(file => file.Directory)
                 .Include(file => file.Tags)
                 .Include(file => file.ChangeLogs)
+                .Include(file => file.Attachments)
                 .FirstOrDefaultAsync(file => file.Id == id);
+        }
+
+        public static async Task<FileAttachment> CreateFileAttachmentAsync(
+            CustomWebApplicationFactory factory,
+            int? fileItemId = null,
+            string? relativePath = null,
+            string? storedFileName = null,
+            bool createPhysicalFile = true)
+        {
+            using var scope = factory.Services.CreateScope();
+            var dbContext = scope.ServiceProvider.GetRequiredService<NasIndexerDbContext>();
+
+            if (!fileItemId.HasValue)
+            {
+                var file = await CreateFileItemAsync(factory);
+                fileItemId = file.Id;
+            }
+
+            storedFileName ??= $"{Guid.NewGuid():N}.txt";
+            relativePath ??= Path.Combine(fileItemId.Value.ToString(), storedFileName).Replace('\\', '/');
+
+            if (createPhysicalFile)
+            {
+                var physicalPath = Path.Combine(factory.AttachmentStorageRoot, relativePath);
+                Directory.CreateDirectory(Path.GetDirectoryName(physicalPath)!);
+                await File.WriteAllTextAsync(physicalPath, "attachment-test-content");
+            }
+
+            var attachment = new FileAttachment
+            {
+                FileItemId = fileItemId.Value,
+                OriginalFileName = "original.txt",
+                StoredFileName = storedFileName,
+                RelativePath = relativePath,
+                ContentType = "text/plain",
+                FileSize = 23,
+                CreatedAt = new DateTime(2026, 6, 11, 0, 0, 0, DateTimeKind.Utc),
+                UploadedByUserId = "test-user"
+            };
+
+            dbContext.FileAttachments.Add(attachment);
+            await dbContext.SaveChangesAsync();
+
+            return attachment;
+        }
+
+        public static async Task<FileAttachment?> FindFileAttachmentAsync(
+            CustomWebApplicationFactory factory,
+            int id)
+        {
+            using var scope = factory.Services.CreateScope();
+            var dbContext = scope.ServiceProvider.GetRequiredService<NasIndexerDbContext>();
+
+            return await dbContext.FileAttachments
+                .AsNoTracking()
+                .FirstOrDefaultAsync(attachment => attachment.Id == id);
         }
 
         public static async Task<FileChangeLog> CreateFileChangeLogAsync(
