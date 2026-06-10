@@ -84,5 +84,81 @@ namespace Labosi_ASP.NET.Tests
                 .Include(tag => tag.Files)
                 .FirstOrDefaultAsync(tag => tag.Id == id);
         }
+
+        public static async Task<NasServer> CreateNasServerAsync(
+            CustomWebApplicationFactory factory,
+            string name,
+            string? ipAddress = null,
+            string? username = null,
+            string? password = null)
+        {
+            using var scope = factory.Services.CreateScope();
+            var dbContext = scope.ServiceProvider.GetRequiredService<NasIndexerDbContext>();
+
+            var server = new NasServer
+            {
+                Name = name,
+                IpAddress = ipAddress ?? "10.10.0.10",
+                Port = 445,
+                Username = username ?? "test-reader",
+                Password = password ?? string.Empty,
+                IsActive = true,
+                LastScan = new DateTime(2026, 6, 10, 9, 0, 0, DateTimeKind.Utc)
+            };
+
+            dbContext.NasServers.Add(server);
+            await dbContext.SaveChangesAsync();
+
+            return server;
+        }
+
+        public static async Task<NasServer> CreateNasServerWithScanJobAsync(
+            CustomWebApplicationFactory factory,
+            string name)
+        {
+            using var scope = factory.Services.CreateScope();
+            var dbContext = scope.ServiceProvider.GetRequiredService<NasIndexerDbContext>();
+            var startTime = new DateTime(2026, 6, 10, 10, 0, 0, DateTimeKind.Utc);
+
+            var server = new NasServer
+            {
+                Name = name,
+                IpAddress = "10.10.0.20",
+                Port = 445,
+                Username = "scan-reader",
+                Password = "dependent-secret",
+                IsActive = true,
+                LastScan = startTime
+            };
+
+            server.ScanJobs.Add(new ScanJob
+            {
+                Status = ScanStatus.Completed,
+                StartTime = startTime,
+                EndTime = startTime.AddMinutes(5),
+                RootPath = $"/tests/{Guid.NewGuid():N}",
+                TotalFiles = 10,
+                ProcessedFiles = 10
+            });
+
+            dbContext.NasServers.Add(server);
+            await dbContext.SaveChangesAsync();
+
+            return server;
+        }
+
+        public static async Task<NasServer?> FindNasServerAsync(
+            CustomWebApplicationFactory factory,
+            int id)
+        {
+            using var scope = factory.Services.CreateScope();
+            var dbContext = scope.ServiceProvider.GetRequiredService<NasIndexerDbContext>();
+
+            return await dbContext.NasServers
+                .AsNoTracking()
+                .Include(server => server.ScanJobs)
+                .Include(server => server.ManagedAdmins)
+                .FirstOrDefaultAsync(server => server.Id == id);
+        }
     }
 }

@@ -204,6 +204,9 @@ Create controllers deriving from `ControllerBase`, marked with `[ApiController]`
 | `FileTag` DTOs | Implemented | `Dtos/FileTagDto.cs`, `Dtos/CreateFileTagDto.cs`, `Dtos/UpdateFileTagDto.cs` | DTOs are separate from MVC form view models and do not expose EF entities directly |
 | `FileTag` API controller | Implemented | `Controllers/Api/FileTagsApiController.cs` | Uses `[ApiController]`, `ControllerBase`, route `api/tags`, manual mapping, existing repository methods, validation limits matching `FileTagFormViewModel`, and existing delete guard for assigned files |
 | `FileTag` API integration tests | Implemented | `Labosi-ASP.NET.Tests/CustomWebApplicationFactory.cs`, `Labosi-ASP.NET.Tests/TestDataFactory.cs`, `Labosi-ASP.NET.Tests/Api/FileTagsApiTests.cs` | Tests call real HTTP endpoints through `HttpClient` using `WebApplicationFactory` and isolated SQLite in-memory database |
+| `NasServer` DTOs | Implemented | `Dtos/NasServerDto.cs`, `Dtos/CreateNasServerDto.cs`, `Dtos/UpdateNasServerDto.cs` | DTOs expose non-sensitive server metadata plus counts only; `Password` is not exposed or accepted |
+| `NasServer` API controller | Implemented | `Controllers/Api/NasServersApiController.cs` | Uses `[ApiController]`, `ControllerBase`, route `api/nas-servers`, manual mapping, existing repository methods, metadata-only create/update, and existing delete guard for scan jobs/managed admins |
+| `NasServer` API integration tests | Implemented | `Labosi-ASP.NET.Tests/Api/NasServersApiTests.cs`, `Labosi-ASP.NET.Tests/TestDataFactory.cs` | Tests call real HTTP endpoints through `HttpClient`, verify CRUD/search/status codes, verify password is absent from JSON, verify submitted password is ignored, and verify update preserves stored password |
 | Other entity APIs | Not started | None | Deferred intentionally; do not implement until explicitly requested |
 | Identity/auth | Not started | None | Deferred intentionally |
 | Upload support | Not started | None | Deferred intentionally |
@@ -264,10 +267,10 @@ Current status: the first integration test foundation exists for the `FileTag` A
 |---|---|
 | `Labosi-ASP.NET.Tests/Labosi-ASP.NET.Tests.csproj` | Implemented xUnit integration test project |
 | `Labosi-ASP.NET.Tests/CustomWebApplicationFactory.cs` | Implemented `WebApplicationFactory` infrastructure using `FileTagsApiController` as the public entry assembly marker and replacing the development DB with SQLite in-memory |
-| `Labosi-ASP.NET.Tests/TestDataFactory.cs` | Implemented helper for isolated FileTag test data, including assigned-tag relationship data |
+| `Labosi-ASP.NET.Tests/TestDataFactory.cs` | Implemented helper for isolated FileTag and NasServer test data, including assigned-tag and dependent-scan-job relationship data |
 | `Labosi-ASP.NET.Tests/Api/FileTagsApiTests.cs` | Implemented FileTag API coverage for list/search/get/create/update/delete, invalid input, missing IDs, ID mismatch, and assigned-tag delete conflict |
+| `Labosi-ASP.NET.Tests/Api/NasServersApiTests.cs` | Implemented NasServer API coverage for list/search/get/create/update/delete, invalid input, missing IDs, ID mismatch, dependent delete conflict, and password omission/preservation |
 | `Labosi-ASP.NET.Tests/TestAuthHandler.cs` | Planned later for protected API tests |
-| `Labosi-ASP.NET.Tests/Api/NasServersApiTests.cs` | Planned later |
 | `Labosi-ASP.NET.Tests/Api/ScanJobsApiTests.cs` | Planned later |
 | `Labosi-ASP.NET.Tests/Api/DirectoriesApiTests.cs` | Planned later |
 | `Labosi-ASP.NET.Tests/Api/FileItemsApiTests.cs` | Planned later |
@@ -314,10 +317,12 @@ Minimum test coverage per API controller:
 
 ### Checkpoint 2 - Core Metadata API CRUD
 
-- Add `NasServersApiController`, `ScanJobsApiController`, `DirectoriesApiController`, and `FileItemsApiController`.
-- Preserve existing Lab 4 business rules in API validation and delete guards.
-- Ensure no DTO exposes `NasServer.Password` or `SystemAdmin.Password`.
-- Run build plus manual/HTTP smoke checks.
+- Status: partially implemented for `NasServer` only.
+- Added `NasServersApiController` and NasServer DTOs.
+- Preserved existing Lab 4 NasServer business rules in API validation and delete guards.
+- Verified `NasServer.Password` is not exposed or accepted by DTOs; tests assert JSON does not contain a password property or raw password value.
+- `ScanJobsApiController`, `DirectoriesApiController`, and `FileItemsApiController` remain deferred.
+- Build and integration tests pass for implemented API slices.
 
 ### Checkpoint 3 - Audit And Admin API
 
@@ -351,9 +356,9 @@ Minimum test coverage per API controller:
 
 ### Checkpoint 7 - Integration Tests
 
-- Status: first `FileTag` API integration foundation implemented.
+- Status: first API integration foundation implemented for `FileTag` and extended to `NasServer`.
 - Added test project and WebApplicationFactory-based factory.
-- Proved one vertical endpoint end-to-end through real `HttpClient` calls and SQLite in-memory data isolation.
+- Proved implemented vertical endpoints end-to-end through real `HttpClient` calls and SQLite in-memory data isolation.
 - Next later step: replicate the pattern across remaining API controllers only after those APIs exist.
 - Auth role coverage and attachment upload/list/delete tests remain deferred.
 
