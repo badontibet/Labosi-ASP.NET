@@ -1,0 +1,60 @@
+@page
+@model NasIndexer.Areas.Identity.Pages.Account.RegisterModel
+@{
+    ViewData["Title"] = "Register";
+}
+
+<section class="page-header">
+    <div>
+        <p class="eyebrow">Local account</p>
+        <h1>Register</h1>
+        <p>Create a NAS Indexer application account.</p>
+    </div>
+</section>
+
+<section class="form-panel">
+    <form id="registerForm" asp-route-returnUrl="@Model.ReturnUrl" method="post" novalidate>
+        <div asp-validation-summary="ModelOnly" class="validation-summary" role="alert"></div>
+
+        <div class="form-grid">
+            <div class="form-field">
+                <label asp-for="Input.Email"></label>
+                <input asp-for="Input.Email" class="form-control" autocomplete="username" aria-required="true" />
+                <span asp-validation-for="Input.Email" class="text-danger"></span>
+            </div>
+
+            <div class="form-field">
+                <label asp-for="Input.OIB"></label>
+                <input asp-for="Input.OIB" class="form-control" autocomplete="off" inputmode="numeric" maxlength="11" aria-required="true" />
+                <span asp-validation-for="Input.OIB" class="text-danger"></span>
+            </div>
+
+            <div class="form-field">
+                <label asp-for="Input.JMBG"></label>
+                <input asp-for="Input.JMBG" class="form-control" autocomplete="off" inputmode="numeric" maxlength="13" aria-required="true" />
+                <span asp-validation-for="Input.JMBG" class="text-danger"></span>
+            </div>
+
+            <div class="form-field">
+                <label asp-for="Input.Password"></label>
+                <input asp-for="Input.Password" class="form-control" autocomplete="new-password" aria-required="true" />
+                <span asp-validation-for="Input.Password" class="text-danger"></span>
+            </div>
+
+            <div class="form-field">
+                <label asp-for="Input.ConfirmPassword"></label>
+                <input asp-for="Input.ConfirmPassword" class="form-control" autocomplete="new-password" aria-required="true" />
+                <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="primary-action">Register</button>
+            <a class="link-chip" asp-area="Identity" asp-page="/Account/Login">Sign in</a>
+        </div>
+    </form>
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

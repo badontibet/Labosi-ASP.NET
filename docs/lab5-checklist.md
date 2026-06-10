@@ -222,9 +222,9 @@ Create controllers deriving from `ControllerBase`, marked with `[ApiController]`
 | `SystemAdmin` DTOs | Implemented | `Dtos/SystemAdminDto.cs`, `Dtos/CreateSystemAdminDto.cs`, `Dtos/UpdateSystemAdminDto.cs` | DTOs keep `SystemAdmin` as a NAS domain entity, expose non-sensitive admin metadata and managed NAS server references, and do not expose or accept `Password` |
 | `SystemAdmin` API controller | Implemented | `Controllers/Api/SystemAdminsApiController.cs` | Uses `[ApiController]`, `ControllerBase`, route `api/system-admins`, manual mapping, query/nasServerId filters, safe placeholder password on API create, update that preserves existing password, managed server ID validation, relationship replacement, and existing delete guard for managed servers |
 | `SystemAdmin` API integration tests | Implemented | `Labosi-ASP.NET.Tests/Api/SystemAdminsApiTests.cs`, `Labosi-ASP.NET.Tests/TestDataFactory.cs` | Tests call real HTTP endpoints through `HttpClient` and verify CRUD/filter/status codes, managed server validation/replacement, delete conflict, password omission, raw password absence, submitted password ignored on create, and password preservation on update |
-| Identity/auth | Not started | None | Deferred intentionally |
+| Identity local account foundation | Implemented | `Models/AppUser.cs`, `Data/NasIndexerDbContext.cs`, `Program.cs`, `Areas/Identity/Pages/Account/Register.cshtml`, `Areas/Identity/Pages/Account/Register.cshtml.cs`, `Views/Shared/_LoginPartial.cshtml`, `Views/Shared/_Layout.cshtml`, `Migrations/20260610190429_AddIdentityAppUser.cs` | Uses ASP.NET Core Identity with separate `AppUser`, required OIB/JMBG fields, local registration/login/logout, Identity UI Razor Pages, and no role authorization or external login yet |
 | Upload support | Not started | None | Deferred intentionally |
-| Attachment/Auth integration tests | Not started | None | Deferred intentionally |
+| Attachment/Auth integration tests | Not started | None | Auth role tests and upload tests are deferred intentionally |
 
 Authorization should be applied consistently to MVC and API surfaces:
 
@@ -238,31 +238,31 @@ Authorization should be applied consistently to MVC and API surfaces:
 
 ## Identity/Auth Files Likely Added Or Changed Later
 
-Current project has no Identity packages, no `AppUser`, no Identity `DbContext`, and no `UseAuthentication`/`UseAuthorization`.
+Current status: local ASP.NET Core Identity account foundation is implemented. The project now has an `AppUser`, Identity packages, `IdentityDbContext<AppUser>`, authentication middleware, default Identity UI login/logout pages, and a custom local registration page that captures OIB and JMBG.
 
-Likely package additions later:
+Packages:
 
-- `Microsoft.AspNetCore.Identity.EntityFrameworkCore`
-- `Microsoft.AspNetCore.Identity.UI`
-- `Microsoft.AspNetCore.Authentication.Google` or Facebook equivalent
+- Implemented: `Microsoft.AspNetCore.Identity.EntityFrameworkCore`
+- Implemented: `Microsoft.AspNetCore.Identity.UI`
+- Planned later: `Microsoft.AspNetCore.Authentication.Google` or Facebook equivalent
 - `Microsoft.VisualStudio.Web.CodeGeneration.Design` only if scaffolding Identity UI
 
-Likely files added or changed:
+Identity files:
 
 | File/folder | Planned purpose |
 |---|---|
-| `Models/AppUser.cs` | Extend `IdentityUser` with required Lab 5 fields such as `OIB` and `JMBG` |
-| `Data/NasIndexerDbContext.cs` | Change from `DbContext` to `IdentityDbContext<AppUser>` or introduce a separate Identity context; prefer one context only if migrations stay controlled |
-| `Program.cs` | Register Identity, roles, auth middleware, external login provider, authorization policies |
-| `Data/IdentitySeedData.cs` or similar | Seed `Admin` and at least one additional role, e.g. `Manager` |
-| `Areas/Identity/Pages/Account/Register.cshtml` | Add OIB/JMBG fields to registration UI |
-| `Areas/Identity/Pages/Account/Register.cshtml.cs` | Validate and save OIB/JMBG |
-| `Areas/Identity/Pages/Account/ExternalLogin.cshtml` | Add OIB/JMBG completion fields for external login |
-| `Areas/Identity/Pages/Account/ExternalLogin.cshtml.cs` | Save OIB/JMBG for external users |
-| `Views/Shared/_LoginPartial.cshtml` | Navigation login/logout links |
-| `Views/Shared/_Layout.cshtml` | Render login partial and maybe role-aware nav controls |
-| `appsettings.json` / user secrets | Configuration keys for Google/Facebook client ID/secret; no real secrets committed |
-| `Migrations/*` | Identity/AppUser/roles/attachment migrations after model changes |
+| `Models/AppUser.cs` | Implemented `IdentityUser` subclass with required `OIB` and `JMBG` validation |
+| `Data/NasIndexerDbContext.cs` | Implemented `IdentityDbContext<AppUser>` while preserving all NAS Indexer DbSets and relationships |
+| `Program.cs` | Implemented local Identity registration plus `UseAuthentication()` before `UseAuthorization()` and `MapRazorPages()` |
+| `Areas/Identity/Pages/Account/Register.cshtml` | Implemented local registration UI with Email, OIB, JMBG, Password, and Confirm Password |
+| `Areas/Identity/Pages/Account/Register.cshtml.cs` | Implemented OIB/JMBG validation and saves those fields on `AppUser` |
+| `Views/Shared/_LoginPartial.cshtml` | Implemented login/register links for anonymous users and manage/logout links for signed-in users |
+| `Views/Shared/_Layout.cshtml` | Implemented login partial rendering from the side navigation |
+| `Migrations/20260610190429_AddIdentityAppUser.cs` | Implemented Identity/AppUser schema migration |
+| `Data/IdentitySeedData.cs` or similar | Planned later only if role seeding is requested |
+| `Areas/Identity/Pages/Account/ExternalLogin.cshtml` | Planned later with Google/Facebook login support |
+| `Areas/Identity/Pages/Account/ExternalLogin.cshtml.cs` | Planned later with Google/Facebook login support |
+| `appsettings.json` / user secrets | Planned later for external provider credentials; no real secrets committed |
 
 Important identity decision:
 
@@ -272,6 +272,7 @@ Important identity decision:
 - `SystemAdmin.Password` must not be exposed by response DTOs or accepted by create/update DTOs.
 - ASP.NET Core Identity authentication must use `AppUser` separately.
 - If the domain ever needs to connect a NAS `SystemAdmin` record to an authenticated account, add an explicit optional link to `AppUser` in a later scoped design instead of treating `SystemAdmin` as the auth user.
+- `dotnet ef database update` was not run during this Identity foundation step. Review migration `20260610190429_AddIdentityAppUser` first, then run `dotnet ef database update` when ready to apply it to the development SQLite database.
 
 ## Integration Test Project/Files Likely Added Later
 
@@ -358,12 +359,13 @@ Minimum test coverage per API controller:
 
 ### Checkpoint 5 - Local Identity And Roles
 
-- Add `AppUser : IdentityUser` with `OIB` and `JMBG`.
-- Integrate Identity into `NasIndexerDbContext` or a carefully separated auth context.
-- Register roles `Admin` and `Manager`.
-- Scaffold/update register and external login completion pages.
-- Add `_LoginPartial` and auth middleware.
-- Apply `[Authorize]`, `[AllowAnonymous]`, and role requirements to MVC and API writes.
+- Status: local Identity account foundation implemented; roles/authorization remain deferred.
+- Added `AppUser : IdentityUser` with required OIB and JMBG validation.
+- Integrated Identity into `NasIndexerDbContext` through `IdentityDbContext<AppUser>`.
+- Added local register/login/logout support through Identity UI and a custom registration page for OIB/JMBG.
+- Added `_LoginPartial`, rendered it from the shared layout, and configured `UseAuthentication()` before `UseAuthorization()`.
+- Generated migration `20260610190429_AddIdentityAppUser`; `dotnet ef database update` was not run.
+- Later step: register roles `Admin` and `Manager`, seed roles if needed, and apply `[Authorize]`, `[AllowAnonymous]`, and role requirements to MVC and API writes.
 
 ### Checkpoint 6 - Third-Party Login
 
@@ -428,11 +430,12 @@ Minimum test coverage per API controller:
 | Uploaded file paths can be unsafe | Generate stored names, validate extensions/content size if required, never trust client file names for paths |
 | External login requires provider credentials | Use user secrets/environment variables; never commit real secrets |
 
-## Documentation-Only Verification For This Step
+## Planning Verification History
 
 - Inspected repository files with `rg --files`.
 - Inspected `Lab5.md` from `C:\Users\Domagoj\Downloads`.
 - Inspected current `DbContext`, models, controllers, view models, repository interface, business rules, layout, JavaScript/AJAX markers, migrations, project file, and auth/upload-related references.
 - Confirmed current branch is `lab-5`.
-- Confirmed current app has no Identity setup and no attachment/upload model yet.
-- Changed only `docs/lab5-checklist.md` and `lab-1/agent_log.txt` for this planning step.
+- Initial planning confirmed the app had no Identity setup and no attachment/upload model at that time.
+- Current implementation now includes local ASP.NET Core Identity/AppUser support. Upload support is still not implemented.
+- The original planning step changed only `docs/lab5-checklist.md` and `lab-1/agent_log.txt`; later implementation steps changed the files listed in the implemented status sections above.

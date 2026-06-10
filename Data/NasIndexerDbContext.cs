@@ -1,9 +1,10 @@
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using NasIndexer.Model;
 
 namespace NasIndexer.Data
 {
-    public class NasIndexerDbContext : DbContext
+    public class NasIndexerDbContext : IdentityDbContext<AppUser>
     {
         public NasIndexerDbContext(DbContextOptions<NasIndexerDbContext> options) : base(options)
         {

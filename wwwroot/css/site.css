@@ -116,6 +116,41 @@ a:focus {
     text-decoration: none;
 }
 
+.auth-nav {
+    display: grid;
+    gap: 0.45rem;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--line-soft);
+}
+
+.auth-nav a,
+.auth-nav button {
+    display: block;
+    width: 100%;
+    padding: 0.62rem 0.75rem;
+    border: 1px solid var(--line);
+    background: rgba(13, 20, 28, 0.86);
+    color: #d5e4f0;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.auth-nav a:hover,
+.auth-nav a:focus,
+.auth-nav button:hover,
+.auth-nav button:focus {
+    border-color: var(--accent-blue);
+    background: rgba(89, 184, 255, 0.12);
+    color: #ffffff;
+    text-decoration: none;
+}
+
+.auth-nav form {
+    margin: 0;
+}
+
 .rail-note {
     margin-top: 1.25rem;
     padding: 0.85rem;

@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using NasIndexer.Data;
+using NasIndexer.Model;
 using NasIndexer.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -9,12 +10,19 @@ builder.Logging.AddConsole();
 builder.Logging.AddDebug();
 
 builder.Services.AddControllersWithViews();
+builder.Services.AddRazorPages();
 
 var connectionString = builder.Configuration.GetConnectionString("NasIndexerDbContext")
     ?? "Data Source=nas-indexer.db";
 
 builder.Services.AddDbContext<NasIndexerDbContext>(options =>
     options.UseSqlite(connectionString));
+builder.Services.AddDefaultIdentity<AppUser>(options =>
+    {
+        options.SignIn.RequireConfirmedAccount = false;
+        options.User.RequireUniqueEmail = true;
+    })
+    .AddEntityFrameworkStores<NasIndexerDbContext>();
 builder.Services.AddScoped<INasRepository, EfNasRepository>();
 
 var app = builder.Build();
@@ -33,8 +41,11 @@ if (!app.Environment.IsDevelopment())
 
 app.UseStaticFiles();
 app.UseRouting();
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapControllers();
+app.MapRazorPages();
 
 app.MapControllerRoute(
     name: "DashboardRoute",
