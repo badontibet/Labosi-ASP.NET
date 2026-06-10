@@ -219,10 +219,12 @@ Create controllers deriving from `ControllerBase`, marked with `[ApiController]`
 | `FileChangeLog` DTOs | Implemented | `Dtos/FileChangeLogDto.cs` | DTO exposes audit fields plus a non-sensitive file summary; no create/update DTO exists |
 | `FileChangeLog` API controller | Implemented | `Controllers/Api/FileChangeLogsApiController.cs` | Read-only API only, route `api/file-change-logs`, with collection/query/changeType/fileId filters and details endpoint; no POST, PUT, or DELETE actions |
 | `FileChangeLog` API integration tests | Implemented | `Labosi-ASP.NET.Tests/Api/FileChangeLogsApiTests.cs`, `Labosi-ASP.NET.Tests/TestDataFactory.cs` | Tests call real HTTP endpoints through `HttpClient` and verify read-only GET/filter/detail behavior plus unavailable POST/PUT/DELETE |
-| Other entity APIs | Not started | None | Deferred intentionally; do not implement until explicitly requested |
+| `SystemAdmin` DTOs | Implemented | `Dtos/SystemAdminDto.cs`, `Dtos/CreateSystemAdminDto.cs`, `Dtos/UpdateSystemAdminDto.cs` | DTOs keep `SystemAdmin` as a NAS domain entity, expose non-sensitive admin metadata and managed NAS server references, and do not expose or accept `Password` |
+| `SystemAdmin` API controller | Implemented | `Controllers/Api/SystemAdminsApiController.cs` | Uses `[ApiController]`, `ControllerBase`, route `api/system-admins`, manual mapping, query/nasServerId filters, safe placeholder password on API create, update that preserves existing password, managed server ID validation, relationship replacement, and existing delete guard for managed servers |
+| `SystemAdmin` API integration tests | Implemented | `Labosi-ASP.NET.Tests/Api/SystemAdminsApiTests.cs`, `Labosi-ASP.NET.Tests/TestDataFactory.cs` | Tests call real HTTP endpoints through `HttpClient` and verify CRUD/filter/status codes, managed server validation/replacement, delete conflict, password omission, raw password absence, submitted password ignored on create, and password preservation on update |
 | Identity/auth | Not started | None | Deferred intentionally |
 | Upload support | Not started | None | Deferred intentionally |
-| Other integration tests | Not started | None | Deferred intentionally |
+| Attachment/Auth integration tests | Not started | None | Deferred intentionally |
 
 Authorization should be applied consistently to MVC and API surfaces:
 
@@ -273,21 +275,21 @@ Important identity decision:
 
 ## Integration Test Project/Files Likely Added Later
 
-Current status: the first integration test foundation exists for the `FileTag` API slice only. Other API controller tests are still planned.
+Current status: the integration test foundation exists and covers the implemented `FileTag`, `NasServer`, `ScanJob`, `DirectoryItem`, `FileItem`, read-only `FileChangeLog`, and `SystemAdmin` API slices. Auth and upload tests remain planned later.
 
 | File/folder | Purpose |
 |---|---|
 | `Labosi-ASP.NET.Tests/Labosi-ASP.NET.Tests.csproj` | Implemented xUnit integration test project |
 | `Labosi-ASP.NET.Tests/CustomWebApplicationFactory.cs` | Implemented `WebApplicationFactory` infrastructure using `FileTagsApiController` as the public entry assembly marker and replacing the development DB with SQLite in-memory |
-| `Labosi-ASP.NET.Tests/TestDataFactory.cs` | Implemented helper for isolated FileTag, NasServer, and ScanJob test data, including assigned-tag, dependent-scan-job, and scanned-directory relationship data |
+| `Labosi-ASP.NET.Tests/TestDataFactory.cs` | Implemented helper for isolated FileTag, NasServer, ScanJob, DirectoryItem, FileItem, FileChangeLog, and SystemAdmin test data, including relationship data for delete guards and filters |
 | `Labosi-ASP.NET.Tests/Api/FileTagsApiTests.cs` | Implemented FileTag API coverage for list/search/get/create/update/delete, invalid input, missing IDs, ID mismatch, and assigned-tag delete conflict |
 | `Labosi-ASP.NET.Tests/Api/NasServersApiTests.cs` | Implemented NasServer API coverage for list/search/get/create/update/delete, invalid input, missing IDs, ID mismatch, dependent delete conflict, and password omission/preservation |
 | `Labosi-ASP.NET.Tests/Api/ScanJobsApiTests.cs` | Implemented ScanJob API coverage for list/search/status/NAS server filters, get/create/update/delete, invalid NAS server, time/progress validation, missing IDs, ID mismatch, and scanned-directory delete conflict |
 | `Labosi-ASP.NET.Tests/Api/DirectoriesApiTests.cs` | Implemented DirectoryItem API coverage for list/search/scan job/parent filters, get/create/update/delete, invalid required fields, missing scan job/parent IDs, invalid dates, self-parent, descendant cycle, missing IDs, ID mismatch, and child/file delete conflicts |
 | `Labosi-ASP.NET.Tests/Api/FileItemsApiTests.cs` | Implemented FileItem API coverage for list/search/directory/tag/extension filters, get/create/update/delete, invalid required fields, missing directory ID, invalid tag IDs, negative size, invalid dates, missing IDs, ID mismatch, tag replacement, and change-log delete conflict |
 | `Labosi-ASP.NET.Tests/Api/FileChangeLogsApiTests.cs` | Implemented read-only FileChangeLog API coverage for list/query/changeType/fileId filters, details, missing ID, and unavailable POST/PUT/DELETE |
+| `Labosi-ASP.NET.Tests/Api/SystemAdminsApiTests.cs` | Implemented SystemAdmin API coverage for list/query/nasServerId filters, get/create/update/delete, invalid input, invalid managed server IDs, ID mismatch, missing IDs, password omission/raw-secret absence, ignored submitted password, password preservation, managed server replacement, and managed-server delete conflict |
 | `Labosi-ASP.NET.Tests/TestAuthHandler.cs` | Planned later for protected API tests |
-| `Labosi-ASP.NET.Tests/Api/SystemAdminsApiTests.cs` | Planned later |
 | `Labosi-ASP.NET.Tests/Api/FileAttachmentsApiTests.cs` | Planned later |
 
 Likely test packages:
@@ -340,9 +342,10 @@ Minimum test coverage per API controller:
 
 ### Checkpoint 3 - Audit And Admin API
 
-- Status: read-only `FileChangeLogsApiController` implemented.
-- Add `SystemAdminsApiController` with password-safe NAS domain DTOs and `query`/`nasServerId` filters.
-- Integration tests prove FileChangeLog write endpoints are absent or method-not-allowed.
+- Status: implemented for read-only `FileChangeLog` and password-safe NAS domain `SystemAdmin`.
+- Added `FileChangeLogsApiController` with read-only GET/filter/details endpoints; integration tests prove write endpoints are absent or method-not-allowed.
+- Added `SystemAdminsApiController` with password-safe NAS domain DTOs, `query`/`nasServerId` filters, managed NAS server validation/replacement, existing managed-server delete guard, API create placeholder password, and update behavior that preserves existing legacy password.
+- Integration tests prove SystemAdmin JSON responses do not expose a password property or raw password values, and submitted password fields are ignored.
 
 ### Checkpoint 4 - Attachment Upload
 
@@ -370,7 +373,7 @@ Minimum test coverage per API controller:
 
 ### Checkpoint 7 - Integration Tests
 
-- Status: first API integration foundation implemented for `FileTag` and extended to `NasServer`, `ScanJob`, `DirectoryItem`, `FileItem`, and read-only `FileChangeLog`.
+- Status: API integration foundation implemented for `FileTag`, `NasServer`, `ScanJob`, `DirectoryItem`, `FileItem`, read-only `FileChangeLog`, and `SystemAdmin`.
 - Added test project and WebApplicationFactory-based factory.
 - Proved implemented vertical endpoints end-to-end through real `HttpClient` calls and SQLite in-memory data isolation.
 - Next later step: replicate the pattern across remaining API controllers only after those APIs exist.
