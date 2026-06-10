@@ -367,5 +367,113 @@ namespace Labosi_ASP.NET.Tests
                 .Include(directory => directory.Files)
                 .FirstOrDefaultAsync(directory => directory.Id == id);
         }
+
+        public static async Task<FileItem> CreateFileItemAsync(
+            CustomWebApplicationFactory factory,
+            int? directoryId = null,
+            IEnumerable<int>? tagIds = null,
+            string? name = null,
+            string? path = null,
+            string? extension = null)
+        {
+            using var scope = factory.Services.CreateScope();
+            var dbContext = scope.ServiceProvider.GetRequiredService<NasIndexerDbContext>();
+            var now = new DateTime(2026, 6, 10, 20, 0, 0, DateTimeKind.Utc);
+
+            if (!directoryId.HasValue)
+            {
+                var directory = new DirectoryItem
+                {
+                    Name = $"file-dir-{Guid.NewGuid():N}"[..20],
+                    Path = $"/file-dir/{Guid.NewGuid():N}",
+                    CreatedDate = now,
+                    ModifiedDate = now
+                };
+
+                dbContext.DirectoryItems.Add(directory);
+                await dbContext.SaveChangesAsync();
+                directoryId = directory.Id;
+            }
+
+            var file = new FileItem
+            {
+                Name = name ?? $"file-{Guid.NewGuid():N}.txt",
+                Path = path ?? $"/files/{Guid.NewGuid():N}/file.txt",
+                Extension = extension ?? ".txt",
+                Size = 512,
+                CreatedDate = now,
+                ModifiedDate = now,
+                DirectoryId = directoryId.Value
+            };
+
+            if (tagIds != null)
+            {
+                foreach (var tag in dbContext.FileTags.Where(tag => tagIds.Contains(tag.Id)))
+                {
+                    file.Tags.Add(tag);
+                }
+            }
+
+            dbContext.FileItems.Add(file);
+            await dbContext.SaveChangesAsync();
+
+            return file;
+        }
+
+        public static async Task<FileItem> CreateFileItemWithChangeLogAsync(
+            CustomWebApplicationFactory factory)
+        {
+            using var scope = factory.Services.CreateScope();
+            var dbContext = scope.ServiceProvider.GetRequiredService<NasIndexerDbContext>();
+            var now = new DateTime(2026, 6, 10, 21, 0, 0, DateTimeKind.Utc);
+
+            var directory = new DirectoryItem
+            {
+                Name = $"audit-dir-{Guid.NewGuid():N}"[..20],
+                Path = $"/audit-dir/{Guid.NewGuid():N}",
+                CreatedDate = now,
+                ModifiedDate = now
+            };
+
+            var file = new FileItem
+            {
+                Name = $"audit-{Guid.NewGuid():N}.txt",
+                Path = $"{directory.Path}/audit.txt",
+                Extension = ".txt",
+                Size = 1024,
+                CreatedDate = now,
+                ModifiedDate = now,
+                Directory = directory
+            };
+
+            file.ChangeLogs.Add(new FileChangeLog
+            {
+                ChangeType = ChangeType.Created,
+                Timestamp = now,
+                OldValue = string.Empty,
+                NewValue = file.Path,
+                User = "integration-test"
+            });
+
+            dbContext.FileItems.Add(file);
+            await dbContext.SaveChangesAsync();
+
+            return file;
+        }
+
+        public static async Task<FileItem?> FindFileItemAsync(
+            CustomWebApplicationFactory factory,
+            int id)
+        {
+            using var scope = factory.Services.CreateScope();
+            var dbContext = scope.ServiceProvider.GetRequiredService<NasIndexerDbContext>();
+
+            return await dbContext.FileItems
+                .AsNoTracking()
+                .Include(file => file.Directory)
+                .Include(file => file.Tags)
+                .Include(file => file.ChangeLogs)
+                .FirstOrDefaultAsync(file => file.Id == id);
+        }
     }
 }

@@ -213,6 +213,9 @@ Create controllers deriving from `ControllerBase`, marked with `[ApiController]`
 | `DirectoryItem` DTOs | Implemented | `Dtos/DirectoryItemDto.cs`, `Dtos/CreateDirectoryItemDto.cs`, `Dtos/UpdateDirectoryItemDto.cs` | DTOs expose directory metadata, optional scan job/parent IDs, nested safe summaries, child directory count, and file count |
 | `DirectoryItem` API controller | Implemented | `Controllers/Api/DirectoriesApiController.cs` | Uses `[ApiController]`, `ControllerBase`, route `api/directories`, manual mapping, existing repository methods, query/scanJobId/parentId filters, relationship validation, parent-cycle validation, MVC-compatible name/path normalization, and existing delete guard for child directories/files |
 | `DirectoryItem` API integration tests | Implemented | `Labosi-ASP.NET.Tests/Api/DirectoriesApiTests.cs`, `Labosi-ASP.NET.Tests/TestDataFactory.cs` | Tests call real HTTP endpoints through `HttpClient` and verify CRUD/search/filter/status codes, invalid required/relationship/date rules, self-parent, descendant-cycle validation, and child/file delete conflicts |
+| `FileItem` DTOs | Implemented | `Dtos/FileItemDto.cs`, `Dtos/CreateFileItemDto.cs`, `Dtos/UpdateFileItemDto.cs` | DTOs expose file metadata, required directory ID, nested safe directory summary, tag summaries, and change log count |
+| `FileItem` API controller | Implemented | `Controllers/Api/FileItemsApiController.cs` | Uses `[ApiController]`, `ControllerBase`, route `api/files`, manual mapping, existing repository methods, query/directoryId/tagId/extension filters, required directory validation, tag ID validation/deduplication, date/size validation, tag replacement, and existing delete guard for change logs |
+| `FileItem` API integration tests | Implemented | `Labosi-ASP.NET.Tests/Api/FileItemsApiTests.cs`, `Labosi-ASP.NET.Tests/TestDataFactory.cs` | Tests call real HTTP endpoints through `HttpClient` and verify CRUD/search/filter/status codes, invalid required/directory/tag/date/size rules, tag replacement, missing IDs, ID mismatch, and change-log delete conflict |
 | Other entity APIs | Not started | None | Deferred intentionally; do not implement until explicitly requested |
 | Identity/auth | Not started | None | Deferred intentionally |
 | Upload support | Not started | None | Deferred intentionally |
@@ -278,8 +281,8 @@ Current status: the first integration test foundation exists for the `FileTag` A
 | `Labosi-ASP.NET.Tests/Api/NasServersApiTests.cs` | Implemented NasServer API coverage for list/search/get/create/update/delete, invalid input, missing IDs, ID mismatch, dependent delete conflict, and password omission/preservation |
 | `Labosi-ASP.NET.Tests/Api/ScanJobsApiTests.cs` | Implemented ScanJob API coverage for list/search/status/NAS server filters, get/create/update/delete, invalid NAS server, time/progress validation, missing IDs, ID mismatch, and scanned-directory delete conflict |
 | `Labosi-ASP.NET.Tests/Api/DirectoriesApiTests.cs` | Implemented DirectoryItem API coverage for list/search/scan job/parent filters, get/create/update/delete, invalid required fields, missing scan job/parent IDs, invalid dates, self-parent, descendant cycle, missing IDs, ID mismatch, and child/file delete conflicts |
+| `Labosi-ASP.NET.Tests/Api/FileItemsApiTests.cs` | Implemented FileItem API coverage for list/search/directory/tag/extension filters, get/create/update/delete, invalid required fields, missing directory ID, invalid tag IDs, negative size, invalid dates, missing IDs, ID mismatch, tag replacement, and change-log delete conflict |
 | `Labosi-ASP.NET.Tests/TestAuthHandler.cs` | Planned later for protected API tests |
-| `Labosi-ASP.NET.Tests/Api/FileItemsApiTests.cs` | Planned later |
 | `Labosi-ASP.NET.Tests/Api/FileChangeLogsApiTests.cs` | Planned later |
 | `Labosi-ASP.NET.Tests/Api/SystemAdminsApiTests.cs` | Planned later |
 | `Labosi-ASP.NET.Tests/Api/FileAttachmentsApiTests.cs` | Planned later |
@@ -323,13 +326,13 @@ Minimum test coverage per API controller:
 
 ### Checkpoint 2 - Core Metadata API CRUD
 
-- Status: partially implemented for `NasServer`, `ScanJob`, and `DirectoryItem` only.
+- Status: implemented for `NasServer`, `ScanJob`, `DirectoryItem`, and `FileItem`.
 - Added `NasServersApiController` and NasServer DTOs.
 - Added `ScanJobsApiController` and ScanJob DTOs.
 - Added `DirectoriesApiController` and DirectoryItem DTOs.
-- Preserved existing Lab 4 NasServer, ScanJob, and DirectoryItem business rules in API validation and delete guards.
+- Added `FileItemsApiController` and FileItem DTOs.
+- Preserved existing Lab 4 NasServer, ScanJob, DirectoryItem, and FileItem business rules in API validation and delete guards.
 - Verified `NasServer.Password` is not exposed or accepted by DTOs; tests assert JSON does not contain a password property or raw password value.
-- `FileItemsApiController` remains deferred.
 - Build and integration tests pass for implemented API slices.
 
 ### Checkpoint 3 - Audit And Admin API
@@ -364,7 +367,7 @@ Minimum test coverage per API controller:
 
 ### Checkpoint 7 - Integration Tests
 
-- Status: first API integration foundation implemented for `FileTag` and extended to `NasServer`, `ScanJob`, and `DirectoryItem`.
+- Status: first API integration foundation implemented for `FileTag` and extended to `NasServer`, `ScanJob`, `DirectoryItem`, and `FileItem`.
 - Added test project and WebApplicationFactory-based factory.
 - Proved implemented vertical endpoints end-to-end through real `HttpClient` calls and SQLite in-memory data isolation.
 - Next later step: replicate the pattern across remaining API controllers only after those APIs exist.
