@@ -475,5 +475,59 @@ namespace Labosi_ASP.NET.Tests
                 .Include(file => file.ChangeLogs)
                 .FirstOrDefaultAsync(file => file.Id == id);
         }
+
+        public static async Task<FileChangeLog> CreateFileChangeLogAsync(
+            CustomWebApplicationFactory factory,
+            int? fileId = null,
+            ChangeType changeType = ChangeType.Modified,
+            string? oldValue = null,
+            string? newValue = null,
+            string? user = null)
+        {
+            using var scope = factory.Services.CreateScope();
+            var dbContext = scope.ServiceProvider.GetRequiredService<NasIndexerDbContext>();
+            var now = new DateTime(2026, 6, 10, 22, 0, 0, DateTimeKind.Utc);
+
+            if (!fileId.HasValue)
+            {
+                var directory = new DirectoryItem
+                {
+                    Name = $"log-dir-{Guid.NewGuid():N}"[..20],
+                    Path = $"/log-dir/{Guid.NewGuid():N}",
+                    CreatedDate = now,
+                    ModifiedDate = now
+                };
+
+                var file = new FileItem
+                {
+                    Name = $"log-{Guid.NewGuid():N}.txt",
+                    Path = $"{directory.Path}/log.txt",
+                    Extension = ".txt",
+                    Size = 512,
+                    CreatedDate = now,
+                    ModifiedDate = now,
+                    Directory = directory
+                };
+
+                dbContext.FileItems.Add(file);
+                await dbContext.SaveChangesAsync();
+                fileId = file.Id;
+            }
+
+            var changeLog = new FileChangeLog
+            {
+                FileId = fileId.Value,
+                ChangeType = changeType,
+                Timestamp = now,
+                OldValue = oldValue ?? "old-value",
+                NewValue = newValue ?? "new-value",
+                User = user ?? "integration-test"
+            };
+
+            dbContext.FileChangeLogs.Add(changeLog);
+            await dbContext.SaveChangesAsync();
+
+            return changeLog;
+        }
     }
 }
