@@ -82,7 +82,7 @@ namespace Labosi_ASP.NET.Tests.Api
         public async Task GetDirectory_ReturnsOk_WhenDirectoryExists()
         {
             using var factory = new CustomWebApplicationFactory();
-            using var client = factory.CreateClient();
+            using var client = factory.CreateAuthenticatedClient();
             var parent = await TestDataFactory.CreateDirectoryAsync(factory);
             var directory = await TestDataFactory.CreateDirectoryAsync(factory, parentId: parent.Id);
 
@@ -100,7 +100,7 @@ namespace Labosi_ASP.NET.Tests.Api
         public async Task GetDirectory_ReturnsNotFound_WhenDirectoryDoesNotExist()
         {
             using var factory = new CustomWebApplicationFactory();
-            using var client = factory.CreateClient();
+            using var client = factory.CreateAuthenticatedClient();
 
             var response = await client.GetAsync("/api/directories/999999");
 
@@ -111,7 +111,7 @@ namespace Labosi_ASP.NET.Tests.Api
         public async Task PostDirectory_WithValidData_ReturnsCreatedAndCreatesRecord()
         {
             using var factory = new CustomWebApplicationFactory();
-            using var client = factory.CreateClient();
+            using var client = factory.CreateManagerClient();
             var scanJob = await TestDataFactory.CreateScanJobAsync(factory);
             var parent = await TestDataFactory.CreateDirectoryAsync(factory);
             var request = new CreateDirectoryItemDto
@@ -143,7 +143,7 @@ namespace Labosi_ASP.NET.Tests.Api
         public async Task PostDirectory_WithInvalidOrMissingRequiredFields_ReturnsBadRequest()
         {
             using var factory = new CustomWebApplicationFactory();
-            using var client = factory.CreateClient();
+            using var client = factory.CreateManagerClient();
             var request = new CreateDirectoryItemDto
             {
                 Name = " ",
@@ -161,7 +161,7 @@ namespace Labosi_ASP.NET.Tests.Api
         public async Task PostDirectory_WithMissingScanJobId_ReturnsBadRequest()
         {
             using var factory = new CustomWebApplicationFactory();
-            using var client = factory.CreateClient();
+            using var client = factory.CreateManagerClient();
             var request = ValidCreateDto();
             request.ScanJobId = 999999;
 
@@ -174,7 +174,7 @@ namespace Labosi_ASP.NET.Tests.Api
         public async Task PostDirectory_WithMissingParentId_ReturnsBadRequest()
         {
             using var factory = new CustomWebApplicationFactory();
-            using var client = factory.CreateClient();
+            using var client = factory.CreateManagerClient();
             var request = ValidCreateDto();
             request.ParentId = 999999;
 
@@ -187,7 +187,7 @@ namespace Labosi_ASP.NET.Tests.Api
         public async Task PostDirectory_WithModifiedDateBeforeCreatedDate_ReturnsBadRequest()
         {
             using var factory = new CustomWebApplicationFactory();
-            using var client = factory.CreateClient();
+            using var client = factory.CreateManagerClient();
             var request = ValidCreateDto();
             request.CreatedDate = new DateTime(2026, 6, 10, 22, 0, 0, DateTimeKind.Utc);
             request.ModifiedDate = request.CreatedDate.Value.AddMinutes(-1);
@@ -201,7 +201,7 @@ namespace Labosi_ASP.NET.Tests.Api
         public async Task PutDirectory_WithValidData_UpdatesAllowedFields()
         {
             using var factory = new CustomWebApplicationFactory();
-            using var client = factory.CreateClient();
+            using var client = factory.CreateManagerClient();
             var scanJob = await TestDataFactory.CreateScanJobAsync(factory);
             var parent = await TestDataFactory.CreateDirectoryAsync(factory);
             var directory = await TestDataFactory.CreateDirectoryAsync(factory);
@@ -236,7 +236,7 @@ namespace Labosi_ASP.NET.Tests.Api
         public async Task PutDirectory_WithIdMismatch_ReturnsBadRequest()
         {
             using var factory = new CustomWebApplicationFactory();
-            using var client = factory.CreateClient();
+            using var client = factory.CreateManagerClient();
             var directory = await TestDataFactory.CreateDirectoryAsync(factory);
             var request = ValidUpdateDto(directory.Id + 1);
 
@@ -249,7 +249,7 @@ namespace Labosi_ASP.NET.Tests.Api
         public async Task PutDirectory_ForMissingDirectory_ReturnsNotFound()
         {
             using var factory = new CustomWebApplicationFactory();
-            using var client = factory.CreateClient();
+            using var client = factory.CreateManagerClient();
             var request = ValidUpdateDto(999999);
 
             var response = await client.PutAsJsonAsync("/api/directories/999999", request);
@@ -261,7 +261,7 @@ namespace Labosi_ASP.NET.Tests.Api
         public async Task PutDirectory_SettingParentIdToItself_ReturnsBadRequest()
         {
             using var factory = new CustomWebApplicationFactory();
-            using var client = factory.CreateClient();
+            using var client = factory.CreateManagerClient();
             var directory = await TestDataFactory.CreateDirectoryAsync(factory);
             var request = ValidUpdateDto(directory.Id);
             request.ParentId = directory.Id;
@@ -275,7 +275,7 @@ namespace Labosi_ASP.NET.Tests.Api
         public async Task PutDirectory_MovingUnderOwnDescendant_ReturnsBadRequest()
         {
             using var factory = new CustomWebApplicationFactory();
-            using var client = factory.CreateClient();
+            using var client = factory.CreateManagerClient();
             var parent = await TestDataFactory.CreateDirectoryAsync(factory);
             var child = await TestDataFactory.CreateDirectoryAsync(factory, parentId: parent.Id);
             var request = ValidUpdateDto(parent.Id);
@@ -290,7 +290,7 @@ namespace Labosi_ASP.NET.Tests.Api
         public async Task DeleteDirectory_ForExistingDirectoryWithoutChildrenOrFiles_DeletesRecord()
         {
             using var factory = new CustomWebApplicationFactory();
-            using var client = factory.CreateClient();
+            using var client = factory.CreateAdminClient();
             var directory = await TestDataFactory.CreateDirectoryAsync(factory);
 
             var response = await client.DeleteAsync($"/api/directories/{directory.Id}");
@@ -304,7 +304,7 @@ namespace Labosi_ASP.NET.Tests.Api
         public async Task DeleteDirectory_ForMissingDirectory_ReturnsNotFound()
         {
             using var factory = new CustomWebApplicationFactory();
-            using var client = factory.CreateClient();
+            using var client = factory.CreateAdminClient();
 
             var response = await client.DeleteAsync("/api/directories/999999");
 
@@ -315,7 +315,7 @@ namespace Labosi_ASP.NET.Tests.Api
         public async Task DeleteDirectory_ForDirectoryWithChildDirectories_ReturnsConflict()
         {
             using var factory = new CustomWebApplicationFactory();
-            using var client = factory.CreateClient();
+            using var client = factory.CreateAdminClient();
             var directory = await TestDataFactory.CreateDirectoryWithChildAsync(factory);
 
             var response = await client.DeleteAsync($"/api/directories/{directory.Id}");
@@ -330,7 +330,7 @@ namespace Labosi_ASP.NET.Tests.Api
         public async Task DeleteDirectory_ForDirectoryWithFiles_ReturnsConflict()
         {
             using var factory = new CustomWebApplicationFactory();
-            using var client = factory.CreateClient();
+            using var client = factory.CreateAdminClient();
             var directory = await TestDataFactory.CreateDirectoryWithFileAsync(factory);
 
             var response = await client.DeleteAsync($"/api/directories/{directory.Id}");

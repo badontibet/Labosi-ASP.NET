@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NasIndexer.Dtos;
 using NasIndexer.Model;
@@ -16,6 +17,7 @@ namespace NasIndexer.Controllers.Api
             this.repository = repository;
         }
 
+        [AllowAnonymous]
         [HttpGet]
         public ActionResult<IEnumerable<FileChangeLogDto>> GetFileChangeLogs(
             [FromQuery] string? query,
@@ -36,6 +38,7 @@ namespace NasIndexer.Controllers.Api
             return Ok(changeLogs.Select(ToDto));
         }
 
+        [Authorize]
         [HttpGet("{id:int}")]
         public ActionResult<FileChangeLogDto> GetFileChangeLog(int id)
         {

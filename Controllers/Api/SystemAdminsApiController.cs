@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NasIndexer.Dtos;
 using NasIndexer.Model;
@@ -18,6 +19,7 @@ namespace NasIndexer.Controllers.Api
             this.repository = repository;
         }
 
+        [AllowAnonymous]
         [HttpGet]
         public ActionResult<IEnumerable<SystemAdminDto>> GetSystemAdmins(
             [FromQuery] string? query,
@@ -37,6 +39,7 @@ namespace NasIndexer.Controllers.Api
             return Ok(admins.Select(ToDto));
         }
 
+        [Authorize]
         [HttpGet("{id:int}")]
         public ActionResult<SystemAdminDto> GetSystemAdmin(int id)
         {
@@ -50,6 +53,7 @@ namespace NasIndexer.Controllers.Api
             return Ok(ToDto(admin));
         }
 
+        [Authorize(Roles = "Admin,Manager")]
         [HttpPost]
         public ActionResult<SystemAdminDto> CreateSystemAdmin(CreateSystemAdminDto dto)
         {
@@ -75,6 +79,7 @@ namespace NasIndexer.Controllers.Api
             return CreatedAtAction(nameof(GetSystemAdmin), new { id = created.Id }, ToDto(created));
         }
 
+        [Authorize(Roles = "Admin,Manager")]
         [HttpPut("{id:int}")]
         public ActionResult<SystemAdminDto> UpdateSystemAdmin(int id, UpdateSystemAdminDto dto)
         {
@@ -113,6 +118,7 @@ namespace NasIndexer.Controllers.Api
             return Ok(ToDto(updated));
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpDelete("{id:int}")]
         public IActionResult DeleteSystemAdmin(int id)
         {

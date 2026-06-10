@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NasIndexer.Dtos;
 using NasIndexer.Model;
@@ -16,6 +17,7 @@ namespace NasIndexer.Controllers.Api
             this.repository = repository;
         }
 
+        [AllowAnonymous]
         [HttpGet]
         public ActionResult<IEnumerable<FileItemDto>> GetFiles(
             [FromQuery] string? query,
@@ -52,6 +54,7 @@ namespace NasIndexer.Controllers.Api
             return Ok(files.Select(ToDto));
         }
 
+        [Authorize]
         [HttpGet("{id:int}")]
         public ActionResult<FileItemDto> GetFile(int id)
         {
@@ -65,6 +68,7 @@ namespace NasIndexer.Controllers.Api
             return Ok(ToDto(file));
         }
 
+        [Authorize(Roles = "Admin,Manager")]
         [HttpPost]
         public ActionResult<FileItemDto> CreateFile(CreateFileItemDto dto)
         {
@@ -91,6 +95,7 @@ namespace NasIndexer.Controllers.Api
             return CreatedAtAction(nameof(GetFile), new { id = created.Id }, ToDto(created));
         }
 
+        [Authorize(Roles = "Admin,Manager")]
         [HttpPut("{id:int}")]
         public ActionResult<FileItemDto> UpdateFile(int id, UpdateFileItemDto dto)
         {
@@ -131,6 +136,7 @@ namespace NasIndexer.Controllers.Api
             return Ok(ToDto(updated));
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpDelete("{id:int}")]
         public IActionResult DeleteFile(int id)
         {

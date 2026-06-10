@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NasIndexer.Dtos;
 using NasIndexer.Model;
@@ -16,6 +17,7 @@ namespace NasIndexer.Controllers.Api
             this.repository = repository;
         }
 
+        [AllowAnonymous]
         [HttpGet]
         public ActionResult<IEnumerable<NasServerDto>> GetNasServers([FromQuery] string? query)
         {
@@ -26,6 +28,7 @@ namespace NasIndexer.Controllers.Api
             return Ok(servers.Select(ToDto));
         }
 
+        [Authorize]
         [HttpGet("{id:int}")]
         public ActionResult<NasServerDto> GetNasServer(int id)
         {
@@ -39,6 +42,7 @@ namespace NasIndexer.Controllers.Api
             return Ok(ToDto(server));
         }
 
+        [Authorize(Roles = "Admin,Manager")]
         [HttpPost]
         public ActionResult<NasServerDto> CreateNasServer(CreateNasServerDto dto)
         {
@@ -63,6 +67,7 @@ namespace NasIndexer.Controllers.Api
             return CreatedAtAction(nameof(GetNasServer), new { id = created.Id }, ToDto(created));
         }
 
+        [Authorize(Roles = "Admin,Manager")]
         [HttpPut("{id:int}")]
         public ActionResult<NasServerDto> UpdateNasServer(int id, UpdateNasServerDto dto)
         {
@@ -96,6 +101,7 @@ namespace NasIndexer.Controllers.Api
             return Ok(ToDto(updated));
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpDelete("{id:int}")]
         public IActionResult DeleteNasServer(int id)
         {

@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NasIndexer.Model;
 using NasIndexer.Repositories;
@@ -25,6 +26,7 @@ namespace NasIndexer.Controllers
             return PartialView("_ScanJobRows", repository.SearchScanJobs(query));
         }
 
+        [Authorize]
         public IActionResult Details(int id)
         {
             var scanJob = repository.GetScanJobById(id);
@@ -37,6 +39,7 @@ namespace NasIndexer.Controllers
             return View(scanJob);
         }
 
+        [Authorize(Roles = "Admin,Manager")]
         public IActionResult Create()
         {
             return View(new ScanJobFormViewModel
@@ -48,6 +51,7 @@ namespace NasIndexer.Controllers
             });
         }
 
+        [Authorize(Roles = "Admin,Manager")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult Create(ScanJobFormViewModel model)
@@ -64,6 +68,7 @@ namespace NasIndexer.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        [Authorize(Roles = "Admin,Manager")]
         public IActionResult Edit(int id)
         {
             var scanJob = repository.GetScanJobForEdit(id);
@@ -76,6 +81,7 @@ namespace NasIndexer.Controllers
             return View(ToFormViewModel(scanJob));
         }
 
+        [Authorize(Roles = "Admin,Manager")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult Edit(int id, ScanJobFormViewModel model)
@@ -101,6 +107,7 @@ namespace NasIndexer.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        [Authorize(Roles = "Admin")]
         public IActionResult Delete(int id)
         {
             var scanJob = repository.GetScanJobById(id);
@@ -114,6 +121,7 @@ namespace NasIndexer.Controllers
             return View(scanJob);
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         [ActionName("Delete")]
         [ValidateAntiForgeryToken]
@@ -145,6 +153,7 @@ namespace NasIndexer.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        [Authorize(Roles = "Admin,Manager")]
         public IActionResult NasServerAutocomplete(string term)
         {
             var servers = string.IsNullOrWhiteSpace(term) || term.Trim().Length < 2

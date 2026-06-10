@@ -81,7 +81,7 @@ namespace Labosi_ASP.NET.Tests.Api
         public async Task GetScanJob_ReturnsOk_WhenScanJobExists()
         {
             using var factory = new CustomWebApplicationFactory();
-            using var client = factory.CreateClient();
+            using var client = factory.CreateAuthenticatedClient();
             var scanJob = await TestDataFactory.CreateScanJobAsync(factory);
 
             var response = await client.GetAsync($"/api/scan-jobs/{scanJob.Id}");
@@ -98,7 +98,7 @@ namespace Labosi_ASP.NET.Tests.Api
         public async Task GetScanJob_ReturnsNotFound_WhenScanJobDoesNotExist()
         {
             using var factory = new CustomWebApplicationFactory();
-            using var client = factory.CreateClient();
+            using var client = factory.CreateAuthenticatedClient();
 
             var response = await client.GetAsync("/api/scan-jobs/999999");
 
@@ -109,7 +109,7 @@ namespace Labosi_ASP.NET.Tests.Api
         public async Task PostScanJob_WithValidData_ReturnsCreatedAndCreatesRecord()
         {
             using var factory = new CustomWebApplicationFactory();
-            using var client = factory.CreateClient();
+            using var client = factory.CreateManagerClient();
             var server = await TestDataFactory.CreateNasServerAsync(factory, UniqueName("CreateScanServer"));
             var request = new CreateScanJobDto
             {
@@ -140,7 +140,7 @@ namespace Labosi_ASP.NET.Tests.Api
         public async Task PostScanJob_WithMissingOrInvalidNasServerId_ReturnsBadRequest()
         {
             using var factory = new CustomWebApplicationFactory();
-            using var client = factory.CreateClient();
+            using var client = factory.CreateManagerClient();
             var request = new CreateScanJobDto
             {
                 NasServerId = 999999,
@@ -160,7 +160,7 @@ namespace Labosi_ASP.NET.Tests.Api
         public async Task PostScanJob_WithEndTimeBeforeStartTime_ReturnsBadRequest()
         {
             using var factory = new CustomWebApplicationFactory();
-            using var client = factory.CreateClient();
+            using var client = factory.CreateManagerClient();
             var server = await TestDataFactory.CreateNasServerAsync(factory, UniqueName("EndBeforeStart"));
             var startTime = new DateTime(2026, 6, 10, 19, 0, 0, DateTimeKind.Utc);
             var request = new CreateScanJobDto
@@ -183,7 +183,7 @@ namespace Labosi_ASP.NET.Tests.Api
         public async Task PostScanJob_WithProcessedFilesGreaterThanTotalFiles_ReturnsBadRequest()
         {
             using var factory = new CustomWebApplicationFactory();
-            using var client = factory.CreateClient();
+            using var client = factory.CreateManagerClient();
             var server = await TestDataFactory.CreateNasServerAsync(factory, UniqueName("ProgressInvalid"));
             var request = new CreateScanJobDto
             {
@@ -204,7 +204,7 @@ namespace Labosi_ASP.NET.Tests.Api
         public async Task PutScanJob_WithValidData_UpdatesAllowedFields()
         {
             using var factory = new CustomWebApplicationFactory();
-            using var client = factory.CreateClient();
+            using var client = factory.CreateManagerClient();
             var firstServer = await TestDataFactory.CreateNasServerAsync(factory, UniqueName("BeforeUpdateServer"));
             var secondServer = await TestDataFactory.CreateNasServerAsync(factory, UniqueName("AfterUpdateServer"));
             var scanJob = await TestDataFactory.CreateScanJobAsync(factory, firstServer.Id);
@@ -240,7 +240,7 @@ namespace Labosi_ASP.NET.Tests.Api
         public async Task PutScanJob_WithIdMismatch_ReturnsBadRequest()
         {
             using var factory = new CustomWebApplicationFactory();
-            using var client = factory.CreateClient();
+            using var client = factory.CreateManagerClient();
             var scanJob = await TestDataFactory.CreateScanJobAsync(factory);
             var request = new UpdateScanJobDto
             {
@@ -263,7 +263,7 @@ namespace Labosi_ASP.NET.Tests.Api
         public async Task PutScanJob_ForMissingScanJob_ReturnsNotFound()
         {
             using var factory = new CustomWebApplicationFactory();
-            using var client = factory.CreateClient();
+            using var client = factory.CreateManagerClient();
             var server = await TestDataFactory.CreateNasServerAsync(factory, UniqueName("MissingScanUpdate"));
             var request = new UpdateScanJobDto
             {
@@ -285,7 +285,7 @@ namespace Labosi_ASP.NET.Tests.Api
         public async Task DeleteScanJob_ForExistingScanJobWithoutDirectories_DeletesRecord()
         {
             using var factory = new CustomWebApplicationFactory();
-            using var client = factory.CreateClient();
+            using var client = factory.CreateAdminClient();
             var scanJob = await TestDataFactory.CreateScanJobAsync(factory);
 
             var response = await client.DeleteAsync($"/api/scan-jobs/{scanJob.Id}");
@@ -299,7 +299,7 @@ namespace Labosi_ASP.NET.Tests.Api
         public async Task DeleteScanJob_ForMissingScanJob_ReturnsNotFound()
         {
             using var factory = new CustomWebApplicationFactory();
-            using var client = factory.CreateClient();
+            using var client = factory.CreateAdminClient();
 
             var response = await client.DeleteAsync("/api/scan-jobs/999999");
 
@@ -310,7 +310,7 @@ namespace Labosi_ASP.NET.Tests.Api
         public async Task DeleteScanJob_ForScanJobWithScannedDirectories_ReturnsConflict()
         {
             using var factory = new CustomWebApplicationFactory();
-            using var client = factory.CreateClient();
+            using var client = factory.CreateAdminClient();
             var scanJob = await TestDataFactory.CreateScanJobWithDirectoryAsync(factory);
 
             var response = await client.DeleteAsync($"/api/scan-jobs/{scanJob.Id}");

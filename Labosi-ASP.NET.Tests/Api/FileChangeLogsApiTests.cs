@@ -81,7 +81,7 @@ namespace Labosi_ASP.NET.Tests.Api
         public async Task GetFileChangeLog_ReturnsOk_WhenChangeLogExists()
         {
             using var factory = new CustomWebApplicationFactory();
-            using var client = factory.CreateClient();
+            using var client = factory.CreateAuthenticatedClient();
             var changeLog = await TestDataFactory.CreateFileChangeLogAsync(factory, user: "auditor");
 
             var response = await client.GetAsync($"/api/file-change-logs/{changeLog.Id}");
@@ -98,7 +98,7 @@ namespace Labosi_ASP.NET.Tests.Api
         public async Task GetFileChangeLog_ReturnsNotFound_WhenChangeLogDoesNotExist()
         {
             using var factory = new CustomWebApplicationFactory();
-            using var client = factory.CreateClient();
+            using var client = factory.CreateAuthenticatedClient();
 
             var response = await client.GetAsync("/api/file-change-logs/999999");
 

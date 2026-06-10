@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NasIndexer.Dtos;
 using NasIndexer.Model;
@@ -19,6 +20,7 @@ namespace NasIndexer.Controllers.Api
             this.repository = repository;
         }
 
+        [AllowAnonymous]
         [HttpGet]
         public ActionResult<IEnumerable<DirectoryItemDto>> GetDirectories(
             [FromQuery] string? query,
@@ -46,6 +48,7 @@ namespace NasIndexer.Controllers.Api
             return Ok(directories.Select(ToDto));
         }
 
+        [Authorize]
         [HttpGet("{id:int}")]
         public ActionResult<DirectoryItemDto> GetDirectory(int id)
         {
@@ -59,6 +62,7 @@ namespace NasIndexer.Controllers.Api
             return Ok(ToDto(directory));
         }
 
+        [Authorize(Roles = "Admin,Manager")]
         [HttpPost]
         public ActionResult<DirectoryItemDto> CreateDirectory(CreateDirectoryItemDto dto)
         {
@@ -83,6 +87,7 @@ namespace NasIndexer.Controllers.Api
             return CreatedAtAction(nameof(GetDirectory), new { id = created.Id }, ToDto(created));
         }
 
+        [Authorize(Roles = "Admin,Manager")]
         [HttpPut("{id:int}")]
         public ActionResult<DirectoryItemDto> UpdateDirectory(int id, UpdateDirectoryItemDto dto)
         {
@@ -121,6 +126,7 @@ namespace NasIndexer.Controllers.Api
             return Ok(ToDto(updated));
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpDelete("{id:int}")]
         public IActionResult DeleteDirectory(int id)
         {

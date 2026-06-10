@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NasIndexer.Dtos;
 using NasIndexer.Model;
@@ -16,6 +17,7 @@ namespace NasIndexer.Controllers.Api
             this.repository = repository;
         }
 
+        [AllowAnonymous]
         [HttpGet]
         public ActionResult<IEnumerable<FileTagDto>> GetTags([FromQuery] string? query)
         {
@@ -26,6 +28,7 @@ namespace NasIndexer.Controllers.Api
             return Ok(tags.Select(ToDto));
         }
 
+        [Authorize]
         [HttpGet("{id:int}")]
         public ActionResult<FileTagDto> GetTag(int id)
         {
@@ -39,6 +42,7 @@ namespace NasIndexer.Controllers.Api
             return Ok(ToDto(tag));
         }
 
+        [Authorize(Roles = "Admin,Manager")]
         [HttpPost]
         public ActionResult<FileTagDto> CreateTag(CreateFileTagDto dto)
         {
@@ -60,6 +64,7 @@ namespace NasIndexer.Controllers.Api
             return CreatedAtAction(nameof(GetTag), new { id = created.Id }, ToDto(created));
         }
 
+        [Authorize(Roles = "Admin,Manager")]
         [HttpPut("{id:int}")]
         public ActionResult<FileTagDto> UpdateTag(int id, UpdateFileTagDto dto)
         {
@@ -90,6 +95,7 @@ namespace NasIndexer.Controllers.Api
             return Ok(ToDto(updated));
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpDelete("{id:int}")]
         public IActionResult DeleteTag(int id)
         {

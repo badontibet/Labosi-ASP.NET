@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NasIndexer.Model;
 using NasIndexer.Repositories;
@@ -25,6 +26,7 @@ namespace NasIndexer.Controllers
             return PartialView("_NasServerRows", repository.SearchNasServers(query, int.MaxValue));
         }
 
+        [Authorize]
         public IActionResult Details(int id)
         {
             var server = repository.GetNasServerById(id);
@@ -37,6 +39,7 @@ namespace NasIndexer.Controllers
             return View(server);
         }
 
+        [Authorize(Roles = "Admin,Manager")]
         public IActionResult Create()
         {
             return View(new NasServerFormViewModel
@@ -47,6 +50,7 @@ namespace NasIndexer.Controllers
             });
         }
 
+        [Authorize(Roles = "Admin,Manager")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult Create(NasServerFormViewModel model)
@@ -63,6 +67,7 @@ namespace NasIndexer.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        [Authorize(Roles = "Admin,Manager")]
         public IActionResult Edit(int id)
         {
             var server = repository.GetNasServerForEdit(id);
@@ -75,6 +80,7 @@ namespace NasIndexer.Controllers
             return View(ToFormViewModel(server));
         }
 
+        [Authorize(Roles = "Admin,Manager")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult Edit(int id, NasServerFormViewModel model)
@@ -100,6 +106,7 @@ namespace NasIndexer.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        [Authorize(Roles = "Admin")]
         public IActionResult Delete(int id)
         {
             var server = repository.GetNasServerById(id);
@@ -113,6 +120,7 @@ namespace NasIndexer.Controllers
             return View(server);
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         [ActionName("Delete")]
         [ValidateAntiForgeryToken]

@@ -45,7 +45,7 @@ namespace Labosi_ASP.NET.Tests.Api
         public async Task GetNasServer_ReturnsOk_WhenServerExists()
         {
             using var factory = new CustomWebApplicationFactory();
-            using var client = factory.CreateClient();
+            using var client = factory.CreateAuthenticatedClient();
             var server = await TestDataFactory.CreateNasServerAsync(factory, UniqueName("GetById"));
 
             var response = await client.GetAsync($"/api/nas-servers/{server.Id}");
@@ -61,7 +61,7 @@ namespace Labosi_ASP.NET.Tests.Api
         public async Task GetNasServer_ReturnsNotFound_WhenServerDoesNotExist()
         {
             using var factory = new CustomWebApplicationFactory();
-            using var client = factory.CreateClient();
+            using var client = factory.CreateAuthenticatedClient();
 
             var response = await client.GetAsync("/api/nas-servers/999999");
 
@@ -72,7 +72,7 @@ namespace Labosi_ASP.NET.Tests.Api
         public async Task GetNasServer_ResponseDoesNotContainPasswordPropertyOrRawPassword()
         {
             using var factory = new CustomWebApplicationFactory();
-            using var client = factory.CreateClient();
+            using var client = factory.CreateAuthenticatedClient();
             const string rawPassword = "raw-nas-password-secret";
             var server = await TestDataFactory.CreateNasServerAsync(
                 factory,
@@ -93,7 +93,7 @@ namespace Labosi_ASP.NET.Tests.Api
         public async Task PostNasServer_WithValidData_ReturnsCreatedAndIgnoresPassword()
         {
             using var factory = new CustomWebApplicationFactory();
-            using var client = factory.CreateClient();
+            using var client = factory.CreateManagerClient();
             const string submittedPassword = "submitted-password-must-not-bind";
             var request = new
             {
@@ -128,7 +128,7 @@ namespace Labosi_ASP.NET.Tests.Api
         public async Task PostNasServer_WithInvalidData_ReturnsBadRequest()
         {
             using var factory = new CustomWebApplicationFactory();
-            using var client = factory.CreateClient();
+            using var client = factory.CreateManagerClient();
             var request = new CreateNasServerDto
             {
                 Name = " ",
@@ -148,7 +148,7 @@ namespace Labosi_ASP.NET.Tests.Api
         public async Task PutNasServer_WithValidData_UpdatesAllowedFieldsOnly()
         {
             using var factory = new CustomWebApplicationFactory();
-            using var client = factory.CreateClient();
+            using var client = factory.CreateManagerClient();
             const string originalPassword = "preserve-this-secret";
             var server = await TestDataFactory.CreateNasServerAsync(
                 factory,
@@ -186,7 +186,7 @@ namespace Labosi_ASP.NET.Tests.Api
         public async Task PutNasServer_WithIdMismatch_ReturnsBadRequest()
         {
             using var factory = new CustomWebApplicationFactory();
-            using var client = factory.CreateClient();
+            using var client = factory.CreateManagerClient();
             var server = await TestDataFactory.CreateNasServerAsync(factory, UniqueName("Mismatch"));
             var request = new UpdateNasServerDto
             {
@@ -208,7 +208,7 @@ namespace Labosi_ASP.NET.Tests.Api
         public async Task PutNasServer_ForMissingServer_ReturnsNotFound()
         {
             using var factory = new CustomWebApplicationFactory();
-            using var client = factory.CreateClient();
+            using var client = factory.CreateManagerClient();
             var request = new UpdateNasServerDto
             {
                 Id = 999999,
@@ -229,7 +229,7 @@ namespace Labosi_ASP.NET.Tests.Api
         public async Task DeleteNasServer_ForExistingServerWithoutDependents_DeletesRecord()
         {
             using var factory = new CustomWebApplicationFactory();
-            using var client = factory.CreateClient();
+            using var client = factory.CreateAdminClient();
             var server = await TestDataFactory.CreateNasServerAsync(factory, UniqueName("Delete"));
 
             var response = await client.DeleteAsync($"/api/nas-servers/{server.Id}");
@@ -243,7 +243,7 @@ namespace Labosi_ASP.NET.Tests.Api
         public async Task DeleteNasServer_ForMissingServer_ReturnsNotFound()
         {
             using var factory = new CustomWebApplicationFactory();
-            using var client = factory.CreateClient();
+            using var client = factory.CreateAdminClient();
 
             var response = await client.DeleteAsync("/api/nas-servers/999999");
 
@@ -254,7 +254,7 @@ namespace Labosi_ASP.NET.Tests.Api
         public async Task DeleteNasServer_ForServerWithScanJobs_ReturnsConflict()
         {
             using var factory = new CustomWebApplicationFactory();
-            using var client = factory.CreateClient();
+            using var client = factory.CreateAdminClient();
             var server = await TestDataFactory.CreateNasServerWithScanJobAsync(factory, UniqueName("DependentDelete"));
 
             var response = await client.DeleteAsync($"/api/nas-servers/{server.Id}");

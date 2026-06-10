@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NasIndexer.Model;
 using NasIndexer.Repositories;
@@ -25,6 +26,7 @@ namespace NasIndexer.Controllers
             return PartialView("_DirectoryRows", repository.SearchDirectories(query));
         }
 
+        [Authorize]
         public IActionResult Details(int id)
         {
             var directory = repository.GetDirectoryById(id);
@@ -37,6 +39,7 @@ namespace NasIndexer.Controllers
             return View(directory);
         }
 
+        [Authorize(Roles = "Admin,Manager")]
         public IActionResult Create()
         {
             var now = DateTime.Now;
@@ -47,6 +50,7 @@ namespace NasIndexer.Controllers
             });
         }
 
+        [Authorize(Roles = "Admin,Manager")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult Create(DirectoryItemFormViewModel model)
@@ -63,6 +67,7 @@ namespace NasIndexer.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        [Authorize(Roles = "Admin,Manager")]
         public IActionResult Edit(int id)
         {
             var directory = repository.GetDirectoryForEdit(id);
@@ -75,6 +80,7 @@ namespace NasIndexer.Controllers
             return View(ToFormViewModel(directory));
         }
 
+        [Authorize(Roles = "Admin,Manager")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult Edit(int id, DirectoryItemFormViewModel model)
@@ -100,6 +106,7 @@ namespace NasIndexer.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        [Authorize(Roles = "Admin")]
         public IActionResult Delete(int id)
         {
             var directory = repository.GetDirectoryById(id);
@@ -113,6 +120,7 @@ namespace NasIndexer.Controllers
             return View(directory);
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         [ActionName("Delete")]
         [ValidateAntiForgeryToken]
@@ -144,6 +152,7 @@ namespace NasIndexer.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        [Authorize(Roles = "Admin,Manager")]
         public IActionResult ParentDirectoryAutocomplete(string term, int? excludeId)
         {
             var directories = string.IsNullOrWhiteSpace(term) || term.Trim().Length < 2
@@ -157,6 +166,7 @@ namespace NasIndexer.Controllers
             }));
         }
 
+        [Authorize(Roles = "Admin,Manager")]
         public IActionResult ScanJobAutocomplete(string term)
         {
             var scanJobs = string.IsNullOrWhiteSpace(term) || term.Trim().Length < 2

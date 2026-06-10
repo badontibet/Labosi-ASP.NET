@@ -222,9 +222,10 @@ Create controllers deriving from `ControllerBase`, marked with `[ApiController]`
 | `SystemAdmin` DTOs | Implemented | `Dtos/SystemAdminDto.cs`, `Dtos/CreateSystemAdminDto.cs`, `Dtos/UpdateSystemAdminDto.cs` | DTOs keep `SystemAdmin` as a NAS domain entity, expose non-sensitive admin metadata and managed NAS server references, and do not expose or accept `Password` |
 | `SystemAdmin` API controller | Implemented | `Controllers/Api/SystemAdminsApiController.cs` | Uses `[ApiController]`, `ControllerBase`, route `api/system-admins`, manual mapping, query/nasServerId filters, safe placeholder password on API create, update that preserves existing password, managed server ID validation, relationship replacement, and existing delete guard for managed servers |
 | `SystemAdmin` API integration tests | Implemented | `Labosi-ASP.NET.Tests/Api/SystemAdminsApiTests.cs`, `Labosi-ASP.NET.Tests/TestDataFactory.cs` | Tests call real HTTP endpoints through `HttpClient` and verify CRUD/filter/status codes, managed server validation/replacement, delete conflict, password omission, raw password absence, submitted password ignored on create, and password preservation on update |
-| Identity local account foundation | Implemented | `Models/AppUser.cs`, `Data/NasIndexerDbContext.cs`, `Program.cs`, `Areas/Identity/Pages/Account/Register.cshtml`, `Areas/Identity/Pages/Account/Register.cshtml.cs`, `Views/Shared/_LoginPartial.cshtml`, `Views/Shared/_Layout.cshtml`, `Migrations/20260610190429_AddIdentityAppUser.cs` | Uses ASP.NET Core Identity with separate `AppUser`, required OIB/JMBG fields, local registration/login/logout, Identity UI Razor Pages, and no role authorization or external login yet |
+| Identity local account foundation | Implemented | `Models/AppUser.cs`, `Data/NasIndexerDbContext.cs`, `Program.cs`, `Areas/Identity/Pages/Account/Register.cshtml`, `Areas/Identity/Pages/Account/Register.cshtml.cs`, `Views/Shared/_LoginPartial.cshtml`, `Views/Shared/_Layout.cshtml`, `Migrations/20260610190429_AddIdentityAppUser.cs` | Uses ASP.NET Core Identity with separate `AppUser`, required OIB/JMBG fields, local registration/login/logout, and Identity UI Razor Pages |
+| Role-based authorization | Implemented | `Data/IdentitySeedData.cs`, `Program.cs`, `Controllers/*.cs`, `Controllers/Api/*.cs`, `Labosi-ASP.NET.Tests/TestAuthHandler.cs`, `Labosi-ASP.NET.Tests/CustomWebApplicationFactory.cs`, `Labosi-ASP.NET.Tests/Api/AuthorizationTests.cs`, existing API test files | Seeds `Admin` and `Manager`, keeps anonymous list/search, requires authenticated details, allows Admin/Manager writes, restricts deletes to Admin, and preserves read-only FileChangeLog |
 | Upload support | Not started | None | Deferred intentionally |
-| Attachment/Auth integration tests | Not started | None | Auth role tests and upload tests are deferred intentionally |
+| Attachment integration tests | Not started | None | Upload tests are deferred intentionally |
 
 Authorization should be applied consistently to MVC and API surfaces:
 
@@ -259,7 +260,7 @@ Identity files:
 | `Views/Shared/_LoginPartial.cshtml` | Implemented login/register links for anonymous users and manage/logout links for signed-in users |
 | `Views/Shared/_Layout.cshtml` | Implemented login partial rendering from the side navigation |
 | `Migrations/20260610190429_AddIdentityAppUser.cs` | Implemented Identity/AppUser schema migration |
-| `Data/IdentitySeedData.cs` or similar | Planned later only if role seeding is requested |
+| `Data/IdentitySeedData.cs` | Implemented role seed helper for `Admin` and `Manager`, plus optional configured role assignment by existing user email |
 | `Areas/Identity/Pages/Account/ExternalLogin.cshtml` | Planned later with Google/Facebook login support |
 | `Areas/Identity/Pages/Account/ExternalLogin.cshtml.cs` | Planned later with Google/Facebook login support |
 | `appsettings.json` / user secrets | Planned later for external provider credentials; no real secrets committed |
@@ -273,10 +274,11 @@ Important identity decision:
 - ASP.NET Core Identity authentication must use `AppUser` separately.
 - If the domain ever needs to connect a NAS `SystemAdmin` record to an authenticated account, add an explicit optional link to `AppUser` in a later scoped design instead of treating `SystemAdmin` as the auth user.
 - `dotnet ef database update` was not run during this Identity foundation step. Review migration `20260610190429_AddIdentityAppUser` first, then run `dotnet ef database update` when ready to apply it to the development SQLite database.
+- Role support is enabled with `Admin` and `Manager` roles. The seed helper creates roles only and can assign those roles to already-existing users via configuration keys `IdentitySeed:AdminEmails` and `IdentitySeed:ManagerEmails`; it does not create production users or hardcode passwords.
 
 ## Integration Test Project/Files Likely Added Later
 
-Current status: the integration test foundation exists and covers the implemented `FileTag`, `NasServer`, `ScanJob`, `DirectoryItem`, `FileItem`, read-only `FileChangeLog`, and `SystemAdmin` API slices. Auth and upload tests remain planned later.
+Current status: the integration test foundation exists and covers the implemented `FileTag`, `NasServer`, `ScanJob`, `DirectoryItem`, `FileItem`, read-only `FileChangeLog`, `SystemAdmin`, and role authorization behavior. Upload tests remain planned later.
 
 | File/folder | Purpose |
 |---|---|
@@ -290,7 +292,8 @@ Current status: the integration test foundation exists and covers the implemente
 | `Labosi-ASP.NET.Tests/Api/FileItemsApiTests.cs` | Implemented FileItem API coverage for list/search/directory/tag/extension filters, get/create/update/delete, invalid required fields, missing directory ID, invalid tag IDs, negative size, invalid dates, missing IDs, ID mismatch, tag replacement, and change-log delete conflict |
 | `Labosi-ASP.NET.Tests/Api/FileChangeLogsApiTests.cs` | Implemented read-only FileChangeLog API coverage for list/query/changeType/fileId filters, details, missing ID, and unavailable POST/PUT/DELETE |
 | `Labosi-ASP.NET.Tests/Api/SystemAdminsApiTests.cs` | Implemented SystemAdmin API coverage for list/query/nasServerId filters, get/create/update/delete, invalid input, invalid managed server IDs, ID mismatch, missing IDs, password omission/raw-secret absence, ignored submitted password, password preservation, managed server replacement, and managed-server delete conflict |
-| `Labosi-ASP.NET.Tests/TestAuthHandler.cs` | Planned later for protected API tests |
+| `Labosi-ASP.NET.Tests/TestAuthHandler.cs` | Implemented test-only authentication handler for anonymous, authenticated, Manager, and Admin API/MVC authorization tests |
+| `Labosi-ASP.NET.Tests/Api/AuthorizationTests.cs` | Implemented focused authorization coverage for anonymous list/search, unauthorized details, authenticated details, non-role forbidden writes, Manager create/edit without delete, Admin create/edit/delete, FileChangeLog write absence, and representative MVC authorization behavior |
 | `Labosi-ASP.NET.Tests/Api/FileAttachmentsApiTests.cs` | Planned later |
 
 Likely test packages:
@@ -359,13 +362,16 @@ Minimum test coverage per API controller:
 
 ### Checkpoint 5 - Local Identity And Roles
 
-- Status: local Identity account foundation implemented; roles/authorization remain deferred.
+- Status: local Identity account foundation and role-based authorization implemented.
 - Added `AppUser : IdentityUser` with required OIB and JMBG validation.
 - Integrated Identity into `NasIndexerDbContext` through `IdentityDbContext<AppUser>`.
 - Added local register/login/logout support through Identity UI and a custom registration page for OIB/JMBG.
 - Added `_LoginPartial`, rendered it from the shared layout, and configured `UseAuthentication()` before `UseAuthorization()`.
 - Generated migration `20260610190429_AddIdentityAppUser`; `dotnet ef database update` was not run.
-- Later step: register roles `Admin` and `Manager`, seed roles if needed, and apply `[Authorize]`, `[AllowAnonymous]`, and role requirements to MVC and API writes.
+- Added `Admin` and `Manager` role support and role seeding.
+- Applied `[Authorize]` and role requirements to MVC/API details and write endpoints while preserving anonymous list/search endpoints and public home/dashboard pages.
+- Existing API integration tests were updated to authenticate with the required role, and focused authorization tests were added.
+- Later step: external login remains deferred.
 
 ### Checkpoint 6 - Third-Party Login
 
@@ -375,11 +381,11 @@ Minimum test coverage per API controller:
 
 ### Checkpoint 7 - Integration Tests
 
-- Status: API integration foundation implemented for `FileTag`, `NasServer`, `ScanJob`, `DirectoryItem`, `FileItem`, read-only `FileChangeLog`, and `SystemAdmin`.
+- Status: API integration foundation implemented for `FileTag`, `NasServer`, `ScanJob`, `DirectoryItem`, `FileItem`, read-only `FileChangeLog`, `SystemAdmin`, and role authorization.
 - Added test project and WebApplicationFactory-based factory.
 - Proved implemented vertical endpoints end-to-end through real `HttpClient` calls and SQLite in-memory data isolation.
-- Next later step: replicate the pattern across remaining API controllers only after those APIs exist.
-- Auth role coverage and attachment upload/list/delete tests remain deferred.
+- Added test-only auth handler for anonymous/authenticated/Manager/Admin requests.
+- Attachment upload/list/delete tests remain deferred.
 
 ### Checkpoint 8 - Final Audit
 

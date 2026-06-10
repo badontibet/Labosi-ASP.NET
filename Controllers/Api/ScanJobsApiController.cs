@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NasIndexer.Dtos;
 using NasIndexer.Model;
@@ -16,6 +17,7 @@ namespace NasIndexer.Controllers.Api
             this.repository = repository;
         }
 
+        [AllowAnonymous]
         [HttpGet]
         public ActionResult<IEnumerable<ScanJobDto>> GetScanJobs(
             [FromQuery] string? query,
@@ -43,6 +45,7 @@ namespace NasIndexer.Controllers.Api
             return Ok(scanJobs.Select(ToDto));
         }
 
+        [Authorize]
         [HttpGet("{id:int}")]
         public ActionResult<ScanJobDto> GetScanJob(int id)
         {
@@ -56,6 +59,7 @@ namespace NasIndexer.Controllers.Api
             return Ok(ToDto(scanJob));
         }
 
+        [Authorize(Roles = "Admin,Manager")]
         [HttpPost]
         public ActionResult<ScanJobDto> CreateScanJob(CreateScanJobDto dto)
         {
@@ -81,6 +85,7 @@ namespace NasIndexer.Controllers.Api
             return CreatedAtAction(nameof(GetScanJob), new { id = created.Id }, ToDto(created));
         }
 
+        [Authorize(Roles = "Admin,Manager")]
         [HttpPut("{id:int}")]
         public ActionResult<ScanJobDto> UpdateScanJob(int id, UpdateScanJobDto dto)
         {
@@ -115,6 +120,7 @@ namespace NasIndexer.Controllers.Api
             return Ok(ToDto(updated));
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpDelete("{id:int}")]
         public IActionResult DeleteScanJob(int id)
         {

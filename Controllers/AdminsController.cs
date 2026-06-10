@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NasIndexer.Model;
 using NasIndexer.Repositories;
@@ -25,6 +26,7 @@ namespace NasIndexer.Controllers
             return PartialView("_AdminRows", repository.SearchAdmins(query));
         }
 
+        [Authorize]
         public IActionResult Details(int id)
         {
             var admin = repository.GetAdminById(id);
@@ -37,6 +39,7 @@ namespace NasIndexer.Controllers
             return View(admin);
         }
 
+        [Authorize(Roles = "Admin,Manager")]
         public IActionResult Create()
         {
             var now = DateTime.Now;
@@ -47,6 +50,7 @@ namespace NasIndexer.Controllers
             }));
         }
 
+        [Authorize(Roles = "Admin,Manager")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult Create(SystemAdminFormViewModel model)
@@ -63,6 +67,7 @@ namespace NasIndexer.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        [Authorize(Roles = "Admin,Manager")]
         public IActionResult Edit(int id)
         {
             var admin = repository.GetAdminForEdit(id);
@@ -75,6 +80,7 @@ namespace NasIndexer.Controllers
             return View(PrepareAdminForm(ToFormViewModel(admin)));
         }
 
+        [Authorize(Roles = "Admin,Manager")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult Edit(int id, SystemAdminFormViewModel model)
@@ -100,6 +106,7 @@ namespace NasIndexer.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        [Authorize(Roles = "Admin")]
         public IActionResult Delete(int id)
         {
             var admin = repository.GetAdminById(id);
@@ -113,6 +120,7 @@ namespace NasIndexer.Controllers
             return View(admin);
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         [ActionName("Delete")]
         [ValidateAntiForgeryToken]

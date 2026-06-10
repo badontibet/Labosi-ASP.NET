@@ -44,7 +44,7 @@ namespace Labosi_ASP.NET.Tests.Api
         public async Task GetTag_ReturnsOk_WhenTagExists()
         {
             using var factory = new CustomWebApplicationFactory();
-            using var client = factory.CreateClient();
+            using var client = factory.CreateAuthenticatedClient();
             var tag = await TestDataFactory.CreateTagAsync(factory, UniqueName("GetById"));
 
             var response = await client.GetAsync($"/api/tags/{tag.Id}");
@@ -60,7 +60,7 @@ namespace Labosi_ASP.NET.Tests.Api
         public async Task GetTag_ReturnsNotFound_WhenTagDoesNotExist()
         {
             using var factory = new CustomWebApplicationFactory();
-            using var client = factory.CreateClient();
+            using var client = factory.CreateAuthenticatedClient();
 
             var response = await client.GetAsync("/api/tags/999999");
 
@@ -71,7 +71,7 @@ namespace Labosi_ASP.NET.Tests.Api
         public async Task PostTag_WithValidData_ReturnsCreatedAndCreatesRecord()
         {
             using var factory = new CustomWebApplicationFactory();
-            using var client = factory.CreateClient();
+            using var client = factory.CreateManagerClient();
             var request = new CreateFileTagDto
             {
                 Name = $"  {UniqueName("Created")}  ",
@@ -97,7 +97,7 @@ namespace Labosi_ASP.NET.Tests.Api
         public async Task PostTag_WithInvalidData_ReturnsBadRequest()
         {
             using var factory = new CustomWebApplicationFactory();
-            using var client = factory.CreateClient();
+            using var client = factory.CreateManagerClient();
             var request = new CreateFileTagDto
             {
                 Name = " ",
@@ -114,7 +114,7 @@ namespace Labosi_ASP.NET.Tests.Api
         public async Task PutTag_WithValidData_UpdatesRecord()
         {
             using var factory = new CustomWebApplicationFactory();
-            using var client = factory.CreateClient();
+            using var client = factory.CreateManagerClient();
             var tag = await TestDataFactory.CreateTagAsync(factory, UniqueName("BeforeUpdate"));
             var request = new UpdateFileTagDto
             {
@@ -142,7 +142,7 @@ namespace Labosi_ASP.NET.Tests.Api
         public async Task PutTag_WithIdMismatch_ReturnsBadRequest()
         {
             using var factory = new CustomWebApplicationFactory();
-            using var client = factory.CreateClient();
+            using var client = factory.CreateManagerClient();
             var tag = await TestDataFactory.CreateTagAsync(factory, UniqueName("Mismatch"));
             var request = new UpdateFileTagDto
             {
@@ -161,7 +161,7 @@ namespace Labosi_ASP.NET.Tests.Api
         public async Task PutTag_ForMissingTag_ReturnsNotFound()
         {
             using var factory = new CustomWebApplicationFactory();
-            using var client = factory.CreateClient();
+            using var client = factory.CreateManagerClient();
             var request = new UpdateFileTagDto
             {
                 Id = 999999,
@@ -179,7 +179,7 @@ namespace Labosi_ASP.NET.Tests.Api
         public async Task DeleteTag_ForExistingUnassignedTag_DeletesRecord()
         {
             using var factory = new CustomWebApplicationFactory();
-            using var client = factory.CreateClient();
+            using var client = factory.CreateAdminClient();
             var tag = await TestDataFactory.CreateTagAsync(factory, UniqueName("Delete"));
 
             var response = await client.DeleteAsync($"/api/tags/{tag.Id}");
@@ -193,7 +193,7 @@ namespace Labosi_ASP.NET.Tests.Api
         public async Task DeleteTag_ForMissingTag_ReturnsNotFound()
         {
             using var factory = new CustomWebApplicationFactory();
-            using var client = factory.CreateClient();
+            using var client = factory.CreateAdminClient();
 
             var response = await client.DeleteAsync("/api/tags/999999");
 
@@ -204,7 +204,7 @@ namespace Labosi_ASP.NET.Tests.Api
         public async Task DeleteTag_ForAssignedTag_ReturnsConflict()
         {
             using var factory = new CustomWebApplicationFactory();
-            using var client = factory.CreateClient();
+            using var client = factory.CreateAdminClient();
             var tag = await TestDataFactory.CreateAssignedTagAsync(factory, UniqueName("AssignedDelete"));
 
             var response = await client.DeleteAsync($"/api/tags/{tag.Id}");

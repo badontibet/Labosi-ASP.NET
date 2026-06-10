@@ -99,7 +99,7 @@ namespace Labosi_ASP.NET.Tests.Api
         public async Task GetFile_ReturnsOk_WhenFileExists()
         {
             using var factory = new CustomWebApplicationFactory();
-            using var client = factory.CreateClient();
+            using var client = factory.CreateAuthenticatedClient();
             var tag = await TestDataFactory.CreateTagAsync(factory, UniqueName("GetTag"));
             var file = await TestDataFactory.CreateFileItemAsync(factory, tagIds: new[] { tag.Id });
 
@@ -117,7 +117,7 @@ namespace Labosi_ASP.NET.Tests.Api
         public async Task GetFile_ReturnsNotFound_WhenFileDoesNotExist()
         {
             using var factory = new CustomWebApplicationFactory();
-            using var client = factory.CreateClient();
+            using var client = factory.CreateAuthenticatedClient();
 
             var response = await client.GetAsync("/api/files/999999");
 
@@ -128,7 +128,7 @@ namespace Labosi_ASP.NET.Tests.Api
         public async Task PostFile_WithValidData_ReturnsCreatedAndCreatesRecord()
         {
             using var factory = new CustomWebApplicationFactory();
-            using var client = factory.CreateClient();
+            using var client = factory.CreateManagerClient();
             var directory = await TestDataFactory.CreateDirectoryAsync(factory);
             var tag = await TestDataFactory.CreateTagAsync(factory, UniqueName("CreateTag"));
             var request = new CreateFileItemDto
@@ -164,7 +164,7 @@ namespace Labosi_ASP.NET.Tests.Api
         public async Task PostFile_WithMissingOrInvalidRequiredFields_ReturnsBadRequest()
         {
             using var factory = new CustomWebApplicationFactory();
-            using var client = factory.CreateClient();
+            using var client = factory.CreateManagerClient();
             var request = new CreateFileItemDto
             {
                 Name = " ",
@@ -184,7 +184,7 @@ namespace Labosi_ASP.NET.Tests.Api
         public async Task PostFile_WithMissingDirectoryId_ReturnsBadRequest()
         {
             using var factory = new CustomWebApplicationFactory();
-            using var client = factory.CreateClient();
+            using var client = factory.CreateManagerClient();
             var request = ValidCreateDto();
             request.DirectoryId = 999999;
 
@@ -197,7 +197,7 @@ namespace Labosi_ASP.NET.Tests.Api
         public async Task PostFile_WithInvalidTagIds_ReturnsBadRequest()
         {
             using var factory = new CustomWebApplicationFactory();
-            using var client = factory.CreateClient();
+            using var client = factory.CreateManagerClient();
             var directory = await TestDataFactory.CreateDirectoryAsync(factory);
             var request = ValidCreateDto(directory.Id);
             request.TagIds = new List<int> { 999999 };
@@ -211,7 +211,7 @@ namespace Labosi_ASP.NET.Tests.Api
         public async Task PostFile_WithNegativeSize_ReturnsBadRequest()
         {
             using var factory = new CustomWebApplicationFactory();
-            using var client = factory.CreateClient();
+            using var client = factory.CreateManagerClient();
             var directory = await TestDataFactory.CreateDirectoryAsync(factory);
             var request = ValidCreateDto(directory.Id);
             request.Size = -1;
@@ -225,7 +225,7 @@ namespace Labosi_ASP.NET.Tests.Api
         public async Task PostFile_WithModifiedDateBeforeCreatedDate_ReturnsBadRequest()
         {
             using var factory = new CustomWebApplicationFactory();
-            using var client = factory.CreateClient();
+            using var client = factory.CreateManagerClient();
             var directory = await TestDataFactory.CreateDirectoryAsync(factory);
             var request = ValidCreateDto(directory.Id);
             request.CreatedDate = new DateTime(2026, 6, 10, 23, 0, 0, DateTimeKind.Utc);
@@ -240,7 +240,7 @@ namespace Labosi_ASP.NET.Tests.Api
         public async Task PutFile_WithValidData_UpdatesAllowedFieldsAndTags()
         {
             using var factory = new CustomWebApplicationFactory();
-            using var client = factory.CreateClient();
+            using var client = factory.CreateManagerClient();
             var originalTag = await TestDataFactory.CreateTagAsync(factory, UniqueName("OriginalTag"));
             var updatedTag = await TestDataFactory.CreateTagAsync(factory, UniqueName("UpdatedTag"));
             var firstDirectory = await TestDataFactory.CreateDirectoryAsync(factory);
@@ -280,7 +280,7 @@ namespace Labosi_ASP.NET.Tests.Api
         public async Task PutFile_WithIdMismatch_ReturnsBadRequest()
         {
             using var factory = new CustomWebApplicationFactory();
-            using var client = factory.CreateClient();
+            using var client = factory.CreateManagerClient();
             var file = await TestDataFactory.CreateFileItemAsync(factory);
             var request = ValidUpdateDto(file.Id + 1, file.DirectoryId);
 
@@ -293,7 +293,7 @@ namespace Labosi_ASP.NET.Tests.Api
         public async Task PutFile_ForMissingFile_ReturnsNotFound()
         {
             using var factory = new CustomWebApplicationFactory();
-            using var client = factory.CreateClient();
+            using var client = factory.CreateManagerClient();
             var directory = await TestDataFactory.CreateDirectoryAsync(factory);
             var request = ValidUpdateDto(999999, directory.Id);
 
@@ -306,7 +306,7 @@ namespace Labosi_ASP.NET.Tests.Api
         public async Task PutFile_WithInvalidDirectoryId_ReturnsBadRequest()
         {
             using var factory = new CustomWebApplicationFactory();
-            using var client = factory.CreateClient();
+            using var client = factory.CreateManagerClient();
             var file = await TestDataFactory.CreateFileItemAsync(factory);
             var request = ValidUpdateDto(file.Id, 999999);
 
@@ -319,7 +319,7 @@ namespace Labosi_ASP.NET.Tests.Api
         public async Task PutFile_WithInvalidTagIds_ReturnsBadRequest()
         {
             using var factory = new CustomWebApplicationFactory();
-            using var client = factory.CreateClient();
+            using var client = factory.CreateManagerClient();
             var file = await TestDataFactory.CreateFileItemAsync(factory);
             var request = ValidUpdateDto(file.Id, file.DirectoryId);
             request.TagIds = new List<int> { 999999 };
@@ -333,7 +333,7 @@ namespace Labosi_ASP.NET.Tests.Api
         public async Task DeleteFile_ForExistingFileWithoutChangeLogs_DeletesRecord()
         {
             using var factory = new CustomWebApplicationFactory();
-            using var client = factory.CreateClient();
+            using var client = factory.CreateAdminClient();
             var file = await TestDataFactory.CreateFileItemAsync(factory);
 
             var response = await client.DeleteAsync($"/api/files/{file.Id}");
@@ -347,7 +347,7 @@ namespace Labosi_ASP.NET.Tests.Api
         public async Task DeleteFile_ForMissingFile_ReturnsNotFound()
         {
             using var factory = new CustomWebApplicationFactory();
-            using var client = factory.CreateClient();
+            using var client = factory.CreateAdminClient();
 
             var response = await client.DeleteAsync("/api/files/999999");
 
@@ -358,7 +358,7 @@ namespace Labosi_ASP.NET.Tests.Api
         public async Task DeleteFile_ForFileWithChangeLogs_ReturnsConflict()
         {
             using var factory = new CustomWebApplicationFactory();
-            using var client = factory.CreateClient();
+            using var client = factory.CreateAdminClient();
             var file = await TestDataFactory.CreateFileItemWithChangeLogAsync(factory);
 
             var response = await client.DeleteAsync($"/api/files/{file.Id}");

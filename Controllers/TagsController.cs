@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NasIndexer.Model;
 using NasIndexer.Repositories;
@@ -24,6 +25,7 @@ namespace NasIndexer.Controllers
             return PartialView("_TagRows", repository.SearchTags(query));
         }
 
+        [Authorize]
         public IActionResult Details(int id)
         {
             var tag = repository.GetTagById(id);
@@ -36,6 +38,7 @@ namespace NasIndexer.Controllers
             return View(tag);
         }
 
+        [Authorize(Roles = "Admin,Manager")]
         public IActionResult Create()
         {
             return View(new FileTagFormViewModel
@@ -44,6 +47,7 @@ namespace NasIndexer.Controllers
             });
         }
 
+        [Authorize(Roles = "Admin,Manager")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult Create(FileTagFormViewModel model)
@@ -61,6 +65,7 @@ namespace NasIndexer.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        [Authorize(Roles = "Admin,Manager")]
         public IActionResult Edit(int id)
         {
             var tag = repository.GetTagForEdit(id);
@@ -73,6 +78,7 @@ namespace NasIndexer.Controllers
             return View(ToFormViewModel(tag));
         }
 
+        [Authorize(Roles = "Admin,Manager")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult Edit(int id, FileTagFormViewModel model)
@@ -98,6 +104,7 @@ namespace NasIndexer.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        [Authorize(Roles = "Admin")]
         public IActionResult Delete(int id)
         {
             var tag = repository.GetTagById(id);
@@ -111,6 +118,7 @@ namespace NasIndexer.Controllers
             return View(tag);
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         [ActionName("Delete")]
         [ValidateAntiForgeryToken]

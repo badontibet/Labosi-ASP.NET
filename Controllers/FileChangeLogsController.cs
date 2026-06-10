@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NasIndexer.Model;
 using NasIndexer.Repositories;
@@ -23,6 +24,7 @@ namespace NasIndexer.Controllers
             return PartialView("_FileChangeLogRows", repository.SearchFileChangeLogs(query, changeType));
         }
 
+        [Authorize]
         public IActionResult Details(int id)
         {
             var changeLog = repository.GetFileChangeLogById(id);

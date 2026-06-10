@@ -70,7 +70,7 @@ namespace Labosi_ASP.NET.Tests.Api
         public async Task GetSystemAdmin_ReturnsOk_WhenAdminExists()
         {
             using var factory = new CustomWebApplicationFactory();
-            using var client = factory.CreateClient();
+            using var client = factory.CreateAuthenticatedClient();
             var admin = await TestDataFactory.CreateSystemAdminAsync(factory, UniqueName("GetById"));
 
             var response = await client.GetAsync($"/api/system-admins/{admin.Id}");
@@ -86,7 +86,7 @@ namespace Labosi_ASP.NET.Tests.Api
         public async Task GetSystemAdmin_ReturnsNotFound_WhenAdminDoesNotExist()
         {
             using var factory = new CustomWebApplicationFactory();
-            using var client = factory.CreateClient();
+            using var client = factory.CreateAuthenticatedClient();
 
             var response = await client.GetAsync("/api/system-admins/999999");
 
@@ -97,7 +97,7 @@ namespace Labosi_ASP.NET.Tests.Api
         public async Task GetSystemAdmin_ResponseDoesNotContainPasswordProperty()
         {
             using var factory = new CustomWebApplicationFactory();
-            using var client = factory.CreateClient();
+            using var client = factory.CreateAuthenticatedClient();
             var admin = await TestDataFactory.CreateSystemAdminAsync(factory, UniqueName("NoSecretProperty"));
 
             var response = await client.GetAsync($"/api/system-admins/{admin.Id}");
@@ -113,7 +113,7 @@ namespace Labosi_ASP.NET.Tests.Api
         public async Task GetSystemAdmin_ResponseDoesNotContainRawPasswordValue()
         {
             using var factory = new CustomWebApplicationFactory();
-            using var client = factory.CreateClient();
+            using var client = factory.CreateAuthenticatedClient();
             const string rawPassword = "raw-system-admin-secret";
             var admin = await TestDataFactory.CreateSystemAdminAsync(
                 factory,
@@ -131,7 +131,7 @@ namespace Labosi_ASP.NET.Tests.Api
         public async Task PostSystemAdmin_WithValidData_ReturnsCreatedAndIgnoresPassword()
         {
             using var factory = new CustomWebApplicationFactory();
-            using var client = factory.CreateClient();
+            using var client = factory.CreateManagerClient();
             var server = await TestDataFactory.CreateNasServerAsync(factory, UniqueName("CreateManaged"));
             const string submittedPassword = "submitted-system-admin-password";
             var request = new
@@ -167,7 +167,7 @@ namespace Labosi_ASP.NET.Tests.Api
         public async Task PostSystemAdmin_WithInvalidData_ReturnsBadRequest()
         {
             using var factory = new CustomWebApplicationFactory();
-            using var client = factory.CreateClient();
+            using var client = factory.CreateManagerClient();
             var request = new CreateSystemAdminDto
             {
                 Username = " ",
@@ -186,7 +186,7 @@ namespace Labosi_ASP.NET.Tests.Api
         public async Task PostSystemAdmin_WithInvalidManagedServerIds_ReturnsBadRequest()
         {
             using var factory = new CustomWebApplicationFactory();
-            using var client = factory.CreateClient();
+            using var client = factory.CreateManagerClient();
             var request = ValidCreateDto();
             request.ManagedNasServerIds = new List<int> { 999999 };
 
@@ -199,7 +199,7 @@ namespace Labosi_ASP.NET.Tests.Api
         public async Task PutSystemAdmin_WithValidData_UpdatesAllowedFieldsAndManagedServers()
         {
             using var factory = new CustomWebApplicationFactory();
-            using var client = factory.CreateClient();
+            using var client = factory.CreateManagerClient();
             var originalServer = await TestDataFactory.CreateNasServerAsync(factory, UniqueName("OriginalManaged"));
             var newServer = await TestDataFactory.CreateNasServerAsync(factory, UniqueName("NewManaged"));
             var admin = await TestDataFactory.CreateSystemAdminAsync(
@@ -238,7 +238,7 @@ namespace Labosi_ASP.NET.Tests.Api
         public async Task PutSystemAdmin_PreservesPasswordAndIgnoresSubmittedPassword()
         {
             using var factory = new CustomWebApplicationFactory();
-            using var client = factory.CreateClient();
+            using var client = factory.CreateManagerClient();
             const string originalPassword = "preserve-system-admin-secret";
             const string submittedPassword = "attempted-system-admin-secret";
             var admin = await TestDataFactory.CreateSystemAdminAsync(
@@ -274,7 +274,7 @@ namespace Labosi_ASP.NET.Tests.Api
         public async Task PutSystemAdmin_WithIdMismatch_ReturnsBadRequest()
         {
             using var factory = new CustomWebApplicationFactory();
-            using var client = factory.CreateClient();
+            using var client = factory.CreateManagerClient();
             var admin = await TestDataFactory.CreateSystemAdminAsync(factory, UniqueName("Mismatch"));
             var request = ValidUpdateDto(admin.Id + 1);
 
@@ -287,7 +287,7 @@ namespace Labosi_ASP.NET.Tests.Api
         public async Task PutSystemAdmin_ForMissingAdmin_ReturnsNotFound()
         {
             using var factory = new CustomWebApplicationFactory();
-            using var client = factory.CreateClient();
+            using var client = factory.CreateManagerClient();
             var request = ValidUpdateDto(999999);
 
             var response = await client.PutAsJsonAsync("/api/system-admins/999999", request);
@@ -299,7 +299,7 @@ namespace Labosi_ASP.NET.Tests.Api
         public async Task PutSystemAdmin_WithInvalidManagedServerIds_ReturnsBadRequest()
         {
             using var factory = new CustomWebApplicationFactory();
-            using var client = factory.CreateClient();
+            using var client = factory.CreateManagerClient();
             var admin = await TestDataFactory.CreateSystemAdminAsync(factory, UniqueName("InvalidManagedUpdate"));
             var request = ValidUpdateDto(admin.Id);
             request.ManagedNasServerIds = new List<int> { 999999 };
@@ -313,7 +313,7 @@ namespace Labosi_ASP.NET.Tests.Api
         public async Task DeleteSystemAdmin_ForExistingUnassignedAdmin_DeletesRecord()
         {
             using var factory = new CustomWebApplicationFactory();
-            using var client = factory.CreateClient();
+            using var client = factory.CreateAdminClient();
             var admin = await TestDataFactory.CreateSystemAdminAsync(factory, UniqueName("Delete"));
 
             var response = await client.DeleteAsync($"/api/system-admins/{admin.Id}");
@@ -327,7 +327,7 @@ namespace Labosi_ASP.NET.Tests.Api
         public async Task DeleteSystemAdmin_ForMissingAdmin_ReturnsNotFound()
         {
             using var factory = new CustomWebApplicationFactory();
-            using var client = factory.CreateClient();
+            using var client = factory.CreateAdminClient();
 
             var response = await client.DeleteAsync("/api/system-admins/999999");
 
@@ -338,7 +338,7 @@ namespace Labosi_ASP.NET.Tests.Api
         public async Task DeleteSystemAdmin_ForAdminWithManagedServers_ReturnsConflict()
         {
             using var factory = new CustomWebApplicationFactory();
-            using var client = factory.CreateClient();
+            using var client = factory.CreateAdminClient();
             var server = await TestDataFactory.CreateNasServerAsync(factory, UniqueName("BlockedManaged"));
             var admin = await TestDataFactory.CreateSystemAdminAsync(
                 factory,

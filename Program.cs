@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using NasIndexer.Data;
 using NasIndexer.Model;
@@ -22,6 +23,7 @@ builder.Services.AddDefaultIdentity<AppUser>(options =>
         options.SignIn.RequireConfirmedAccount = false;
         options.User.RequireUniqueEmail = true;
     })
+    .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<NasIndexerDbContext>();
 builder.Services.AddScoped<INasRepository, EfNasRepository>();
 
@@ -32,6 +34,7 @@ using (var scope = app.Services.CreateScope())
     var db = scope.ServiceProvider.GetRequiredService<NasIndexerDbContext>();
     db.Database.Migrate();
     NasIndexerDbInitializer.Seed(db);
+    await IdentitySeedData.SeedAsync(scope.ServiceProvider);
 }
 
 if (!app.Environment.IsDevelopment())
