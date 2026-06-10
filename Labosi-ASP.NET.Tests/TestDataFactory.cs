@@ -264,5 +264,108 @@ namespace Labosi_ASP.NET.Tests
                 .Include(scanJob => scanJob.ScannedDirectories)
                 .FirstOrDefaultAsync(scanJob => scanJob.Id == id);
         }
+
+        public static async Task<DirectoryItem> CreateDirectoryAsync(
+            CustomWebApplicationFactory factory,
+            string? name = null,
+            string? path = null,
+            int? scanJobId = null,
+            int? parentId = null)
+        {
+            using var scope = factory.Services.CreateScope();
+            var dbContext = scope.ServiceProvider.GetRequiredService<NasIndexerDbContext>();
+            var now = new DateTime(2026, 6, 10, 17, 0, 0, DateTimeKind.Utc);
+
+            var directory = new DirectoryItem
+            {
+                Name = name ?? $"dir-{Guid.NewGuid():N}",
+                Path = path ?? $"/directories/{Guid.NewGuid():N}",
+                ScanJobId = scanJobId,
+                ParentId = parentId,
+                CreatedDate = now,
+                ModifiedDate = now
+            };
+
+            dbContext.DirectoryItems.Add(directory);
+            await dbContext.SaveChangesAsync();
+
+            return directory;
+        }
+
+        public static async Task<DirectoryItem> CreateDirectoryWithChildAsync(
+            CustomWebApplicationFactory factory)
+        {
+            using var scope = factory.Services.CreateScope();
+            var dbContext = scope.ServiceProvider.GetRequiredService<NasIndexerDbContext>();
+            var now = new DateTime(2026, 6, 10, 18, 0, 0, DateTimeKind.Utc);
+
+            var parent = new DirectoryItem
+            {
+                Name = $"parent-{Guid.NewGuid():N}"[..20],
+                Path = $"/parent/{Guid.NewGuid():N}",
+                CreatedDate = now,
+                ModifiedDate = now
+            };
+
+            parent.SubDirectories.Add(new DirectoryItem
+            {
+                Name = $"child-{Guid.NewGuid():N}"[..20],
+                Path = $"{parent.Path}/child",
+                CreatedDate = now,
+                ModifiedDate = now
+            });
+
+            dbContext.DirectoryItems.Add(parent);
+            await dbContext.SaveChangesAsync();
+
+            return parent;
+        }
+
+        public static async Task<DirectoryItem> CreateDirectoryWithFileAsync(
+            CustomWebApplicationFactory factory)
+        {
+            using var scope = factory.Services.CreateScope();
+            var dbContext = scope.ServiceProvider.GetRequiredService<NasIndexerDbContext>();
+            var now = new DateTime(2026, 6, 10, 19, 0, 0, DateTimeKind.Utc);
+
+            var directory = new DirectoryItem
+            {
+                Name = $"files-{Guid.NewGuid():N}"[..20],
+                Path = $"/files/{Guid.NewGuid():N}",
+                CreatedDate = now,
+                ModifiedDate = now
+            };
+
+            directory.Files.Add(new FileItem
+            {
+                Name = $"file-{Guid.NewGuid():N}.txt",
+                Path = $"{directory.Path}/file.txt",
+                Extension = ".txt",
+                Size = 256,
+                CreatedDate = now,
+                ModifiedDate = now
+            });
+
+            dbContext.DirectoryItems.Add(directory);
+            await dbContext.SaveChangesAsync();
+
+            return directory;
+        }
+
+        public static async Task<DirectoryItem?> FindDirectoryAsync(
+            CustomWebApplicationFactory factory,
+            int id)
+        {
+            using var scope = factory.Services.CreateScope();
+            var dbContext = scope.ServiceProvider.GetRequiredService<NasIndexerDbContext>();
+
+            return await dbContext.DirectoryItems
+                .AsNoTracking()
+                .Include(directory => directory.Parent)
+                .Include(directory => directory.ScanJob)
+                .Include(directory => directory.SubDirectories)
+                .Include(directory => directory.Files)
+                .FirstOrDefaultAsync(directory => directory.Id == id);
+        }
     }
 }
