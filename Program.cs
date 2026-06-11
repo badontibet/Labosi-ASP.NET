@@ -26,6 +26,23 @@ builder.Services.AddDefaultIdentity<AppUser>(options =>
     })
     .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<NasIndexerDbContext>();
+
+var googleClientId = builder.Configuration["Authentication:Google:ClientId"];
+var googleClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
+
+// Configure with:
+// dotnet user-secrets set "Authentication:Google:ClientId" "..."
+// dotnet user-secrets set "Authentication:Google:ClientSecret" "..."
+if (!string.IsNullOrWhiteSpace(googleClientId) && !string.IsNullOrWhiteSpace(googleClientSecret))
+{
+    builder.Services.AddAuthentication()
+        .AddGoogle(options =>
+        {
+            options.ClientId = googleClientId;
+            options.ClientSecret = googleClientSecret;
+        });
+}
+
 builder.Services.AddScoped<INasRepository, EfNasRepository>();
 builder.Services.AddScoped<FileAttachmentStorageService>();
 

@@ -1,0 +1,48 @@
+@page
+@model NasIndexer.Areas.Identity.Pages.Account.ExternalLoginModel
+@{
+    ViewData["Title"] = "External login";
+}
+
+<section class="page-header">
+    <div>
+        <p class="eyebrow">@Model.ProviderDisplayName account</p>
+        <h1>Complete account</h1>
+        <p>Finish creating your NAS Indexer application account.</p>
+    </div>
+</section>
+
+<section class="form-panel">
+    <form asp-page-handler="Confirmation" asp-route-returnUrl="@Model.ReturnUrl" method="post" novalidate>
+        <div asp-validation-summary="ModelOnly" class="validation-summary" role="alert"></div>
+
+        <div class="form-grid">
+            <div class="form-field">
+                <label asp-for="Input.Email"></label>
+                <input asp-for="Input.Email" class="form-control" autocomplete="email" aria-required="true" />
+                <span asp-validation-for="Input.Email" class="text-danger"></span>
+            </div>
+
+            <div class="form-field">
+                <label asp-for="Input.OIB"></label>
+                <input asp-for="Input.OIB" class="form-control" autocomplete="off" inputmode="numeric" maxlength="11" aria-required="true" />
+                <span asp-validation-for="Input.OIB" class="text-danger"></span>
+            </div>
+
+            <div class="form-field">
+                <label asp-for="Input.JMBG"></label>
+                <input asp-for="Input.JMBG" class="form-control" autocomplete="off" inputmode="numeric" maxlength="13" aria-required="true" />
+                <span asp-validation-for="Input.JMBG" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="primary-action">Create account</button>
+            <a class="link-chip" asp-area="Identity" asp-page="/Account/Login">Cancel</a>
+        </div>
+    </form>
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

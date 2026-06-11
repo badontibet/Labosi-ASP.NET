@@ -246,7 +246,8 @@ Packages:
 
 - Implemented: `Microsoft.AspNetCore.Identity.EntityFrameworkCore`
 - Implemented: `Microsoft.AspNetCore.Identity.UI`
-- Planned later: `Microsoft.AspNetCore.Authentication.Google` or Facebook equivalent
+- Implemented: `Microsoft.AspNetCore.Authentication.Google`
+- Not implemented: Facebook login
 - `Microsoft.VisualStudio.Web.CodeGeneration.Design` only if scaffolding Identity UI
 
 Identity files:
@@ -255,16 +256,16 @@ Identity files:
 |---|---|
 | `Models/AppUser.cs` | Implemented `IdentityUser` subclass with required `OIB` and `JMBG` validation |
 | `Data/NasIndexerDbContext.cs` | Implemented `IdentityDbContext<AppUser>` while preserving all NAS Indexer DbSets and relationships |
-| `Program.cs` | Implemented local Identity registration plus `UseAuthentication()` before `UseAuthorization()` and `MapRazorPages()` |
-| `Areas/Identity/Pages/Account/Register.cshtml` | Implemented local registration UI with Email, OIB, JMBG, Password, and Confirm Password |
-| `Areas/Identity/Pages/Account/Register.cshtml.cs` | Implemented OIB/JMBG validation and saves those fields on `AppUser` |
+| `Program.cs` | Implemented local Identity registration plus optional Google authentication configured only through `Authentication:Google:ClientId` and `Authentication:Google:ClientSecret`; `UseAuthentication()` remains before `UseAuthorization()` |
+| `Areas/Identity/Pages/Account/Register.cshtml` | Implemented local registration UI with Email, OIB, JMBG, Password, Confirm Password, and configured external provider buttons |
+| `Areas/Identity/Pages/Account/Register.cshtml.cs` | Implemented OIB/JMBG validation, saves those fields on `AppUser`, and loads configured external login providers |
 | `Views/Shared/_LoginPartial.cshtml` | Implemented login/register links for anonymous users and manage/logout links for signed-in users |
 | `Views/Shared/_Layout.cshtml` | Implemented login partial rendering from the side navigation |
 | `Migrations/20260610190429_AddIdentityAppUser.cs` | Implemented Identity/AppUser schema migration |
 | `Data/IdentitySeedData.cs` | Implemented role seed helper for `Admin` and `Manager`, plus optional configured role assignment by existing user email |
-| `Areas/Identity/Pages/Account/ExternalLogin.cshtml` | Planned later with Google/Facebook login support |
-| `Areas/Identity/Pages/Account/ExternalLogin.cshtml.cs` | Planned later with Google/Facebook login support |
-| `appsettings.json` / user secrets | Planned later for external provider credentials; no real secrets committed |
+| `Areas/Identity/Pages/Account/ExternalLogin.cshtml` | Implemented external login account completion UI requiring Email, OIB, and JMBG |
+| `Areas/Identity/Pages/Account/ExternalLogin.cshtml.cs` | Implemented Google/external challenge, callback, existing external-login sign-in, and AppUser creation only after OIB/JMBG validation |
+| `appsettings.json` / user secrets | Google credentials are read from configuration/user secrets only; no real secrets committed |
 
 Important identity decision:
 
@@ -276,6 +277,10 @@ Important identity decision:
 - If the domain ever needs to connect a NAS `SystemAdmin` record to an authenticated account, add an explicit optional link to `AppUser` in a later scoped design instead of treating `SystemAdmin` as the auth user.
 - `dotnet ef database update` was not run during this Identity foundation step. Review migration `20260610190429_AddIdentityAppUser` first, then run `dotnet ef database update` when ready to apply it to the development SQLite database.
 - Role support is enabled with `Admin` and `Manager` roles. The seed helper creates roles only and can assign those roles to already-existing users via configuration keys `IdentitySeed:AdminEmails` and `IdentitySeed:ManagerEmails`; it does not create production users or hardcode passwords.
+- Google login is optional at runtime. If `Authentication:Google:ClientId` or `Authentication:Google:ClientSecret` is missing, the app still builds and local Identity login/register still work.
+- Configure Google locally with:
+  - `dotnet user-secrets set "Authentication:Google:ClientId" "..."`
+  - `dotnet user-secrets set "Authentication:Google:ClientSecret" "..."`
 
 ## Integration Test Project/Files Likely Added Later
 
@@ -381,9 +386,12 @@ Minimum test coverage per API controller:
 
 ### Checkpoint 6 - Third-Party Login
 
-- Add Google or Facebook authentication package.
-- Configure through user secrets/environment variables only.
-- Verify external login registration captures `OIB` and `JMBG`.
+- Status: Google external login implemented; Facebook login intentionally not implemented.
+- Added Google authentication package and optional provider registration through configuration only.
+- Config keys: `Authentication:Google:ClientId` and `Authentication:Google:ClientSecret`.
+- If Google config is missing, local Identity still works and tests do not require provider secrets.
+- External login account completion creates `AppUser` only after required Email, OIB, and JMBG validation.
+- No migration was generated for this step.
 
 ### Checkpoint 7 - Integration Tests
 
@@ -423,7 +431,7 @@ Minimum test coverage per API controller:
 | Local auth through ASP.NET Core Identity | Add `AppUser`, Identity packages/config, register/login UI | csproj, `Models/AppUser.cs`, `Data/NasIndexerDbContext.cs`, `Program.cs`, `Areas/Identity/*` | Register/login manual tests; auth integration tests | High: changes DbContext/migrations and app pipeline |
 | Extend `AppUser` fields | Add `OIB` and `JMBG` with required fixed-length numeric validation | `Models/AppUser.cs`, Identity pages, migration | Validation tests and registration manual test | Medium |
 | Authorization rules | Anonymous list/search; authenticated details; Admin or Manager create/edit; Admin-only delete; no FileChangeLog writes | `Program.cs`, controllers/API controllers, role seed | `401`/`403` tests per role and endpoint type | High: consistent MVC and API protection |
-| Third-party Google/Facebook login | Add one external provider configured through user secrets/env vars | csproj, `Program.cs`, Identity external login pages, config docs | Manual external login; no secrets grep | Medium/high: provider setup outside repo |
+| Third-party Google login | Implement Google provider only, configured through user secrets/env vars, with external account completion requiring OIB/JMBG | csproj, `Program.cs`, Identity external login pages, config docs | Manual Google login; no secrets grep; build/test without secrets | Medium/high: provider setup outside repo |
 | Integration tests for all API CRUD endpoints | Add test project with `WebApplicationFactory`, test DB, fake auth | `Labosi-ASP.NET.Tests/*`, solution file | `dotnet test` | High: test setup must isolate DB and auth |
 | Test successful scenarios | Per-controller success tests for list/get/create/update/delete | test files | `dotnet test` | Medium |
 | Test nonexistent IDs | Per-controller `404` tests | test files | `dotnet test` | Low |
@@ -441,7 +449,7 @@ Minimum test coverage per API controller:
 | `FileChangeLog` read-only exception may need explanation during grading | Keep clear docs and tests proving the audit business rule |
 | EF InMemory does not enforce relational behavior | Prefer SQLite in-memory tests for delete-block and FK scenarios |
 | Uploaded file paths can be unsafe | Generate stored names, validate extensions/content size if required, never trust client file names for paths |
-| External login requires provider credentials | Use user secrets/environment variables; never commit real secrets |
+| External login requires provider credentials | Use user secrets/environment variables; never commit real secrets; app remains usable when Google config is absent |
 
 ## Planning Verification History
 

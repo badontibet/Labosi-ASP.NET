@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -26,6 +27,8 @@ namespace NasIndexer.Areas.Identity.Pages.Account
         public InputModel Input { get; set; } = new();
 
         public string? ReturnUrl { get; set; }
+
+        public IList<AuthenticationScheme> ExternalLogins { get; set; } = new List<AuthenticationScheme>();
 
         public class InputModel
         {
@@ -56,14 +59,16 @@ namespace NasIndexer.Areas.Identity.Pages.Account
             public string ConfirmPassword { get; set; } = string.Empty;
         }
 
-        public void OnGet(string? returnUrl = null)
+        public async Task OnGetAsync(string? returnUrl = null)
         {
             ReturnUrl = returnUrl;
+            await LoadExternalLoginsAsync();
         }
 
         public async Task<IActionResult> OnPostAsync(string? returnUrl = null)
         {
             ReturnUrl = returnUrl ?? Url.Content("~/");
+            await LoadExternalLoginsAsync();
 
             if (!ModelState.IsValid)
             {
@@ -93,6 +98,11 @@ namespace NasIndexer.Areas.Identity.Pages.Account
             }
 
             return Page();
+        }
+
+        private async Task LoadExternalLoginsAsync()
+        {
+            ExternalLogins = (await signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
         }
     }
 }

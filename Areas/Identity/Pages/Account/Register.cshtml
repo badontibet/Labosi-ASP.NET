@@ -55,6 +55,23 @@
     </form>
 </section>
 
+@if (Model.ExternalLogins.Count > 0)
+{
+    <section class="form-panel">
+        <h2>External login</h2>
+        <form asp-page="./ExternalLogin" asp-route-returnUrl="@Model.ReturnUrl" method="post">
+            <div class="form-actions">
+                @foreach (var provider in Model.ExternalLogins)
+                {
+                    <button type="submit" class="link-chip" name="provider" value="@provider.Name">
+                        @provider.DisplayName
+                    </button>
+                }
+            </div>
+        </form>
+    </section>
+}
+
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
 }
