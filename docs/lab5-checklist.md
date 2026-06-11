@@ -1,6 +1,6 @@
 # Lab 5 Checklist - NAS Indexer API, Auth, Uploads, Tests
 
-Status: planning and repository audit only. No application code has been implemented by this document.
+Status: final Lab 5 audit complete. This document records the implemented NAS Indexer API, Identity, authorization, upload, Google login, and integration test status.
 
 Branch audited: `lab-5`
 
@@ -11,6 +11,124 @@ Source material: `C:\Users\Domagoj\Downloads\Lab5.md`
 Lab 5 examples are written around a quiz domain. This project must keep the existing NAS Indexer domain and translate every requirement to the current entities, relationships, and business rules.
 
 Do not add quiz/course/category teaching-example models, controllers, DTOs, routes, migrations, seed data, or views. The API, Identity, upload, external login, and integration tests must stay inside the existing NAS Indexer domain and use the entities already present in the project.
+
+## Final Lab 5 Audit Status
+
+Final audit date: `2026-06-11`
+
+### API And DTO Status
+
+All API controllers use DTOs and manual mapping. EF entities are not returned directly from API responses.
+
+| Area | Final status |
+|---|---|
+| `FileTag` API | Implemented full CRUD at `api/tags` with search, validation, DTOs, authorization, and assigned-file delete conflict guard |
+| `NasServer` API | Implemented password-safe CRUD at `api/nas-servers`; `NasServer.Password` is not exposed or accepted; delete is blocked when scan jobs or managed admins exist |
+| `ScanJob` API | Implemented CRUD at `api/scan-jobs` with query/status/NAS server filters, DTOs, validation, and scanned-directory delete conflict guard |
+| `DirectoryItem` API | Implemented CRUD at `api/directories` with query/scan job/parent filters, DTOs, relationship validation, parent-cycle checks, and child/file delete conflict guard |
+| `FileItem` API | Implemented CRUD at `api/files` with query/directory/tag/extension filters, DTOs, tag assignment handling, validation, and change-log delete conflict guard |
+| `FileChangeLog` API | Implemented read-only audit/history API at `api/file-change-logs`; collection/filter/details endpoints only; no `POST`, `PUT`, or `DELETE` actions |
+| `SystemAdmin` API | Implemented password-safe NAS domain CRUD at `api/system-admins` with query/NAS server filters; `SystemAdmin.Password` is not exposed or accepted and is not used for login |
+| `FileAttachment` API | Implemented at `api/files/{fileItemId}/attachments` with authenticated list, Admin/Manager multipart upload, Admin delete, DTO responses, disk storage, and DB metadata |
+
+### Password Safety
+
+- `NasServer.Password` is omitted from API response DTOs and create/update DTOs.
+- `SystemAdmin.Password` is omitted from API response DTOs and create/update DTOs.
+- `SystemAdmin.Password` remains legacy NAS domain data only and is not used for ASP.NET Core Identity login.
+- Authentication uses `AppUser` only.
+
+### Identity And Authorization
+
+| Requirement | Final status |
+|---|---|
+| `AppUser` | Implemented as the ASP.NET Core Identity user type |
+| `OIB` | Required on `AppUser`; exactly 11 numeric characters |
+| `JMBG` | Required on `AppUser`; exactly 13 numeric characters |
+| Local register/login/logout | Implemented through Identity UI plus custom registration page for OIB/JMBG |
+| Anonymous access | MVC Index/Search, API collection/search endpoints, and currently public home/dashboard pages |
+| Authenticated access | MVC Details and API `GET {id}` endpoints |
+| Admin/Manager access | MVC Create/Edit, API `POST`/`PUT`, and FileAttachment upload |
+| Admin-only access | MVC Delete, API `DELETE`, and FileAttachment delete |
+| FileChangeLog writes | Not available by business rule because change logs are audit/history records |
+
+### Upload Status
+
+- `FileAttachment` is linked to `FileItem`.
+- Uploaded files are stored on disk with generated safe stored filenames.
+- Attachment metadata is stored in the database, including original filename, stored filename/path, content type, size, created timestamp, and uploader ID.
+- MVC/AJAX attachment UI is present on FileItem Details/Edit surfaces.
+- Attachment list loads through AJAX.
+- Admin/Manager users can upload through AJAX.
+- Admin users can delete attachments through AJAX.
+- Absolute server file paths are not exposed in UI/API responses.
+
+### Google External Login
+
+- Google external login is implemented.
+- Google credentials are read only from configuration/user-secrets keys:
+  - `Authentication:Google:ClientId`
+  - `Authentication:Google:ClientSecret`
+- No real Google secrets are committed to tracked files.
+- If Google credentials are missing, the app still builds and local Identity login/register still work.
+- External login account completion requires Email, OIB, and JMBG before creating an `AppUser`.
+- Facebook login is not implemented.
+
+### Integration Test Status
+
+Latest audit command: `dotnet test --logger "console;verbosity=minimal"`
+
+Result: `136` tests passed, `0` failed, `0` skipped.
+
+Coverage summary:
+
+- API list/search/details/create/update/delete behavior for implemented CRUD controllers.
+- Read-only `FileChangeLog` API and unavailable write endpoints.
+- Password omission and preservation behavior for `NasServer` and `SystemAdmin`.
+- Business-rule delete conflicts.
+- Role authorization for anonymous, authenticated, Manager, and Admin API/MVC access.
+- FileAttachment upload/list/delete API behavior, including isolated test file storage.
+
+### Manual Verification Steps
+
+1. Local login/register/logout:
+   - Run the app.
+   - Open `/Identity/Account/Register`.
+   - Register with valid Email, OIB, JMBG, and password.
+   - Confirm login/logout links work from the layout.
+2. Ordinary authenticated user:
+   - Log in as a user without `Admin` or `Manager`.
+   - Confirm Details pages and API `GET {id}` requests are reachable.
+   - Confirm create/edit/delete actions are forbidden.
+3. Manager:
+   - Assign an existing user through `IdentitySeed:ManagerEmails`.
+   - Confirm create/edit and attachment upload work.
+   - Confirm delete and attachment delete are forbidden.
+4. Admin:
+   - Assign an existing user through `IdentitySeed:AdminEmails`.
+   - Confirm create/edit/delete and attachment delete work.
+5. Google login:
+   - Configure user secrets:
+     - `dotnet user-secrets set "Authentication:Google:ClientId" "..."`
+     - `dotnet user-secrets set "Authentication:Google:ClientSecret" "..."`
+   - Configure the Google OAuth redirect URI, for example `https://localhost:{port}/signin-google`.
+   - Start the app and use the Google button on Identity login/register.
+   - Confirm the external-login completion page requires valid OIB and JMBG.
+6. Attachment UI:
+   - Open a FileItem Details/Edit page while authenticated and confirm the attachment list loads.
+   - As Manager, upload an allowed file and confirm the list refreshes.
+   - As Admin, delete the attachment and confirm the list refreshes.
+   - As an unauthorized user, confirm upload/delete actions are blocked.
+
+### Final Risks And Open Notes
+
+- Google `ClientId` and `ClientSecret` must stay in user-secrets/environment configuration and must not be committed.
+- `FileChangeLog` intentionally remains read-only by NAS Indexer audit/history business rule.
+- Review and apply migrations when ready:
+  - `dotnet ef database update`
+  - Existing migration `20260610190429_AddIdentityAppUser`
+  - Existing migration `20260610212249_AddFileAttachments`
+- A manual browser pass is still recommended for role-specific MVC flows, Google login, and attachment AJAX interactions.
 
 ## Current Repository Inventory
 
@@ -404,11 +522,13 @@ Minimum test coverage per API controller:
 
 ### Checkpoint 8 - Final Audit
 
-- Run `dotnet build`.
-- Run `dotnet test`.
-- Run grep checks for password exposure and forbidden FileChangeLog write endpoints.
-- Run smoke checks for representative API routes.
-- Update this checklist and `lab-1/agent_log.txt`.
+- Status: final documentation audit completed on `2026-06-11`.
+- `dotnet build` passed with 0 warnings and 0 errors.
+- `dotnet test --logger "console;verbosity=minimal"` passed with 136 tests.
+- `git status --short` and `git diff --stat` were clean before this documentation/log update.
+- Google secret search found only configuration keys/placeholders in tracked files; no real secrets were found.
+- Teaching-example artifact search found only checklist text documenting that quiz/course/category artifacts must not be added.
+- This checklist and `lab-1/agent_log.txt` were updated for the final audit.
 
 ## Audit Matrix
 
