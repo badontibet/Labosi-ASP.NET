@@ -12,3 +12,9 @@ obj/
 
 # Generated application logs
 logs/
+
+# Generated Playwright artifacts
+Labosi-ASP.NET.E2ETests/test-results/
+Labosi-ASP.NET.E2ETests/playwright-report/
+Labosi-ASP.NET.E2ETests/**/*.webm
+Labosi-ASP.NET.E2ETests/**/*.trace.zip

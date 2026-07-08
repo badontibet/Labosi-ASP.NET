@@ -15,6 +15,7 @@ namespace Labosi_ASP.NET.Tests
     public class CustomWebApplicationFactory : WebApplicationFactory<FileTagsApiController>
     {
         public string AttachmentStorageRoot { get; } = Path.Combine(Path.GetTempPath(), "nas-indexer-tests", Guid.NewGuid().ToString("N"));
+        public string LogStorageRoot { get; } = Path.Combine(Path.GetTempPath(), "nas-indexer-test-logs", Guid.NewGuid().ToString("N"));
 
         public HttpClient CreateAuthenticatedClient(params string[] roles)
         {
@@ -45,7 +46,8 @@ namespace Labosi_ASP.NET.Tests
             {
                 configurationBuilder.AddInMemoryCollection(new Dictionary<string, string?>
                 {
-                    ["FileAttachmentStorage:RootPath"] = AttachmentStorageRoot
+                    ["FileAttachmentStorage:RootPath"] = AttachmentStorageRoot,
+                    ["AppFileLogging:RootPath"] = LogStorageRoot
                 });
             });
 
@@ -86,6 +88,11 @@ namespace Labosi_ASP.NET.Tests
             if (disposing && Directory.Exists(AttachmentStorageRoot))
             {
                 Directory.Delete(AttachmentStorageRoot, recursive: true);
+            }
+
+            if (disposing && Directory.Exists(LogStorageRoot))
+            {
+                Directory.Delete(LogStorageRoot, recursive: true);
             }
         }
     }

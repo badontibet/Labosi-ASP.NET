@@ -10,9 +10,13 @@
 
   <ItemGroup>
     <Compile Remove="Labosi-ASP.NET.Tests\**\*.cs" />
+    <Compile Remove="Labosi-ASP.NET.E2ETests\**\*.cs" />
     <Content Remove="Labosi-ASP.NET.Tests\**\*" />
+    <Content Remove="Labosi-ASP.NET.E2ETests\**\*" />
     <EmbeddedResource Remove="Labosi-ASP.NET.Tests\**\*" />
+    <EmbeddedResource Remove="Labosi-ASP.NET.E2ETests\**\*" />
     <None Remove="Labosi-ASP.NET.Tests\**\*" />
+    <None Remove="Labosi-ASP.NET.E2ETests\**\*" />
   </ItemGroup>
 
   <ItemGroup>

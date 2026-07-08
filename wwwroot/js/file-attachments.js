@@ -62,7 +62,7 @@
         }
 
         var html = [
-            "<div class=\"table-wrap attachment-table\">",
+            "<div class=\"table-wrap table-responsive attachment-table\">",
             "<table>",
             "<thead><tr>",
             "<th>File</th>",
