@@ -1,0 +1,70 @@
+@model GlobalSearchViewModel
+
+@{
+    ViewData["Title"] = "Global Search";
+}
+
+<nav class="breadcrumb" aria-label="Breadcrumb">
+    <a asp-controller="Home" asp-action="Index">Dashboard</a>
+    <span>/</span>
+    <span>Search</span>
+</nav>
+
+<section class="page-hero">
+    <span class="eyebrow">Global search</span>
+    <h1>Find NAS Indexer Data</h1>
+    <p>Search public pages and NAS index records without exposing stored secrets or request bodies.</p>
+    <form class="global-search-panel" asp-controller="Search" asp-action="Index" method="get">
+        <label for="global-search-page-input">Search term</label>
+        <div class="global-search-row">
+            <input id="global-search-page-input"
+                   class="form-control"
+                   type="search"
+                   name="q"
+                   value="@Model.Query"
+                   maxlength="@GlobalSearchViewModel.MaxQueryLength"
+                   placeholder="Server, file, tag, directory, scan path..."
+                   autocomplete="off" />
+            <button type="submit" class="primary-action">Search</button>
+        </div>
+    </form>
+</section>
+
+@if (!string.IsNullOrWhiteSpace(Model.Message))
+{
+    <section class="panel">
+        <p>@Model.Message</p>
+    </section>
+}
+
+@if (Model.HasResults)
+{
+    <section class="search-results-grid" aria-label="Global search results">
+        @foreach (var group in Model.Groups)
+        {
+            <article class="panel search-result-group">
+                <div class="panel-heading">
+                    <div>
+                        <h2>@group.Name</h2>
+                        <p>@group.Results.Count result(s)</p>
+                    </div>
+                    <span class="tag-chip">@group.TypeLabel</span>
+                </div>
+
+                <ul class="search-result-list">
+                    @foreach (var result in group.Results)
+                    {
+                        <li>
+                            <a class="search-result-title" href="@result.Url">@result.Title</a>
+                            <span class="status-badge">@result.TypeLabel</span>
+                            @if (!string.IsNullOrWhiteSpace(result.Description))
+                            {
+                                <p>@result.Description</p>
+                            }
+                        </li>
+                    }
+                </ul>
+            </article>
+        }
+    </section>
+}

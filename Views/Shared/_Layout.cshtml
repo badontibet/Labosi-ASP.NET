@@ -21,6 +21,20 @@
             <details class="mobile-nav-shell">
                 <summary class="mobile-nav-toggle">Menu</summary>
                 <div class="rail-nav-content">
+                    <form class="global-search-form" asp-controller="Search" asp-action="Index" method="get">
+                        <label for="global-search-nav-input">Global search</label>
+                        <div class="global-search-row">
+                            <input id="global-search-nav-input"
+                                   class="form-control"
+                                   type="search"
+                                   name="q"
+                                   maxlength="@GlobalSearchViewModel.MaxQueryLength"
+                                   placeholder="Search NAS index..."
+                                   autocomplete="off" />
+                            <button type="submit" class="primary-action">Search</button>
+                        </div>
+                    </form>
+
                     <nav class="primary-nav" aria-label="Primary navigation">
                         <a asp-controller="Home" asp-action="Index">Dashboard</a>
                         <a asp-controller="NasServers" asp-action="Index">NAS Servers</a>

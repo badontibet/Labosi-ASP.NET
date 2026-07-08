@@ -7,8 +7,8 @@ Scope: read-only project audit and implementation plan. No application behavior 
 ## Verification Snapshot
 
 - `dotnet build`: passed after logging implementation, 0 warnings, 0 errors.
-- `dotnet test --logger "console;verbosity=minimal"`: passed after logging implementation, 138 passed, 0 failed, 0 skipped, 138 total.
-- Static test count before logging implementation: 136 xUnit facts/theories under `Labosi-ASP.NET.Tests/Api`; logging implementation added 2 focused request-log tests.
+- `dotnet test --logger "console;verbosity=minimal"`: passed after global search implementation, 142 passed, 0 failed, 0 skipped, 142 total.
+- Static test count before logging implementation: 136 xUnit facts/theories under `Labosi-ASP.NET.Tests/Api`; logging implementation added 2 focused request-log tests; global search implementation added 4 focused MVC search tests.
 - Responsive implementation changed only UI/static/documentation/log files; backend behavior was not changed.
 - Pre-existing untracked files were present before this audit under `wwwroot/uploads/file-attachments/1/` and `wwwroot/uploads/file-attachments/3/`.
 
@@ -22,7 +22,8 @@ Scope: read-only project audit and implementation plan. No application behavior 
 - Google login configuration: `Program.cs`, `Areas/Identity/Pages/Account/ExternalLogin.cshtml.cs`; secrets are read from configuration keys, not tracked values.
 - File-based application request logging: `Services/AppFileLogger.cs`, `Middleware/RequestFileLoggingMiddleware.cs`, `Program.cs`, `.gitignore`, and focused tests in `Labosi-ASP.NET.Tests/Api/RequestFileLoggingTests.cs`.
 - Responsive CSS/UI patterns: viewport meta in `Views/Shared/_Layout.cshtml`, native mobile menu, mobile/tablet/desktop breakpoints, responsive grids, `table-responsive` wrappers, wrapped/stacked actions, and mobile-safe attachment upload controls in `wwwroot/css/site.css`, `wwwroot/css/lab4.css`, and `wwwroot/js/file-attachments.js`.
-- Page-local search: `Search` MVC actions in list controllers, repository search methods, `data-lab4-search` inputs, and `wwwroot/js/lab4.js`.
+- Global search: `Controllers/SearchController.cs`, `ViewModels/GlobalSearchViewModel.cs`, `Views/Search/Index.cshtml`, shared layout search form, and focused tests in `Labosi-ASP.NET.Tests/Api/GlobalSearchTests.cs`.
+- Page-local search remains available: `Search` MVC actions in list controllers, repository search methods, `data-lab4-search` inputs, and `wwwroot/js/lab4.js`.
 
 ## Scored Audit Matrix
 
@@ -32,7 +33,7 @@ Scope: read-only project audit and implementation plan. No application behavior 
 | Tests for all API endpoints | 2 | Complete | 8 API controller test files plus authorization tests cover list/search/details/create/update/delete where supported; FileChangeLog write endpoints are tested as unavailable by rule. | Explain API routes and show test project structure. | `dotnet test --logger "console;verbosity=minimal"` reports 136/136 passed. | Preserve coverage when adding new endpoints such as global search, logging, AI, or MCP. | Low if future endpoints get tests immediately. |
 | Optional Playwright scenario with 10 steps | Up to 3 extra | Optional missing | No Playwright package, config, or `*.spec.*` files found. | None currently. | `rg -i "playwright|Microsoft.Playwright"` found no implementation. | Add one documented 10-step browser scenario covering login, CRUD/search/upload or equivalent. | Medium: auth and seeded users must be stable for repeatable E2E. |
 | AI integration for data entry or similar use | 3 | Missing | No OpenAI/Azure AI package, service, controller, view integration, or config keys found. | None currently. | `rg -i "OpenAI|Azure.AI|AI"` found no concrete feature. | Add a small NAS-domain data-entry helper, for example metadata/tag suggestions for FileItem creation. | Medium/high: secrets, prompt safety, validation, and graceful offline fallback are required. |
-| Global search across menus, pages, and data | 2 | Partial | Page-local AJAX search exists for NAS servers, scan jobs, directories, files, change logs, tags, and admins; no single global search UI/controller was found. | Demonstrate each list page search; cannot demonstrate one global search yet. | Inspect `Controllers/*Controller.cs`, `Repositories/INasRepository.cs`, `wwwroot/js/lab4.js`; no global route exists. | Add a global search box in layout plus results endpoint/page spanning nav targets and entity data. | Medium: must avoid weakening existing page-specific searches. |
+| Global search across menus, pages, and data | 2 | Complete | Shared layout includes a global search form that submits to `GET /Search?q=...`; `SearchController` performs server-side grouped search across pages, NAS servers, directories, files, file tags, scan jobs, and attachments by original filename. Results are capped per group and use safe list links for anonymous users. | Search for a known server, file, tag, scan path, menu term such as `files`, and a nonsense term. Show grouped results and friendly empty state. | `GlobalSearchTests` cover empty query, known grouped data results, page/menu results, anonymous-safe links, and password exclusion; `dotnet test` reports 142/142 passed. | Manual browser proof before grading is recommended. | Low/medium: search intentionally avoids passwords/secrets/raw hidden data and keeps detail links auth-aware. |
 | Logging mechanism using a file or API | 2 | Complete | Custom `AppFileLogger` writes to `logs/app-yyyyMMdd.log`; `RequestFileLoggingMiddleware` logs completed MVC/API requests and unhandled exceptions without request bodies, cookies, auth headers, uploaded contents, or unsafe query values. `.gitignore` excludes `logs/`. | Run the app, open `/`, `/api/tags?query=demo`, and an authenticated page if available; inspect `logs/app-yyyyMMdd.log` for method, path, status, elapsed time, and user/anonymous. | `RequestFileLoggingTests` verify request logging and sensitive query redaction; `dotnet test` reports 138/138 passed. | Preserve logging when future endpoints are added; add exception demo only in a controlled development scenario if needed. | Low/medium: avoid future changes that log bodies, cookies, secrets, OIB/JMBG, or multipart form data. |
 | Responsive mobile/web UI | 2 | Complete | UX/UI sub-agent audit completed. Shared layout now has a native mobile menu; entity tables and attachment tables use `table-responsive`; action/form/upload controls wrap or stack on narrow screens; dashboard/cards/details/forms use responsive grid behavior; long table/detail text wraps safely; Identity `page-header` styling is aligned with app panels. | Use DevTools at 375px, 768px, and desktop width; open the menu, dashboard, entity lists, create/edit form, details page, FileItem attachment section, and register/external-login pages. | `dotnet build`, `dotnet test`, and `git diff --check`; static inspection of `Views/**/*.cshtml`, Identity pages, `site.css`, `lab4.css`, and attachment JS. | Manual browser proof remains recommended before grading; no Playwright screenshot test was added in this stage. | Low: changes are CSS/Razor/attachment-list markup only and preserve backend behavior. |
 | CRUD must work without errors | 2 | Complete for existing domain surfaces | MVC controllers and API tests cover CRUD/business rules; FileChangeLog is intentionally read-only; FileAttachment API covers upload/list/delete. | Manually create/edit/delete allowed NAS servers, scan jobs, directories, files, tags, admins; verify blocked deletes show errors. | 136 integration tests passed, including CRUD success, invalid input, not found, conflict, and authorization cases. | Re-test after each upgrade stage. | Low if changes stay scoped. |
@@ -94,12 +95,37 @@ Follow this order unless a later audit finds a hard dependency. Every implementa
 
 ### 3. Global Search
 
+- Status: implemented.
 - Expected points: 2.
 - Recommended Codex model/effort: GPT-5.5 Medium.
-- Files likely affected: `Controllers/`, `Repositories/INasRepository.cs`, `Repositories/EfNasRepository.cs`, new view model, `Views/Shared/_Layout.cshtml`, `Views/Search/*`, `wwwroot/js/lab4.js`, tests.
-- Verification commands: `dotnet build`; `dotnet test --logger "console;verbosity=minimal"`; targeted integration tests for search results and authorization.
-- Manual demonstration: one layout search query returns menu/page shortcuts plus matching NAS servers, scan jobs, directories, files, tags, admins, and change logs.
+- Files affected: `Controllers/SearchController.cs`; `ViewModels/GlobalSearchViewModel.cs`; `Views/Search/Index.cshtml`; `Views/Shared/_Layout.cshtml`; `wwwroot/css/site.css`; `Labosi-ASP.NET.Tests/Api/GlobalSearchTests.cs`; `docs/project-upgrade-checklist.md`; `lab-1/agent_log.txt`.
+- Verification commands: `dotnet build`; `dotnet test --logger "console;verbosity=minimal"`; `git diff --check`; targeted integration tests for search results and safe anonymous links.
+- Manual demonstration: one layout search query returns menu/page shortcuts plus matching NAS servers, scan jobs, directories, files, tags, and attachments when present.
 - Rollback or stop conditions: search exposes unauthorized details, raw passwords, secrets, OIB/JMBG, or breaks page-local search.
+
+#### Global Search Implementation Summary
+
+- Added `GET /Search?q=...` as a public MVC route using `SearchController`.
+- Added a global search form to the shared layout so search is available from the main navigation on desktop, tablet, and mobile.
+- Added grouped result view models and a responsive results page.
+- Search covers menu/page entries, NAS servers, directories, file items, file tags, scan jobs, and file attachments by original filename.
+- Empty or whitespace queries return a friendly message and skip database-heavy search.
+- Queries are trimmed and capped at 80 characters.
+- EF Core search uses `AsNoTracking`, `EF.Functions.Like`, ordering, and `Take(10)` per group.
+- Search results do not include passwords, Google secrets, cookies, request bodies, raw hidden data, or uploaded file contents.
+- Anonymous users get safe public list links for protected entity data; authenticated users get details links where existing MVC authorization already allows details pages.
+
+#### Manual Global Search Demo
+
+1. Run the app from the repository root with `dotnet run`.
+2. Use the global search box in the side navigation or open `/Search?q=files`.
+3. Search for a known NAS server name and show the `NAS servers` group.
+4. Search for a known file name and show the `Files` group.
+5. Search for a known tag and show the `Tags` group.
+6. Search for a scan root path or server name tied to a scan job and show the `Scan jobs` group.
+7. Search for a menu term such as `files`, `servers`, or `dashboard` and show the `Pages` group.
+8. Search for a nonsense term and show the friendly empty result.
+9. Explain that anonymous result links go to safe public list pages, while authenticated users can use detail links where existing rules permit them.
 
 ### 4. Playwright End-to-End Scenario
 
@@ -164,7 +190,7 @@ Path to at least 50:
 
 - Add logging: +2 completed.
 - Complete responsive audit/fixes and evidence: +1 completed.
-- Add global search: +2.
+- Add global search: +2 completed.
 - Add cloud deployment: +3.
 - Add Playwright scenario with at least partial credit: +2 to +3.
 - Improve final stability through verified implementation: +1 to +2.
