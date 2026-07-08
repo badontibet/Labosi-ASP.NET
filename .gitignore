@@ -9,3 +9,6 @@ obj/
 *.db
 *.db-shm
 *.db-wal
+
+# Generated application logs
+logs/

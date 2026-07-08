@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using NasIndexer.Data;
+using NasIndexer.Middleware;
 using NasIndexer.Model;
 using NasIndexer.Repositories;
 using NasIndexer.Services;
@@ -45,6 +46,7 @@ if (!string.IsNullOrWhiteSpace(googleClientId) && !string.IsNullOrWhiteSpace(goo
 
 builder.Services.AddScoped<INasRepository, EfNasRepository>();
 builder.Services.AddScoped<FileAttachmentStorageService>();
+builder.Services.AddSingleton<AppFileLogger>();
 
 var app = builder.Build();
 
@@ -65,6 +67,7 @@ app.UseStaticFiles();
 app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseMiddleware<RequestFileLoggingMiddleware>();
 
 app.MapControllers();
 app.MapRazorPages();
