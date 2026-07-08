@@ -78,6 +78,9 @@
 
 .primary-action,
 .danger-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     min-height: 2.45rem;
     padding: 0.55rem 0.9rem;
     border: 1px solid transparent;
@@ -103,7 +106,11 @@
 }
 
 .search-box {
+    display: grid;
+    gap: 0.5rem;
     min-width: min(28rem, 100%);
+    width: 100%;
+    max-width: 28rem;
 }
 
 .color-input-row {
@@ -168,7 +175,7 @@
 }
 
 .attachment-drop-zone input {
-    max-width: 14rem;
+    max-width: min(14rem, 100%);
 }
 
 .attachment-table table {
@@ -258,6 +265,42 @@
     border-color: rgba(255, 107, 122, 0.7);
     background: rgba(255, 107, 122, 0.1);
     color: #ffd5da;
+}
+
+@media (max-width: 520px) {
+    .hero-actions,
+    .form-actions,
+    .action-cell,
+    .attachment-upload {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .hero-actions > *,
+    .form-actions > *,
+    .action-cell > *,
+    .attachment-upload > * {
+        width: 100%;
+    }
+
+    .attachment-drop-zone {
+        align-items: stretch;
+        flex-direction: column;
+        min-width: 0;
+    }
+
+    .attachment-drop-zone input {
+        width: 100%;
+    }
+
+    .attachment-table table {
+        min-width: 32rem;
+    }
+
+    .quick-links a,
+    .link-chip {
+        justify-content: center;
+    }
 }
 
 @keyframes lab4-row-highlight {

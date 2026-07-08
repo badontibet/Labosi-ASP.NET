@@ -9,7 +9,7 @@ Scope: read-only project audit and implementation plan. No application behavior 
 - `dotnet build`: passed after logging implementation, 0 warnings, 0 errors.
 - `dotnet test --logger "console;verbosity=minimal"`: passed after logging implementation, 138 passed, 0 failed, 0 skipped, 138 total.
 - Static test count before logging implementation: 136 xUnit facts/theories under `Labosi-ASP.NET.Tests/Api`; logging implementation added 2 focused request-log tests.
-- Current tracked changes from this task should be limited to this file and `lab-1/agent_log.txt`.
+- Responsive implementation changed only UI/static/documentation/log files; backend behavior was not changed.
 - Pre-existing untracked files were present before this audit under `wwwroot/uploads/file-attachments/1/` and `wwwroot/uploads/file-attachments/3/`.
 
 ## Current Repository Evidence
@@ -21,7 +21,7 @@ Scope: read-only project audit and implementation plan. No application behavior 
 - File attachment upload backend and AJAX UI: `Models/FileAttachment.cs`, `Services/FileAttachmentStorageService.cs`, `Controllers/Api/FileAttachmentsApiController.cs`, `Views/FileItems/_Attachments.cshtml`, `wwwroot/js/file-attachments.js`.
 - Google login configuration: `Program.cs`, `Areas/Identity/Pages/Account/ExternalLogin.cshtml.cs`; secrets are read from configuration keys, not tracked values.
 - File-based application request logging: `Services/AppFileLogger.cs`, `Middleware/RequestFileLoggingMiddleware.cs`, `Program.cs`, `.gitignore`, and focused tests in `Labosi-ASP.NET.Tests/Api/RequestFileLoggingTests.cs`.
-- Responsive CSS patterns: viewport meta in `Views/Shared/_Layout.cshtml`, mobile breakpoint and responsive grids/tables in `wwwroot/css/site.css` and `wwwroot/css/lab4.css`.
+- Responsive CSS/UI patterns: viewport meta in `Views/Shared/_Layout.cshtml`, native mobile menu, mobile/tablet/desktop breakpoints, responsive grids, `table-responsive` wrappers, wrapped/stacked actions, and mobile-safe attachment upload controls in `wwwroot/css/site.css`, `wwwroot/css/lab4.css`, and `wwwroot/js/file-attachments.js`.
 - Page-local search: `Search` MVC actions in list controllers, repository search methods, `data-lab4-search` inputs, and `wwwroot/js/lab4.js`.
 
 ## Scored Audit Matrix
@@ -34,7 +34,7 @@ Scope: read-only project audit and implementation plan. No application behavior 
 | AI integration for data entry or similar use | 3 | Missing | No OpenAI/Azure AI package, service, controller, view integration, or config keys found. | None currently. | `rg -i "OpenAI|Azure.AI|AI"` found no concrete feature. | Add a small NAS-domain data-entry helper, for example metadata/tag suggestions for FileItem creation. | Medium/high: secrets, prompt safety, validation, and graceful offline fallback are required. |
 | Global search across menus, pages, and data | 2 | Partial | Page-local AJAX search exists for NAS servers, scan jobs, directories, files, change logs, tags, and admins; no single global search UI/controller was found. | Demonstrate each list page search; cannot demonstrate one global search yet. | Inspect `Controllers/*Controller.cs`, `Repositories/INasRepository.cs`, `wwwroot/js/lab4.js`; no global route exists. | Add a global search box in layout plus results endpoint/page spanning nav targets and entity data. | Medium: must avoid weakening existing page-specific searches. |
 | Logging mechanism using a file or API | 2 | Complete | Custom `AppFileLogger` writes to `logs/app-yyyyMMdd.log`; `RequestFileLoggingMiddleware` logs completed MVC/API requests and unhandled exceptions without request bodies, cookies, auth headers, uploaded contents, or unsafe query values. `.gitignore` excludes `logs/`. | Run the app, open `/`, `/api/tags?query=demo`, and an authenticated page if available; inspect `logs/app-yyyyMMdd.log` for method, path, status, elapsed time, and user/anonymous. | `RequestFileLoggingTests` verify request logging and sensitive query redaction; `dotnet test` reports 138/138 passed. | Preserve logging when future endpoints are added; add exception demo only in a controlled development scenario if needed. | Low/medium: avoid future changes that log bodies, cookies, secrets, OIB/JMBG, or multipart form data. |
-| Responsive mobile/web UI | 2 | Partial, likely close | Viewport meta, mobile breakpoint at 860px, one-column shell, wrapped nav/actions, responsive grids, horizontal table overflow. No browser screenshot/test evidence was generated. | Resize browser to mobile width and verify dashboard, list pages, forms, details, auth pages, and attachment UI. | Static CSS inspection only; no Playwright/screenshot test exists. | Run UX/UI sub-agent before UI changes; fix any overflow or awkward mobile flows found. | Low/medium: many patterns exist, but dense tables and side rail need real-device verification. |
+| Responsive mobile/web UI | 2 | Complete | UX/UI sub-agent audit completed. Shared layout now has a native mobile menu; entity tables and attachment tables use `table-responsive`; action/form/upload controls wrap or stack on narrow screens; dashboard/cards/details/forms use responsive grid behavior; long table/detail text wraps safely; Identity `page-header` styling is aligned with app panels. | Use DevTools at 375px, 768px, and desktop width; open the menu, dashboard, entity lists, create/edit form, details page, FileItem attachment section, and register/external-login pages. | `dotnet build`, `dotnet test`, and `git diff --check`; static inspection of `Views/**/*.cshtml`, Identity pages, `site.css`, `lab4.css`, and attachment JS. | Manual browser proof remains recommended before grading; no Playwright screenshot test was added in this stage. | Low: changes are CSS/Razor/attachment-list markup only and preserve backend behavior. |
 | CRUD must work without errors | 2 | Complete for existing domain surfaces | MVC controllers and API tests cover CRUD/business rules; FileChangeLog is intentionally read-only; FileAttachment API covers upload/list/delete. | Manually create/edit/delete allowed NAS servers, scan jobs, directories, files, tags, admins; verify blocked deletes show errors. | 136 integration tests passed, including CRUD success, invalid input, not found, conflict, and authorization cases. | Re-test after each upgrade stage. | Low if changes stay scoped. |
 | Expose MCP and access through an agentic IDE | 2 | Missing | `.agents/skills/ux-ui-subagent` and `.github/skills/*` exist, but no MCP server, manifest, endpoint, or IDE connection instructions were found. | None currently. | `rg -i "MCP|ModelContextProtocol"` found no concrete support. | Add a minimal NAS Indexer MCP surface or documented MCP server exposing selected data/actions. | Medium/high: must define safe tools and auth/read-only boundaries. |
 | Overall application functionality and stability | 12 | Partial to strong | Build/test pass; Identity, roles, API, DTOs, upload backend/UI, Google login config, AJAX search, and domain business rules exist. Missing deployment, global search, file/API logging, Playwright, AI, MCP. | Full smoke demo: dashboard, auth, CRUD, API, upload, search, Google login if secrets configured. | `dotnet build`; `dotnet test`; future E2E smoke tests. | Finish staged upgrade features and keep Lab 5 functionality intact. | Medium: new features could destabilize auth, uploads, or navigation if not staged. |
@@ -65,12 +65,32 @@ Follow this order unless a later audit finds a hard dependency. Every implementa
 
 ### 2. Responsive UI Audit And Fixes
 
-- Expected points: close remaining responsive gap, likely 1 to 2 total UI points after evidence.
+- Status: implemented.
+- Expected points: 2.
 - Recommended Codex model/effort: GPT-5.5 Medium; invoke explicit UX/UI sub-agent before changing UI.
-- Files likely affected: `Views/Shared/_Layout.cshtml`, affected Razor views, `wwwroot/css/site.css`, `wwwroot/css/lab4.css`, possibly `wwwroot/js/lab4.js`.
+- Files affected: `Views/Shared/_Layout.cshtml`; `Views/Admins/Index.cshtml`; `Views/Directories/Index.cshtml`; `Views/FileChangeLogs/Index.cshtml`; `Views/FileItems/Details.cshtml`; `Views/FileItems/Index.cshtml`; `Views/NasServers/Index.cshtml`; `Views/ScanJobs/Index.cshtml`; `Views/Tags/Index.cshtml`; `wwwroot/css/site.css`; `wwwroot/css/lab4.css`; `wwwroot/js/file-attachments.js`.
 - Verification commands: `dotnet build`; `dotnet test --logger "console;verbosity=minimal"`; browser/mobile smoke pass; later Playwright screenshot checks if Playwright is added.
 - Manual demonstration: inspect dashboard, all list pages, forms, details, auth pages, and attachment UI at desktop and mobile widths.
 - Rollback or stop conditions: nav becomes harder to use, tables lose data, forms overlap, auth/upload controls break, or Lab 5 behavior changes.
+
+#### Responsive Audit And Fix Summary
+
+- Inspected shared layout/navigation, Home dashboard, entity list tables, create/edit form patterns, details/action areas, FileItem attachments, Identity register/external-login pages, validation summaries, and long path/name/tag display.
+- Added a native `<details>` mobile menu so the side navigation collapses at phone width while remaining visible on desktop and tablet widths.
+- Added Bootstrap-compatible `table-responsive` wrappers to list/detail tables and the AJAX-rendered attachment table while keeping the existing dark table styling.
+- Tightened CSS for 375px screens: actions and attachment controls stack full-width, cards/details collapse cleanly, table wrappers scroll horizontally, file input fits its drop zone, search controls get consistent spacing, and long cell text can wrap.
+- Improved 1920px desktop use by centering the content deck and allowing a wider maximum content area for data-heavy pages.
+- No controllers, routes, DTOs, models, migrations, Identity logic, Google login behavior, upload backend behavior, or API behavior were changed.
+
+#### Manual Responsive Demo
+
+1. Run the app from the repository root with `dotnet run`.
+2. Open browser DevTools and set the viewport to 375px wide.
+3. Open the mobile menu, then visit Dashboard, NAS Servers or Files list, a create/edit form, a details page, FileItem attachments, Register, and External Login if available.
+4. Confirm tables scroll inside their wrappers instead of widening the page, action buttons stack, forms fit one column, long paths/names wrap, and attachment upload/list/delete controls remain usable.
+5. Set the viewport to 768px wide and confirm navigation/content remain usable, tables are still contained, and forms/cards use tablet-friendly spacing.
+6. Set the viewport to desktop width, including 1920px if available, and confirm the desktop side navigation and wider centered content deck remain visually consistent.
+7. Explain that the UI uses Bootstrap-compatible `table-responsive` class names plus small existing-site CSS rules rather than a new frontend framework.
 
 ### 3. Global Search
 
@@ -143,7 +163,7 @@ Conservative current upgrade evidence:
 Path to at least 50:
 
 - Add logging: +2 completed.
-- Complete responsive audit/fixes and evidence: +1.
+- Complete responsive audit/fixes and evidence: +1 completed.
 - Add global search: +2.
 - Add cloud deployment: +3.
 - Add Playwright scenario with at least partial credit: +2 to +3.
