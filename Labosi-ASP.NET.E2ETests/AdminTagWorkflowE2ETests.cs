@@ -14,6 +14,7 @@ namespace Labosi_ASP.NET.E2ETests
         [Fact]
         public async Task AdminCanSearchCreateOpenEditAndVerifyTag()
         {
+            var editedFileName = $"e2e-file-{Guid.NewGuid():N}"[..24] + ".txt";
             var tagName = $"E2E Tag {Guid.NewGuid():N}"[..22];
             var updatedDescription = $"Updated by Playwright {Guid.NewGuid():N}"[..45];
 
@@ -39,44 +40,71 @@ namespace Labosi_ASP.NET.E2ETests
             await page.GetByRole(AriaRole.Button, new() { NameRegex = new("Log in|Login", System.Text.RegularExpressions.RegexOptions.IgnoreCase) }).ClickAsync();
             await ExpectVisibleAsync(page.GetByText(app.AdminEmail));
 
-            // Step 4: Admin uses global search for the Tags page.
-            await page.GetByLabel("Global search").FillAsync("tags");
-            await page.GetByRole(AriaRole.Button, new() { Name = "Search" }).ClickAsync();
+            // Step 4: Admin opens the Files catalog.
+            await page.GetByRole(AriaRole.Link, new() { Name = "Files" }).First.ClickAsync();
+            await ExpectVisibleAsync(page.GetByRole(AriaRole.Heading, new() { Name = "Indexed File Catalog" }));
+
+            // Step 5: Admin opens an existing FileItem edit form.
+            await page.GetByRole(AriaRole.Link, new() { Name = "Edit" }).First.ClickAsync();
+            await ExpectVisibleAsync(page.GetByRole(AriaRole.Heading, new() { Name = "Edit File" }));
+
+            // Step 6: Admin changes one safe file metadata field and saves.
+            await page.GetByLabel("Name").FillAsync(editedFileName);
+            await page.GetByRole(AriaRole.Button, new() { Name = "Save changes" }).ClickAsync();
+            await ExpectVisibleAsync(page.GetByRole(AriaRole.Heading, new() { Name = "Indexed File Catalog" }));
+            await ExpectVisibleAsync(page.GetByText(editedFileName, new() { Exact = true }));
+
+            // Step 7: Admin returns to the dashboard and sees the real activity timeline update.
+            await page.GetByRole(AriaRole.Link, new() { Name = "Dashboard" }).First.ClickAsync();
+            await ExpectVisibleAsync(page.GetByRole(AriaRole.Heading, new() { Name = "NAS Operations Control Center" }));
+            await ExpectVisibleAsync(page.GetByRole(AriaRole.Heading, new() { Name = "Recent File Changes" }));
+            await ExpectVisibleAsync(page.GetByRole(AriaRole.Link, new() { Name = editedFileName }).First);
+            await ExpectVisibleAsync(page.GetByText($"by {app.AdminEmail}").First);
+
+            // Step 8: Admin uses global search for the edited file.
+            await page.GetByRole(AriaRole.Searchbox, new() { Name = "Global search" }).FillAsync(editedFileName);
+            await page.GetByRole(AriaRole.Searchbox, new() { Name = "Global search" }).PressAsync("Enter");
+            await ExpectVisibleAsync(page.GetByRole(AriaRole.Heading, new() { Name = "Files" }));
+            await ExpectVisibleAsync(page.GetByText(editedFileName).First);
+
+            // Step 9: Admin uses global search for the Tags page.
+            await page.GetByRole(AriaRole.Searchbox, new() { Name = "Global search" }).FillAsync("tags");
+            await page.GetByRole(AriaRole.Searchbox, new() { Name = "Global search" }).PressAsync("Enter");
             await ExpectVisibleAsync(page.GetByRole(AriaRole.Heading, new() { Name = "Find NAS Indexer Data" }));
 
-            // Step 5: Admin opens the Tags page from the search results.
+            // Step 10: Admin opens the Tags page from the search results.
             await page.GetByRole(AriaRole.Link, new() { Name = "Tags" }).First.ClickAsync();
             await ExpectVisibleAsync(page.GetByRole(AriaRole.Heading, new() { Name = "File Tag Registry" }));
 
-            // Step 6: Admin opens the Create Tag form.
+            // Step 11: Admin opens the Create Tag form.
             await page.GetByRole(AriaRole.Link, new() { Name = "Create tag" }).ClickAsync();
             await ExpectVisibleAsync(page.GetByRole(AriaRole.Heading, new() { Name = "Create File Tag" }));
 
-            // Step 7: Admin creates a safe NAS Indexer tag.
+            // Step 12: Admin creates a safe NAS Indexer tag.
             await page.GetByLabel("Name").FillAsync(tagName);
             await page.GetByLabel("Description").FillAsync("Created by Playwright E2E");
             await page.GetByLabel("Color").FillAsync("#22AA99");
             await page.GetByRole(AriaRole.Button, new() { Name = "Create" }).ClickAsync();
             await ExpectVisibleAsync(page.GetByText(tagName, new() { Exact = true }));
 
-            // Step 8: Admin searches globally for the new tag.
-            await page.GetByLabel("Global search").FillAsync(tagName);
-            await page.GetByRole(AriaRole.Button, new() { Name = "Search" }).ClickAsync();
+            // Step 13: Admin searches globally for the new tag.
+            await page.GetByRole(AriaRole.Searchbox, new() { Name = "Global search" }).FillAsync(tagName);
+            await page.GetByRole(AriaRole.Searchbox, new() { Name = "Global search" }).PressAsync("Enter");
             await ExpectVisibleAsync(page.GetByRole(AriaRole.Heading, new() { Name = "Tags" }));
 
-            // Step 9: Admin opens the tag details page from global search.
+            // Step 14: Admin opens the tag details page from global search.
             await page.GetByRole(AriaRole.Link, new() { Name = tagName }).ClickAsync();
             await ExpectVisibleAsync(page.GetByRole(AriaRole.Heading, new() { Name = tagName }));
 
-            // Step 10: Admin opens the edit page.
+            // Step 15: Admin opens the edit page.
             await page.GetByRole(AriaRole.Link, new() { Name = "Edit" }).ClickAsync();
             await ExpectVisibleAsync(page.GetByRole(AriaRole.Heading, new() { Name = "Edit File Tag" }));
 
-            // Step 11: Admin changes one safe text field and saves.
+            // Step 16: Admin changes one safe text field and saves.
             await page.GetByLabel("Description").FillAsync(updatedDescription);
             await page.GetByRole(AriaRole.Button, new() { Name = "Save changes" }).ClickAsync();
 
-            // Step 12: Admin verifies the updated content appears back on the list.
+            // Step 17: Admin verifies the updated content appears back on the list.
             await ExpectVisibleAsync(page.GetByRole(AriaRole.Heading, new() { Name = "File Tag Registry" }));
             await ExpectVisibleAsync(page.GetByText(updatedDescription));
             await ExpectVisibleAsync(page.GetByText(tagName, new() { Exact = true }));

@@ -74,6 +74,13 @@ namespace NasIndexer.Controllers.Api
 
             context.FileAttachments.Add(attachment);
             await context.SaveChangesAsync();
+            await FileChangeLogService.RecordAttachmentUploadedAsync(
+                context,
+                fileItemId,
+                attachment.OriginalFileName,
+                attachment.FileSize,
+                User,
+                HttpContext.RequestAborted);
 
             return CreatedAtAction(
                 nameof(GetAttachments),
@@ -96,8 +103,15 @@ namespace NasIndexer.Controllers.Api
             }
 
             await storageService.DeleteAsync(attachment.RelativePath);
+            var originalFileName = attachment.OriginalFileName;
             context.FileAttachments.Remove(attachment);
             await context.SaveChangesAsync();
+            await FileChangeLogService.RecordAttachmentDeletedAsync(
+                context,
+                fileItemId,
+                originalFileName,
+                User,
+                HttpContext.RequestAborted);
 
             return NoContent();
         }

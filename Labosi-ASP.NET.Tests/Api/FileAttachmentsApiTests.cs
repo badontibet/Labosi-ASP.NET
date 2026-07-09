@@ -1,6 +1,10 @@
 using System.Net;
 using System.Net.Http.Json;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using NasIndexer.Data;
 using NasIndexer.Dtos;
+using NasIndexer.Model;
 using Xunit;
 
 namespace Labosi_ASP.NET.Tests.Api
@@ -58,6 +62,13 @@ namespace Labosi_ASP.NET.Tests.Api
             var storedAttachment = await TestDataFactory.FindFileAttachmentAsync(factory, dto.Id);
             Assert.NotNull(storedAttachment);
             Assert.Equal(dto.RelativePath, storedAttachment.RelativePath);
+
+            var logs = await GetChangeLogsForFileAsync(factory, file.Id);
+            var log = Assert.Single(logs);
+            Assert.Equal(ChangeType.Modified, log.ChangeType);
+            Assert.Contains("Attachment uploaded", log.NewValue);
+            Assert.Contains("report.txt", log.NewValue);
+            Assert.DoesNotContain("attachment content", log.NewValue, StringComparison.OrdinalIgnoreCase);
         }
 
         [Fact]
@@ -134,6 +145,12 @@ namespace Labosi_ASP.NET.Tests.Api
             Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
             Assert.Null(await TestDataFactory.FindFileAttachmentAsync(factory, attachment.Id));
             Assert.False(File.Exists(physicalPath));
+
+            var logs = await GetChangeLogsForFileAsync(factory, file.Id);
+            var log = Assert.Single(logs);
+            Assert.Equal(ChangeType.Modified, log.ChangeType);
+            Assert.Contains("Attachment deleted", log.NewValue);
+            Assert.Contains("original.txt", log.OldValue);
         }
 
         [Fact]
@@ -265,6 +282,18 @@ namespace Labosi_ASP.NET.Tests.Api
             fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(contentType);
             multipart.Add(fileContent, "file", fileName);
             return multipart;
+        }
+
+        private static async Task<List<FileChangeLog>> GetChangeLogsForFileAsync(CustomWebApplicationFactory factory, int fileId)
+        {
+            using var scope = factory.Services.CreateScope();
+            var dbContext = scope.ServiceProvider.GetRequiredService<NasIndexerDbContext>();
+
+            return await dbContext.FileChangeLogs
+                .AsNoTracking()
+                .Where(changeLog => changeLog.FileId == fileId)
+                .OrderBy(changeLog => changeLog.Id)
+                .ToListAsync();
         }
     }
 }

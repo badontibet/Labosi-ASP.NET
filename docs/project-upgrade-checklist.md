@@ -26,6 +26,172 @@ Scope: read-only project audit and implementation plan. No application behavior 
 - Playwright E2E scenario: `Labosi-ASP.NET.E2ETests/` with a temp SQLite database, temp upload/log roots, seeded Admin user, local app process, headless Chromium browser flow, and one 12-step Admin tag workflow.
 - Page-local search remains available: `Search` MVC actions in list controllers, repository search methods, `data-lab4-search` inputs, and `wwwroot/js/lab4.js`.
 
+## Visual Polish For Stability Demo
+
+Implemented on 2026-07-09 with UI/documentation-only changes.
+
+- Dashboard readability: metric cards now use larger numbers, short contextual helper text, more breathing room, and subtle health accents for active/completed/running/failed counts.
+- Sidebar clarity: primary navigation now shows a route-aware active state, stronger hover/focus treatment, larger readable targets, and clearer separation between brand, global search, navigation, account links, and the repository status badge.
+- Layout width: the main content deck is centered with a slightly narrower maximum width so desktop pages feel more intentional while existing table wrappers preserve data-heavy pages.
+- Action areas: primary actions, row actions, destructive links, hero action groups, and form action groups have consistent sizing, spacing, wrapping, and mobile stacking.
+- Badges/status indicators: scan status badges keep the existing color language and add a small dot affordance so completed/running/failed/pending states are visually distinct beyond text alone.
+- Tables/lists: table rows have increased padding, safer long-text wrapping, clearer row endings, and existing `table-responsive` wrappers remain intact.
+- Quick Links: dashboard quick links now read as action cards with a title and short purpose statement for demo navigation.
+- Account consistency: Register and external-login `.form-panel` sections receive the same dark framed visual treatment as MVC CRUD forms without changing Identity behavior.
+
+### Professor Demo Pages For Visual/Stability Criterion
+
+Show these pages in order for the "Overall application functionality and stability" discussion:
+
+1. Dashboard/Home: explain metrics, scan watchlist, recent file changes, and quick-link action cards.
+2. NAS Servers list/details: show active sidebar state, search panel, responsive table, status badge, metadata cards, and details actions.
+3. File Items list/details/edit: show long path wrapping, file metadata, edit form consistency, and authenticated attachment section.
+4. Global search results: search for a menu term, file/tag/server term, and a nonsense term to show grouped results and empty state.
+5. File attachment section: as an authenticated Admin/Manager, show upload/list/delete controls and responsive containment.
+6. Login/Register pages: show dark operations-center visual consistency, framed account form, validation area styling, and unchanged Identity/Google login behavior.
+
+### Stability Criterion Support
+
+- The polish improves perceived stability by making primary navigation, current location, statuses, actions, and empty/loading states easier to identify during a live demo.
+- The work is intentionally CSS/Razor-only and preserves existing routes, forms, validation, authorization, Identity, Google login, upload behavior, API behavior, domain models, DTOs, DbContext, migrations, and tests.
+- The implementation complements the existing automated safety net: MVC/API integration tests, logging tests, global search tests, and the Playwright Admin workflow remain the objective stability proof.
+
+## MAX Impression Dashboard And Activity Upgrade
+
+Implemented on 2026-07-09 to make the NAS Operations Control Center feel live, trustworthy, and demo-ready.
+
+### Improvements Made
+
+- Added a centralized `FileChangeLogService` for safe file activity creation.
+- FileItem MVC create and edit actions now create real `FileChangeLog` rows after successful saves.
+- FileItem API create and edit actions now create real `FileChangeLog` rows after successful saves.
+- Attachment upload and delete API actions now add file-level `Modified` activity using only safe metadata: original filename and byte count.
+- Dashboard Recent File Changes now reads newest entries directly from the `FileChangeLogs` table with `AsNoTracking`, ordered newest-first and capped for dashboard use.
+- Dashboard now includes `Data as of`, deterministic Operational Status, database-backed metrics, scan warning count, active server ratio, scan progress bars, activity timeline rows, and expanded quick-link action cards.
+- The visible application UI was cleaned up after the MAX pass so it remains domain-focused; the former Demo Readiness panel and assignment-style capability checklist are no longer shown on the dashboard.
+- Subtle live-style polish was added with CSS-only motion: repository feed dot pulse, critical/running/failed badge glow, active scan progress stripe motion, dashboard section entrance, and hover transitions for navigation, cards, quick links, and timeline rows.
+- Accessibility note: `prefers-reduced-motion: reduce` disables/minimizes these animations and transitions.
+- Dashboard health is deterministic:
+  - `Critical` when failed scans exist.
+  - `Warning` when scans are running, servers are inactive, or no active server exists.
+  - `Healthy` when active servers exist and no scan failures are recorded.
+
+### Why Recent File Changes Did Not Update Before
+
+Before this upgrade, the dashboard displayed `FileItem.ChangeLogs`, but normal FileItem create/edit actions did not create `FileChangeLog` records. Seeded or manually inserted audit records could appear, but real user edits often produced no new dashboard activity. The dashboard now reads the audit table directly, and real create/edit/upload/delete-attachment actions write audit rows through one centralized service.
+
+### User Actions That Create Activity
+
+- MVC FileItem create: `Created`.
+- MVC FileItem edit: `Modified`.
+- API FileItem create: `Created`.
+- API FileItem edit: `Modified`.
+- API attachment upload: file-level `Modified`.
+- API attachment delete: file-level `Modified`.
+
+FileItem delete activity was intentionally not added because existing business rules block deleting files that have change logs. Since create/edit now correctly create change logs, adding a delete log would require changing that rule or creating orphan-style audit data. The existing delete behavior was preserved.
+
+### Dashboard Demo Script
+
+1. Log in as Admin.
+2. Open Dashboard and point out `Data as of`, Operational Status, metrics, scan progress, Recent File Changes, and Quick Links.
+3. Open Files.
+4. Edit an existing FileItem with a safe visible metadata change.
+5. Save.
+6. Return to Dashboard.
+7. Show the new `Modified` activity with the logged-in user and timestamp.
+8. Use Global Search for that file, tag, or server.
+9. Open File details.
+10. Upload a small attachment if using an Admin/Manager account and attachment storage is configured.
+11. Open Dashboard or Change Logs again and show the attachment activity.
+12. Open `logs/app-yyyyMMdd.log` to show request logging evidence.
+13. Run or show the Playwright E2E test as automated browser proof.
+
+### Dashboard UI Cleanup Demo Notes
+
+1. Open Dashboard.
+2. Confirm no visible `Demo Readiness`, assignment checklist, grading, professor, API/DTO, Identity role, File logging, or Playwright marketing text appears in the app UI.
+3. Confirm the repository feed dot gently pulses.
+4. Confirm Critical, Running, and Failed statuses have subtle emphasis.
+5. Confirm active scan progress bars use a restrained stripe motion.
+6. Hover dashboard metric cards, quick-link cards, timeline rows, and sidebar links to show small product-like feedback.
+7. Confirm Recent File Changes still displays real database activity.
+8. Confirm mobile and desktop layouts remain stable.
+
+### Oral Defense Notes
+
+- Activity logging is centralized so MVC, API, and attachment actions use one safe implementation and avoid inconsistent audit text.
+- `FileChangeLog` remains read-only from the public API: there are still no public POST, PUT, or DELETE endpoints for file change logs.
+- Dashboard health is computed from real database values, not fake random demo data.
+- Activity values intentionally avoid passwords, request bodies, cookies, Google credentials, authorization headers, uploaded file contents, and multipart payloads.
+- No migration was required because the existing `FileChangeLog` table already supports the needed activity records.
+
+### Files Changed By MAX Upgrade
+
+- `Services/FileChangeLogService.cs`
+- `Controllers/HomeController.cs`
+- `Controllers/FileItemsController.cs`
+- `Controllers/Api/FileItemsApiController.cs`
+- `Controllers/Api/FileAttachmentsApiController.cs`
+- `ViewModels/DashboardViewModel.cs`
+- `Views/Home/Index.cshtml`
+- `wwwroot/css/site.css`
+- `Labosi-ASP.NET.Tests/Api/FileItemsApiTests.cs`
+- `Labosi-ASP.NET.Tests/Api/FileAttachmentsApiTests.cs`
+- `Labosi-ASP.NET.E2ETests/AdminTagWorkflowE2ETests.cs`
+- `docs/project-upgrade-checklist.md`
+- `lab-1/agent_log.txt`
+
+### Known Limitations
+
+- FileItem delete activity is skipped to preserve the existing delete guard for files with change logs.
+- Attachment activity is represented as file-level `Modified` because `FileChangeLog` links to `FileItem`, not directly to `FileAttachment`.
+- Dashboard is request/refesh based. No SignalR, timers, fake random activity, or background workers were added.
+- The Playwright scenario now includes an isolated Admin FileItem edit, Dashboard return, Recent File Changes verification, and global search for the edited file before continuing through the existing tag workflow.
+
+## Final Pre-Defense Polish
+
+Completed on 2026-07-09 as a UI/documentation-only final pass.
+
+- Dashboard remains domain-focused as the NAS Operations Control Center.
+- Visible assignment-style wording was removed from the app UI, including the former Demo Readiness panel and implementation-checklist capability chips.
+- Dashboard wording now uses operator language such as Repository feed, Operational Status, Scan Watchlist, Recent File Changes, and Quick Links.
+- Recent File Changes remains a rich audit timeline with action badge, file name, author, timestamp, context, and an Audit record link.
+- Recent File Changes now also exposes a `View all changes` link to the Change Logs list page.
+- Quick Links remain card-style operator shortcuts with title, count/context, and Open action.
+- Subtle CSS-only live polish remains in place: repository/status dot pulse, critical/running/failed badge emphasis, progress bar shimmer, card hover, quick-link hover, timeline row hover, and dashboard section entrance.
+- `prefers-reduced-motion: reduce` minimizes animations and transitions.
+- No backend behavior, API behavior, Identity/Google behavior, upload behavior, FileChangeLog behavior, packages, or migrations were changed in this final polish step.
+
+### Final Dashboard Demo Route
+
+1. Start the app.
+2. Open `/` or `/dashboard`.
+3. Show Repository feed, Operational Status, metrics, Scan Watchlist progress bars, Recent File Changes, `View all changes`, and Quick Links.
+4. Edit a FileItem as an Admin or Manager, return to Dashboard, and show the new Recent File Changes entry.
+5. Open `/FileChangeLogs` from `View all changes` to show the full audit list.
+6. Use Global Search from the sidebar for the edited file, a tag, and a server.
+
+### Oral Defense Reference
+
+- Use `docs/oral-defense-map.md` as the practical code navigation script.
+- It maps each defense topic to exact files/folders, a short explanation, a likely professor question, a strong short answer, and a manual demo step.
+
+### Final Verification Commands
+
+- `dotnet build`
+- `dotnet test --logger "console;verbosity=minimal"`
+- `dotnet test Labosi-ASP.NET.E2ETests/Labosi-ASP.NET.E2ETests.csproj --logger "console;verbosity=minimal"`
+- `git diff --check`
+- Manual browser inspection at desktop, 768px, and 375px.
+
+### Demo Account And Secrets Notes
+
+- Use a locally configured Admin or Manager account for the manual dashboard/FileItem edit demo.
+- The Playwright E2E test seeds its own isolated Admin user in a temporary database and does not need Google login or real secrets.
+- Google ClientId and ClientSecret must remain in user-secrets or environment configuration, never in tracked files.
+- Do not commit generated `logs/`, runtime uploads, Playwright reports, screenshots, videos, traces, browser binaries, local database files, `bin/`, or `obj/`.
+
 ## Scored Audit Matrix
 
 | Criterion | Points | Status | Evidence | Manual demonstration | Automated verification | Remaining work | Risk |

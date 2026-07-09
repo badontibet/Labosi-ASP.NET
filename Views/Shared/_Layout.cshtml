@@ -1,3 +1,8 @@
+@{
+    var currentController = ViewContext.RouteData.Values["controller"]?.ToString();
+    string NavClass(string controller) => string.Equals(currentController, controller, StringComparison.OrdinalIgnoreCase) ? "active" : "";
+}
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -36,21 +41,21 @@
                     </form>
 
                     <nav class="primary-nav" aria-label="Primary navigation">
-                        <a asp-controller="Home" asp-action="Index">Dashboard</a>
-                        <a asp-controller="NasServers" asp-action="Index">NAS Servers</a>
-                        <a asp-controller="ScanJobs" asp-action="Index">Scan Jobs</a>
-                        <a asp-controller="Directories" asp-action="Index">Directories</a>
-                        <a asp-controller="FileItems" asp-action="Index">Files</a>
-                        <a asp-controller="FileChangeLogs" asp-action="Index">Change Logs</a>
-                        <a asp-controller="Tags" asp-action="Index">Tags</a>
-                        <a asp-controller="Admins" asp-action="Index">Admins</a>
+                        <a class="@NavClass("Home")" asp-controller="Home" asp-action="Index">Dashboard</a>
+                        <a class="@NavClass("NasServers")" asp-controller="NasServers" asp-action="Index">NAS Servers</a>
+                        <a class="@NavClass("ScanJobs")" asp-controller="ScanJobs" asp-action="Index">Scan Jobs</a>
+                        <a class="@NavClass("Directories")" asp-controller="Directories" asp-action="Index">Directories</a>
+                        <a class="@NavClass("FileItems")" asp-controller="FileItems" asp-action="Index">Files</a>
+                        <a class="@NavClass("FileChangeLogs")" asp-controller="FileChangeLogs" asp-action="Index">Change Logs</a>
+                        <a class="@NavClass("Tags")" asp-controller="Tags" asp-action="Index">Tags</a>
+                        <a class="@NavClass("Admins")" asp-controller="Admins" asp-action="Index">Admins</a>
                     </nav>
 
                     <partial name="_LoginPartial" />
 
                     <div class="rail-note">
                         <span class="pulse-dot"></span>
-                        EF SQLite repository feed
+                        Repository feed online
                     </div>
                 </div>
             </details>

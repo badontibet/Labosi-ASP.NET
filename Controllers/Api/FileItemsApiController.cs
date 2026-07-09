@@ -1,8 +1,10 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using NasIndexer.Data;
 using NasIndexer.Dtos;
 using NasIndexer.Model;
 using NasIndexer.Repositories;
+using NasIndexer.Services;
 
 namespace NasIndexer.Controllers.Api
 {
@@ -11,10 +13,12 @@ namespace NasIndexer.Controllers.Api
     public class FileItemsApiController : ControllerBase
     {
         private readonly INasRepository repository;
+        private readonly NasIndexerDbContext context;
 
-        public FileItemsApiController(INasRepository repository)
+        public FileItemsApiController(INasRepository repository, NasIndexerDbContext context)
         {
             this.repository = repository;
+            this.context = context;
         }
 
         [AllowAnonymous]
@@ -90,6 +94,7 @@ namespace NasIndexer.Controllers.Api
             };
 
             repository.AddFile(file, selectedTagIds);
+            FileChangeLogService.RecordFileCreated(context, file, User);
 
             var created = repository.GetFileById(file.Id) ?? file;
             return CreatedAtAction(nameof(GetFile), new { id = created.Id }, ToDto(created));
@@ -104,7 +109,8 @@ namespace NasIndexer.Controllers.Api
                 return BadRequest("Route id must match the DTO id.");
             }
 
-            if (repository.GetFileForEdit(id) == null)
+            var beforeFile = repository.GetFileForEdit(id);
+            if (beforeFile == null)
             {
                 return NotFound();
             }
@@ -132,6 +138,8 @@ namespace NasIndexer.Controllers.Api
                 return NotFound();
             }
 
+            var afterFile = repository.GetFileForEdit(id) ?? file;
+            FileChangeLogService.RecordFileModified(context, beforeFile, afterFile, User);
             var updated = repository.GetFileById(id) ?? file;
             return Ok(ToDto(updated));
         }

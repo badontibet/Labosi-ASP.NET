@@ -12,6 +12,12 @@ namespace NasIndexer.ViewModels
         public List<FileChangeLog> RecentChanges { get; set; } = new List<FileChangeLog>();
         public List<ScanJob> WarningScanJobs { get; set; } = new List<ScanJob>();
 
+        public DateTime? LastUpdatedUtc { get; set; }
+        public string HealthStatus { get; set; } = "Unknown";
+        public string HealthStatusClass { get; set; } = "status-pending";
+        public string HealthSummary { get; set; } = "Waiting for inventory data.";
+        public int ScanWarningCount { get; set; }
+
         public int TotalServers { get; set; }
         public int ActiveServers { get; set; }
         public int InactiveServers { get; set; }

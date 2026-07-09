@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using NasIndexer.Data;
 using NasIndexer.Model;
 using NasIndexer.Repositories;
+using NasIndexer.Services;
 using NasIndexer.Utilities;
 using NasIndexer.ViewModels;
 
@@ -10,10 +12,12 @@ namespace NasIndexer.Controllers
     public class FileItemsController : Controller
     {
         private readonly INasRepository repository;
+        private readonly NasIndexerDbContext context;
 
-        public FileItemsController(INasRepository repository)
+        public FileItemsController(INasRepository repository, NasIndexerDbContext context)
         {
             this.repository = repository;
+            this.context = context;
         }
 
         public IActionResult Index()
@@ -61,6 +65,7 @@ namespace NasIndexer.Controllers
             }
 
             repository.AddFile(file, model.SelectedTagIds);
+            FileChangeLogService.RecordFileCreated(context, file, User);
             TempData["StatusMessage"] = $"File {file.Name} was created.";
             TempData["HighlightFileId"] = file.Id;
 
@@ -95,11 +100,19 @@ namespace NasIndexer.Controllers
                 return View(PrepareFileForm(model));
             }
 
+            var beforeFile = repository.GetFileForEdit(id);
+            if (beforeFile == null)
+            {
+                return NotFound();
+            }
+
             if (!repository.UpdateFile(file, model.SelectedTagIds))
             {
                 return NotFound();
             }
 
+            var afterFile = repository.GetFileForEdit(id) ?? file;
+            FileChangeLogService.RecordFileModified(context, beforeFile, afterFile, User);
             TempData["StatusMessage"] = $"File {file.Name} was updated.";
             TempData["HighlightFileId"] = file.Id;
 

@@ -1,6 +1,10 @@
 using System.Net;
 using System.Net.Http.Json;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using NasIndexer.Dtos;
+using NasIndexer.Data;
+using NasIndexer.Model;
 using Xunit;
 
 namespace Labosi_ASP.NET.Tests.Api
@@ -161,6 +165,31 @@ namespace Labosi_ASP.NET.Tests.Api
         }
 
         [Fact]
+        public async Task PostFile_WithValidData_CreatesActivityLog()
+        {
+            using var factory = new CustomWebApplicationFactory();
+            using var client = CreateRoleClient(factory, "activity-manager@example.test", "Manager");
+            var directory = await TestDataFactory.CreateDirectoryAsync(factory);
+            var request = ValidCreateDto(directory.Id);
+            request.Name = "activity-created.txt";
+            request.Path = "/activity/activity-created.txt";
+
+            var response = await client.PostAsJsonAsync("/api/files", request);
+
+            Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+            var dto = await response.Content.ReadFromJsonAsync<FileItemDto>();
+            Assert.NotNull(dto);
+
+            var logs = await GetChangeLogsForFileAsync(factory, dto.Id);
+            var log = Assert.Single(logs);
+            Assert.Equal(ChangeType.Created, log.ChangeType);
+            Assert.Equal("activity-manager@example.test", log.User);
+            Assert.Contains("activity-created.txt", log.NewValue);
+            Assert.DoesNotContain("password", log.NewValue, StringComparison.OrdinalIgnoreCase);
+            Assert.DoesNotContain("secret", log.NewValue, StringComparison.OrdinalIgnoreCase);
+        }
+
+        [Fact]
         public async Task PostFile_WithMissingOrInvalidRequiredFields_ReturnsBadRequest()
         {
             using var factory = new CustomWebApplicationFactory();
@@ -274,6 +303,30 @@ namespace Labosi_ASP.NET.Tests.Api
             Assert.Equal(secondDirectory.Id, storedFile.DirectoryId);
             Assert.Single(storedFile.Tags);
             Assert.Equal(updatedTag.Id, storedFile.Tags.Single().Id);
+        }
+
+        [Fact]
+        public async Task PutFile_WithValidData_CreatesActivityLog()
+        {
+            using var factory = new CustomWebApplicationFactory();
+            using var client = CreateRoleClient(factory, "activity-editor@example.test", "Manager");
+            var directory = await TestDataFactory.CreateDirectoryAsync(factory);
+            var file = await TestDataFactory.CreateFileItemAsync(factory, directory.Id, name: "before-activity.txt");
+            var request = ValidUpdateDto(file.Id, directory.Id);
+            request.Name = "after-activity.txt";
+            request.Path = "/activity/after-activity.txt";
+
+            var response = await client.PutAsJsonAsync($"/api/files/{file.Id}", request);
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var logs = await GetChangeLogsForFileAsync(factory, file.Id);
+            var log = Assert.Single(logs);
+            Assert.Equal(ChangeType.Modified, log.ChangeType);
+            Assert.Equal("activity-editor@example.test", log.User);
+            Assert.Contains("before-activity.txt", log.OldValue);
+            Assert.Contains("after-activity.txt", log.NewValue);
+            Assert.DoesNotContain("password", log.OldValue + log.NewValue, StringComparison.OrdinalIgnoreCase);
+            Assert.DoesNotContain("secret", log.OldValue + log.NewValue, StringComparison.OrdinalIgnoreCase);
         }
 
         [Fact]
@@ -401,6 +454,26 @@ namespace Labosi_ASP.NET.Tests.Api
         private static string UniqueName(string prefix)
         {
             return $"{prefix}-{Guid.NewGuid():N}";
+        }
+
+        private static HttpClient CreateRoleClient(CustomWebApplicationFactory factory, string user, string role)
+        {
+            var client = factory.CreateClient();
+            client.DefaultRequestHeaders.Add(TestAuthHandler.UserHeader, user);
+            client.DefaultRequestHeaders.Add(TestAuthHandler.RolesHeader, role);
+            return client;
+        }
+
+        private static async Task<List<FileChangeLog>> GetChangeLogsForFileAsync(CustomWebApplicationFactory factory, int fileId)
+        {
+            using var scope = factory.Services.CreateScope();
+            var dbContext = scope.ServiceProvider.GetRequiredService<NasIndexerDbContext>();
+
+            return await dbContext.FileChangeLogs
+                .AsNoTracking()
+                .Where(changeLog => changeLog.FileId == fileId)
+                .OrderBy(changeLog => changeLog.Id)
+                .ToListAsync();
         }
     }
 }
